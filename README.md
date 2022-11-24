@@ -9,5 +9,7 @@ https://swexpertacademy.com/main/main.do
 # Youtube 강의
 https://www.youtube.com/@ChanSuShin
 
+https://www.youtube.com/playlist?list=PLRx0vPvlEmdAghTr5mXQxGpHjWqSz0dgC
+
 # 참고 Site
 https://my-coding-notes.tistory.com/
