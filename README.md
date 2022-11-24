@@ -15,7 +15,7 @@ https://www.youtube.com/playlist?list=PLRx0vPvlEmdAghTr5mXQxGpHjWqSz0dgC
 
 # 참고 Site
 ## By Nam
-https:/github.com/namplusk
+https:/github.com/nampluskr
 
 ## 꾸준한 연습장
 https://my-coding-notes.tistory.com/
