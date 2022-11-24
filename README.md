@@ -6,9 +6,10 @@ https://www.acmicpc.net/
 
 https://swexpertacademy.com/main/main.do
 
-# Youtube 강의
+# 한국외대 신찬수 교수님 강의
 https://www.youtube.com/@ChanSuShin
 
+# 동빈나 
 https://www.youtube.com/playlist?list=PLRx0vPvlEmdAghTr5mXQxGpHjWqSz0dgC
 
 # 참고 Site
