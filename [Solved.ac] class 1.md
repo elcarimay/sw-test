@@ -1,4 +1,4 @@
-```
+```python
 input_1157="""
 zZa
 """
@@ -15,7 +15,7 @@ if cnt.count(max(cnt)) >=2:
 else:
     print(spel[cnt.index(max(cnt))])
 ```
-```
+```python
 input_2884="""
 23 40
 """
@@ -34,7 +34,7 @@ elif m >= 45:
     rh = h
 print('%d %d' % (rh, rm))
 ```
-```
+```python
 # 백준 10171번
 #\    /\
 # )  ( ')
@@ -46,7 +46,7 @@ print(" )  ( ')")
 print("(  /  )")
 print(" \(__)|")
 ```
-```
+```python
 # 백준 10172번
 #|\_/|
 #|q p|   /}
@@ -59,7 +59,7 @@ print('( 0 )"""\\')  # \'앞에 \을 붙여준다.
 print('|"^"`    |')
 print("||_/=\\\__|")  # \\ 앞에 \을 하나 더 붙여준다.
 ```
-```
+```python
 input_10951="""
 1 1
 2 3
