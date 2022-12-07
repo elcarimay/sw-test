@@ -1,4 +1,4 @@
-```
+```python
 input_cleaner="""
 4 3 2
 25
