@@ -1,4 +1,5 @@
 # head
+'''
 input_cleaner="""
 4 3 2
 25
@@ -76,6 +77,7 @@ def fun(x0, y0, direc_index, com, flag):
 # print(x, y, d_index, flag)
 # [x, y, d_index, flag] = fun(x, y, d_index, 1, flag)
 # print(x, y, d_index, flag)
+'''
 # [x, y, d_index, flag] = fun(x, y, d_index, 1, flag)
 # print(x, y, d_index, flag)
 # [x, y, d_index, flag] = fun(x, y, d_index, 1, flag)
