@@ -6,7 +6,7 @@ inputs = input_1157.split('\n')[1:-1][::-1]
 def input():    return inputs.pop()
 
 word = input().upper()
-`cnt`, spel = [], []
+cnt, spel = [], []
 for i in list(set(word)):
     spel.append(i)
     cnt.append(word.count(i))
