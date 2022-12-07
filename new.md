@@ -1,5 +1,3 @@
-# head
-'''
 input_cleaner="""
 4 3 2
 25
@@ -31,14 +29,6 @@ def sect(xx,yy,n):
         flag = 3
     elif 2*n <= xx < 3*n and n <= yy < 2*n:
         flag = 1
-    elif 0 <= xx < n and 0 <= yy < n:
-        flag = 6
-    elif 0 <= xx < n and 2*n <= yy < 3*n:
-        flag = 7
-    elif 2*n <= xx < 3*n and 0 <= yy < n:
-        flag = 8
-    elif 2*n <= xx < 3*n and 2*n <= yy < 3*n:
-        flag = 9
     else:
         pass
     return flag
@@ -52,18 +42,27 @@ def cross(pf,nf,px,py,di):
     else:
         nx, ny = py, px
         di -= 1
+    return [nx, ny, di]
 
 
-def fun(x0, y0, direc_index, com, flag):
+def fun(px, py, direc_index, com, flag):
     pf = flag
     if com == 1:
-        x0 += dx[direc_index]
-        y0 += dy[direc_index]
+        nx += dx[direc_index]
+        ny += dy[direc_index]
+        if nx < 0 or nx >= 3*n or ny < 0 or ny >= 3*n:
+            pass
+        elif:
+
+        
     elif com == 2:
         direc_index += 1
     else:
         direc_index -= 1
     nf = sect(x0, y0, n)
+    if pf != nf:
+        [x0, y0, direc_index] = cross(pf, nf, x0, y0, direc_index)
+    
 
     return [x0, y0, direc_index, flag]
 
@@ -77,7 +76,6 @@ def fun(x0, y0, direc_index, com, flag):
 # print(x, y, d_index, flag)
 # [x, y, d_index, flag] = fun(x, y, d_index, 1, flag)
 # print(x, y, d_index, flag)
-'''
 # [x, y, d_index, flag] = fun(x, y, d_index, 1, flag)
 # print(x, y, d_index, flag)
 # [x, y, d_index, flag] = fun(x, y, d_index, 1, flag)
