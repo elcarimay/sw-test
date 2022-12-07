@@ -1,4 +1,4 @@
-```
+```python
 input_1018="""
 8 8
 WBWBWBWB
@@ -35,7 +35,7 @@ for i in range(n-7):
         result.append(draw2)
 print(min(result))
 ```
-```
+```python
 input_1181="""
 13
 but
@@ -64,7 +64,7 @@ arr.sort(key = len)
 for i in arr:
     print(i)
 ```
-```
+```python
 input_1181="""
 500
 """
@@ -83,7 +83,7 @@ while True:
         break
     nth+=1
 ```
-```
+```python
 input_1654="""
 4 11
 802
@@ -110,7 +110,7 @@ while start <= end:
         end = mid - 1
 print(end)
 ```
-```
+```python
 input_1874="""
 8
 4
@@ -145,7 +145,7 @@ else:
     for i in op:
         print(i)
 ```
-```
+```python
 input_1920="""
 5
 4 1 5 2 3
@@ -166,7 +166,7 @@ for i in m_arr:
     else:
         print(0)
 ```
-```
+```python
 input_1966="""
 3
 1 0
@@ -205,7 +205,7 @@ for _ in range(tc):
             imp.append(imp.pop(0))
             idx.append(idx.pop(0))
 ```
-```
+```python
 input_2108="""
 3
 0
@@ -238,7 +238,7 @@ else:
 print(max(num) - min(num))
 # int(round((sum(num)/5),0))
 ```
-```
+```python
 input_2775="""
 2
 1
@@ -258,7 +258,7 @@ for _ in range(tc):
             f0[i] += f0[i - 1]
     print(f0[-1])
 ```
-```
+```python
 input_2805="""
 5 20
 4 42 40 26 46
@@ -282,7 +282,7 @@ while start <= end:
         end = mid - 1
 print(end)
 ```
-```
+```python
 input_2839="""
 11
 """
@@ -302,7 +302,7 @@ while sugar >= 0:
 else:
     print(-1)
 ```
-```
+```python
 input_2869="""
 100 99 1000000000
 """
@@ -315,7 +315,7 @@ a, b, v = map(int, input().split())
 day = (v - b) / (a - b)
 print(math.ceil(day))
 ```
-```
+```python
 input_10814="""
 3
 21 Junkyu
@@ -336,7 +336,7 @@ data.sort(key = lambda x:x[0])
 for i in data:
     print(*i)
 ```
-```
+```python
 input_10989="""
 10
 5
@@ -362,7 +362,7 @@ for i in range(10001):
         for j in range(data[i]):
             print(i)
 ```
-```
+```python
 input_11650="""
 5
 3 4
@@ -382,7 +382,7 @@ data.sort(key = lambda x:(x[0],x[1]))
 for i in data:
     print(*i)
 ```
-```
+```python
 input_18111="""
 3 4 0
 64 64 64 64
@@ -415,7 +415,7 @@ for target in range(257):
 
 print(ans, idx)
 ```
-```
+```python
 input_15829="""
 3
 zzz
