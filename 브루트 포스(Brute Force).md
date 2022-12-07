@@ -7,7 +7,7 @@
 한자릿수를 모두 더하면 9(9가지 X 자릿수(1))  
 두자릿수를 모두 더하면 180(90가지 X 자릿수(2))  
 세자릿수를 모두 더하면 2700(900가지 X 자릿수(3))  
-```
+```python
 input_1748="""
 3
 5
@@ -41,7 +41,7 @@ for _ in range(n):
 5일 때 -> 13  
 
 이에 따라 점화식은 f(n) = f(n-1) + f(n-2) + f(n-3) (n>3 인 경우)  
-```
+```python
 input_9095 = """
 3
 4
@@ -63,7 +63,7 @@ t = int(input())
 for _ in range(t):
     print(cache[int(input())])
 ```
-```
+```python
 inputs = input_9095.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
 def sol(num):
@@ -101,7 +101,7 @@ for _ in range(t):
 ## 15649번 N과 M(1) (Silver III)  
 
 permutation	정렬 X, 반복 X
-```
+```python
 input_15649="""
 3
 3 1
@@ -128,7 +128,7 @@ for _ in range(int(tc)):
 
     dfs()
 ```
-```
+```python
 inputs = input_15649.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
 
@@ -152,7 +152,7 @@ for _ in range(int(tc)):
 
     dfs()
 ```
-```
+```python
 from itertools import permutations
 
 inputs = input_15649.split('\n')[1:-1][::-1]
@@ -167,7 +167,7 @@ for _ in range(int(tc)):
 ## 15650번 N과 M(2) (Silver III)  
 
 combination 정렬 O, 반복 X
-```
+```python
 input_15650="""
 3
 3 1
@@ -194,7 +194,7 @@ for _ in range(int(tc)):
 
     dfs(0)
 ```
-```
+```python
 inputs = input_15650.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
 
@@ -216,7 +216,7 @@ for _ in range(int(tc)):
 
     dfs(0)
 ```
-```
+```python
 from itertools import combinations
 inputs = input_15650.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
@@ -234,7 +234,7 @@ for _ in range(int(tc)):
 ## 15651번 N과 M(3) (Silver III)  
 
 product	정렬 X, 반복 O
-```
+```python
 input_15651="""
 3
 3 1
@@ -262,7 +262,7 @@ for _ in range(int(tc)):
 
     dfs()
 ```
-```
+```python
 inputs = input_15651.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
 
@@ -282,7 +282,7 @@ for _ in range(int(tc)):
     a = list(range(1,int(n)+1))
     dfs()
 ```
-```
+```python
 from itertools import product
 inputs = input_15651.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
@@ -296,7 +296,7 @@ for _ in range(int(tc)):
 ## 15652번 N과 M(4) (Silver III)  
 
 combination with replacement 정렬 O, 반복 O
-```
+```python
 input_15652="""
 3
 3 1
@@ -322,7 +322,7 @@ for _ in range(int(tc)):
 
     dfs(0)
 ```
-```
+```python
 inputs = input_15652.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
 
@@ -343,7 +343,7 @@ for _ in range(int(tc)):
 
     dfs(0)
 ```
-```
+```python
 from itertools import combinations_with_replacement
 
 inputs = input_15652.split('\n')[1:-1][::-1]
@@ -358,7 +358,7 @@ for _ in range(int(tc)):
 ## 15654번 N과 M(5) (Silver III)  
 
 permutation	정렬 X, 반복 X
-```
+```python
 input_15654="""
 4 2
 9 8 7 1
@@ -383,7 +383,7 @@ arr.sort()
 
 dfs()
 ```
-```
+```python
 inputs = input_15654.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
 
@@ -404,7 +404,7 @@ arr.sort()
 
 dfs()
 ```
-```
+```python
 from itertools import permutations
 
 inputs = input_15654.split('\n')[1:-1][::-1]
@@ -419,7 +419,7 @@ for i in permutations(arr,int(m)):
 ## 15655번 N과 M(6) (Silver III)  
 
 combination 정렬 O, 반복 X
-```
+```python
 input_15655="""
 4 4
 1231 1232 1233 1234
@@ -447,7 +447,7 @@ dfs(0)
 for i in result:
     print(*i)
 ```
-```
+```python
 from itertools import combinations
 inputs = input_15655.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
@@ -461,7 +461,7 @@ for i in combinations(arr, int(m)):
 ## 15656번 N과 M(7) (Silver III)  
 
 product	정렬 X, 반복 O
-```
+```python
 input_15656="""
 4 2
 9 8 7 1
@@ -483,7 +483,7 @@ def dfs(selected=[]):
         dfs(selected + [arr[i]])
 dfs()
 ```
-```
+```python
 input_15656="""
 4 2
 9 8 7 1
@@ -507,7 +507,7 @@ def dfs(selected=[]):
         selected.pop()
 dfs()
 ```
-```
+```python
 from itertools import product
 inputs = input_15656.split('\n')[1:-1][::-1]
 def input(): return inputs.pop()
@@ -521,7 +521,7 @@ for i in product(arr, repeat=int(m)):
 ## 15657번 N과 M(8) (Silver III)  
 
 combination with replacement 정렬 O, 반복 O
-```
+```python
 input_15657="""
 4 2
 9 8 7 1
@@ -542,7 +542,7 @@ def dfs(start, selected=[]):
         dfs(i, selected + [arr[i]])
 dfs(0)
 ```
-```
+```python
 input_15657="""
 4 2
 9 8 7 1
@@ -565,7 +565,7 @@ def dfs(start, selected=[]):
         selected.pop()
 dfs(0)
 ```
-```
+```python
 from itertools import combinations_with_replacement
 
 inputs = input_15657.split('\n')[1:-1][::-1]
