@@ -1,0 +1,39 @@
+```python
+from itertools import permutations
+
+input_2503="""
+4
+123 1 1
+356 1 0
+327 2 0
+489 0 1
+"""
+inputs = input_2503.split('\n')[1:-1][::-1]
+def input():    return inputs.pop()
+
+n = int(input())
+db = list(permutations(list(range(1,10)),3))
+
+def check(db1, test1):
+    remove_cnt = 0
+    for i in range(len(db1)):
+        s_cnt = b_cnt = 0
+        i -= remove_cnt
+        for j in range(3):
+            test1[j] = int(test1[j])
+            if test1[j] in db1[i]:
+                if j == db1[i].index(test1[j]):
+                    s_cnt += 1
+                else:
+                    b_cnt += 1
+        if s_cnt != s or b_cnt != b:
+            db1.remove(db1[i])
+            remove_cnt += 1
+    return db1
+
+for _ in range(n):
+    test, s, b = map(int, input().split())
+    test = list(str(test))
+    db = check(db,test)
+print(len(db))
+```
