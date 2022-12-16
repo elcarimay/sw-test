@@ -22,9 +22,7 @@ zi = griddata((x,y),z,(xi,yi),method='linear')
 zi[mask] = np.nan
 
 # plot
-fig = plt.figure()
-ax = fig.add_subplot(111)
-plt.contourf(xi,yi,zi,np.arange(0,1.01,0.01))
+plt.contourf(xi,yi,zi)
 plt.plot(x,y,'k.')
 plt.xlabel('xi',fontsize=16)
 plt.ylabel('yi',fontsize=16)
