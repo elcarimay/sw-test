@@ -1,3 +1,4 @@
+```python
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -187,3 +188,4 @@ int apple(int r, int c, int len)
     return dLength;
 }
 
+```
