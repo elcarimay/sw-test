@@ -1,3 +1,4 @@
+#[Solution.py]
 ```python
 import heapq
 from collections import defaultdict, deque
@@ -87,4 +88,70 @@ def order(tStamp, mCityA, mCityB, mTax):
 def check(tStamp):
     updateTime(tStamp)
     return cities[0].grain
+```
+#[Main.py]
 ```python
+import sys
+import solution
+from time import time
+
+
+CMD_INIT = 100
+CMD_DESTROY = 200
+CMD_ORDER = 300
+CMD_CHECK = 400
+
+order2 = {100: "init",
+         200: "destroy",
+         300: "order",
+         400: "check",}
+
+def run(k):
+    ok = True
+    query = [int(i) for i in k.readline().strip('\n').rstrip(' ').split(' ')]
+
+    for _ in range(query[0]):
+        cmd, *param = [int(i) for i in k.readline().strip('\n').rstrip(' ').split(' ')]
+        print(f">> {order2[cmd]}", *param)
+
+        if cmd == CMD_INIT:
+            N, M = param
+            solution.init(N, M)
+
+        if cmd == CMD_DESTROY:
+            pass
+
+        if cmd == CMD_ORDER:
+            tStamp, mCityA, mCityB, mTax, answer = param
+            result = solution.order(tStamp, mCityA, mCityB, mTax)
+            if answer != result:
+                ok = False
+
+        if cmd == CMD_CHECK:
+            tStamp, answer = param
+            result = solution.check(tStamp)
+            if answer != result:
+                ok = False
+
+        if not ok:
+            break
+
+    return ok
+
+
+if __name__ == '__main__':
+
+    start = time()
+    fo = open('C:\\Program1\\WPy64-31101\\notebooks\\01_Pro_test\\sample_input_직선왕국.txt', 'r')
+    sys.stdin = fo
+    k = sys.stdin
+    TC, MARK = [int(i) for i in k.readline().strip('\n').rstrip(' ').split(' ')]
+
+    TC = 5
+    for case in range(1, TC + 1):
+        score = MARK if run(k) else 0
+        print("#%d %d" % (case, score), flush=True)
+    
+    fo.close()
+    print(f">> Time = {time() - start:.5f} [sec]")
+'''
