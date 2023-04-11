@@ -89,7 +89,7 @@ def check(tStamp):
     updateTime(tStamp)
     return cities[0].grain
 ```
-#[Main.py]
+# [Main.py]
 ```python
 import sys
 import solution
@@ -154,4 +154,4 @@ if __name__ == '__main__':
     
     fo.close()
     print(f">> Time = {time() - start:.5f} [sec]")
-'''
+```
