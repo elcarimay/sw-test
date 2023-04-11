@@ -108,13 +108,13 @@ order2 = {100: "init",
          300: "order",
          400: "check",}
 
-def run(k):
+def run():
     ok = True
-    query = [int(i) for i in k.readline().strip('\n').rstrip(' ').split(' ')]
+    query = [int(i) for i in sys.stdin.readline().strip('\n').rstrip(' ').split(' ')]
 
     for _ in range(query[0]):
-        cmd, *param = [int(i) for i in k.readline().strip('\n').rstrip(' ').split(' ')]
-        print(f">> {order2[cmd]}", *param)
+        cmd, *param = [int(i) for i in sys.stdin.readline().strip('\n').rstrip(' ').split(' ')]
+        # print(f">> {order2[cmd]}", *param)
 
         if cmd == CMD_INIT:
             N, M = param
@@ -144,17 +144,14 @@ def run(k):
 if __name__ == '__main__':
 
     start = time()
-    fo = open('C:\\Program1\\WPy64-31101\\notebooks\\01_Pro_test\\sample_input_직선왕국.txt', 'r')
-    sys.stdin = fo
-    k = sys.stdin
-    TC, MARK = [int(i) for i in k.readline().strip('\n').rstrip(' ').split(' ')]
+    sys.stdin = open('C:\\Program1\\WPy64-31101\\notebooks\\01_Pro_test\\sample_input_직선왕국.txt', 'r')
+    TC, MARK = [int(i) for i in sys.stdin.readline().strip('\n').rstrip(' ').split(' ')]
 
-    TC = 5
     for case in range(1, TC + 1):
-        score = MARK if run(k) else 0
+        score = MARK if run() else 0
         print("#%d %d" % (case, score), flush=True)
     
-    fo.close()
+    sys.stdin.close()
     print(f">> Time = {time() - start:.5f} [sec]")
 ```
 ### [풀이] `Solution.cpp`
