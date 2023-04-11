@@ -1,4 +1,6 @@
-# [Solution.py]
+## 230411_Linear_Kingdom
+
+### `Solution.py`
 ```python
 import heapq
 from collections import defaultdict, deque
@@ -89,7 +91,7 @@ def check(tStamp):
     updateTime(tStamp)
     return cities[0].grain
 ```
-# [Main.py]
+### `Main.py`
 ```python
 import sys
 import solution
