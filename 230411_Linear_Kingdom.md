@@ -1,4 +1,4 @@
-'''python
+```python
 import heapq
 from collections import defaultdict, deque
 
@@ -87,4 +87,4 @@ def order(tStamp, mCityA, mCityB, mTax):
 def check(tStamp):
     updateTime(tStamp)
     return cities[0].grain
-'''python
+```python
