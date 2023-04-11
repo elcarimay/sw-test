@@ -152,7 +152,7 @@ if __name__ == '__main__':
         print("#%d %d" % (case, score), flush=True)
     
     sys.stdin.close()
-    print(f">> Time = {time() - start:.5f} [sec]")
+    print(f">> Time = {time() - start:.3f} [sec]")
 ```
 ### [풀이] `Solution.cpp`
 ```C
