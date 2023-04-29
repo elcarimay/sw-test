@@ -18,3 +18,6 @@ https://www.youtube.com/playlist?list=PLRx0vPvlEmdAghTr5mXQxGpHjWqSz0dgC
 
 ## 꾸준한 연습장
 https://my-coding-notes.tistory.com/
+
+## 세종대학교 인공지능연구소
+https://github.com/sejongresearch
