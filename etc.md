@@ -15,6 +15,8 @@ int main()
     {
         *(pNum + 1) = i;
     }
+    
+    // 
     // 프로그램이 끝나기전에 아래 한줄 입력
     _CrtDumpMemoryLeaks();
 
