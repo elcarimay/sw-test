@@ -1,6 +1,6 @@
 <C++>
 디버그시 조사식에 변수이름을 입력하여 실시간으로 모니터링 가능
-하기 코드에서 for문 앞에 중단점을 걸고 debug실행해서 _ CrtDumpMemoryLeaks 변수가 생기는지 확인하고
+하기 코드에서 for문 앞에 중단점을 걸고 debug실행해서 CrtDumpMemoryLeaks 변수가 생기는지 확인하고
 생겼다면 Memoryleak발생한 것임.
 
 ```C++
