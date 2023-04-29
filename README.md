@@ -21,3 +21,6 @@ https://my-coding-notes.tistory.com/
 
 ## 세종대학교 인공지능연구소
 https://github.com/sejongresearch
+
+## 세종대 최유경 교수님 강의(2020)
+https://www.youtube.com/watch?v=f69fB5dhHdQ&list=PL1xKqHsVFgvkjsEOlTU-h7HAOmD1Bpadd&index=3
