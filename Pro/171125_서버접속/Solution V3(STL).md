@@ -3,153 +3,84 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
+using namespace std;
 
-extern void Init();
-extern void NewAccount(char id[11], char password[11], int defaulttime);
-extern void Logout(char id[11]);
-extern void Connect(char id[11], char password[11]);
-extern int Tick();
+#define MAX_USER 50000
+#define MAX_TIME 100000 // 8만까지 하면 되나 넉넉히 잡음.
+#define MAX_TABLE 50007 // 서로 다른 원소의 숫자와 비슷한 숫자, hash함수 특성상 3,7,9같은 숫자를 넣음
 
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
+struct User {
+    string password;
+    bool isLogout;
+    int defaulttime;
+    int logouttime; // 로그아웃되는 시간 = currenttime + defaulttime
+};
 
-#define MAX_ACCOUNT 50000
-#define MAX_TIME 30000
+unordered_map<string, int> mapID;
+vector<User> user;
 
-typedef enum {
-	INIT,
-	NEWACCOUNT,
-	LOGOUT,
-	CONNECT,
-	TICK
-}STATE;
+int currenttime;
+unordered_map<int, vector<int>> logoutUsers;
 
-typedef struct {
-	char id[11];
-	char password[11];
-	int defaulttime;
-}ACCOUNT;
-static ACCOUNT account[MAX_ACCOUNT];
-
-static int mSeed;
-static int mrand(int num)
+void Init()
 {
-	mSeed = mSeed * 1103515245 + 12345;
-	return (((mSeed >> 16) & 0x7FFF) % num);
+    mapID.clear();
+    user.clear();
+    currenttime = 0;
+
+    logoutUsers.clear();
 }
 
-static void make_account(int cnt)
-{
-	for (int i = 0; i < cnt; i++) {
-		int idl = 5 + mrand(6);
-		for (int k = 0; k < idl; k++) {
-			int ch = mrand(36);
-			if (ch < 10) account[i].id[k] = ch + '0';
-			else account[i].id[k] = ch - 10 + 'a';
-		}
-		account[i].id[idl] = '\0';
+void NewAccount(char id[11], char password[11], int defaulttime)
+{ // 중괄호내에 변수를 만들면 stack 영역에 저장되므로 함수호출이 끝나면 사라짐.(지역변수)
+    int userCount = user.size();
+    mapID[string(id)] = userCount;
+    user.push_back(User());
 
-		int pal = 5 + mrand(6);
-		for (int k = 0; k < pal; k++) {
-			int ch = mrand(36);
-			if (ch < 10) account[i].password[k] = ch + '0';
-			else account[i].password[k] = ch - 10 + 'a';
-		}
-		account[i].password[pal] = '\0';
+    user[userCount].password = string(password);
+    user[userCount].defaulttime = defaulttime;
+    user[userCount].logouttime = currenttime + defaulttime;
+    user[userCount].isLogout = false;
 
-		int max_time = cnt;
-		if (max_time > MAX_TIME) max_time = MAX_TIME;
-		account[i].defaulttime = 1 + mrand(max_time);
-	}
+    logoutUsers[user[userCount].logouttime].push_back(userCount);
 }
 
-static void init(int num)
+void Logout(char id[11])
 {
-	// Sample파일에 보면 순서대로 입력이 되고 num갯수만큼만 입력됨.
-	// 초기 num의 1/3부분에 대해서 newaccount를 진행해야 함.
-	Init();
-
-	make_account(num);
-	for (int i = 0; i < num / 3; i++) {
-		char id[11], password[11];
-		int defaulttime;
-		strcpy(id, account[i].id);
-		strcpy(password, account[i].password);
-		defaulttime = account[i].defaulttime;
-		NewAccount(id, password, defaulttime);
-	}
+    int uIdx = mapID[string(id)];
+    if (!user[uIdx].isLogout)
+        user[uIdx].isLogout = true;
 }
 
-static int run()
+void Connect(char id[11], char password[11])
 {
-	int ret = 1;
-	int cmd, param1, param2, num, cmdcnt;
-
-	char id[11], password[11];
-	int defaulttime;
-
-	scanf("%d %d %d %d", &cmd, &mSeed, &num, &cmdcnt);
-	init(num);
-
-	for (int i = 0; i < cmdcnt; i++) {
-		scanf("%d", &cmd);
-		if (cmd == NEWACCOUNT) {
-			scanf("%d %d", &param1, &param2);
-			strcpy(id, account[param1].id);
-			strcpy(password, account[param1].password);
-			defaulttime = param2;
-			NewAccount(id, password, defaulttime);
-		}
-		else if (cmd == LOGOUT) {
-			scanf("%d", &param1);
-			strcpy(id, account[param1].id);
-			Logout(id);
-		}
-		else if (cmd == CONNECT) {
-			scanf("%d %d", &param1, &param2);
-			strcpy(id, account[param1].id);
-			strcpy(password, account[param2].password);
-			Connect(id, password);
-		}
-		else if (cmd == TICK) {
-			scanf("%d", &param1);
-			int result = Tick();
-			if (result != param1)
-				ret = 0;
-		}
-	}
-
-	return ret;
+    int uIdx = mapID[string(id)];
+    if (user[uIdx].isLogout) return;
+    if (user[uIdx].password == string(password)) {
+        user[uIdx].logouttime = currenttime + user[uIdx].defaulttime;
+        logoutUsers[user[uIdx].logouttime].push_back(uIdx);
+    }
 }
 
-int main()
+
+int Tick()
 {
-	clock_t start = clock();
+    int logoutUserCount = 0;
+    currenttime++;
 
-	setbuf(stdout, NULL);
-	freopen("sample_input.txt", "r", stdin);
-
-	int T;
-	scanf("%d", &T);
-
-	for (int tc = 1; tc <= T; tc++)
-	{
-		int Score = 100;
-		if (run() == 0)
-			Score = 0;
-
-		printf("#%d %d\n", tc, Score);
-	}
-	int result = (clock() - start) / (CLOCKS_PER_SEC / 1000);
-	printf("\n>> Result: %d ms\n", result);
-	return 0;
+    for (auto uID : logoutUsers[currenttime]) {
+        if (!user[uID].isLogout && user[uID].logouttime == currenttime) {
+            user[uID].isLogout = true;
+            logoutUserCount++;
+        }
+    }
+    return logoutUserCount;
 }
 
+// 실행시간: 약  40 ms
 // 실행시간: 약  40 ms
 ```
