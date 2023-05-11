@@ -61,7 +61,7 @@ void Connect(char id[11], char password[11])
 }
 
 
-int Tick() // 반드시 Linked list사용 권장(개선포인트 2번째) -> 실행시간: 약 28 ms
+int Tick()
 {
     int logoutUserCount = 0;
     currenttime++;
