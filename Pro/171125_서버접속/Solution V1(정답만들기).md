@@ -61,7 +61,7 @@ void Connect(char id[11], char password[11])
 
 int Tick()
 {
-    int logoutUser = 0;
+    int logoutUserCount = 0;
     for(int i = 0;i < userCount;i++)
     {
         if(user[i].isLogout) continue;
@@ -69,11 +69,11 @@ int Tick()
         if(user[i].logintime == 0)
         {
             user[i].isLogout = true;
-            logoutUser++;
+            logoutUserCount++;
         }
             
     }
-    return logoutUser;
+    return logoutUserCount;
 }
 
 // 실행시간: 약 650 ms
