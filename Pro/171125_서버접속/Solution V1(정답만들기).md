@@ -76,5 +76,5 @@ int Tick()
     return logoutUser;
 }
 
-// 실행시간: 약 1300 ms
+// 실행시간: 약 626 ms
 ```
