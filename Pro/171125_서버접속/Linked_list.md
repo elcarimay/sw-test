@@ -94,7 +94,7 @@ int getUserIdx(char id[11])
 {
     int hashkey = hash(id);
     ListNode* temp = head[hashkey];
-    while(temp!=0){ // 부분탐색(개선포인트 1번째) 이것까지하고 시간확인 약 800 ms
+    while(temp!=0){ // 부분탐색(개선포인트 1번째) 이것까지하고 시간확인 약 500 ms
         int i = temp->id;
         if(strcmp(user[i].id, id)==0)
             return i;
