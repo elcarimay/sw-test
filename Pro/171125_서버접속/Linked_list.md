@@ -145,6 +145,7 @@ int Tick() // 반드시 Linked list사용 권장(개선포인트 2번째) -> 실
         temp = temp->next;
 
     }
+    // 전체탐색
     // for(int i = 0;i < userCount;i++)
     // {
     //     if(user[i].isLogout) continue;
