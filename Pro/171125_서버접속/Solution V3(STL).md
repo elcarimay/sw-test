@@ -9,10 +9,6 @@
 
 using namespace std;
 
-#define MAX_USER 50000
-#define MAX_TIME 100000 // 8만까지 하면 되나 넉넉히 잡음.
-#define MAX_TABLE 50007 // 서로 다른 원소의 숫자와 비슷한 숫자, hash함수 특성상 3,7,9같은 숫자를 넣음
-
 struct User {
     string password;
     bool isLogout;
