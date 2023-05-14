@@ -2,10 +2,12 @@
 
 ## 빌드
 Ctrl + F7 : 현재파일 컴파일
+
 Ctrl + Break : 빌드 중지
 
 ## 소스
 Ctrl + K, C : Comment In
+
 Ctrl + K, U : Comment Out
 
 ## Ctrl + Shift + F : Find in File
