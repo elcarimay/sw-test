@@ -230,6 +230,7 @@ struct Order
 	int stock;
 	int quantity;
 	int price;
+	bool type;
 };
 
 Order orders[MAX_NUMBER];
@@ -239,35 +240,45 @@ int minPrice[MAX_STOCK];
 int maxProfit[MAX_STOCK];
 
 
-int getSellOrder()
+int getSellOrder(int mStock)
 {
 	//1. 가장 낮은 가격?
-	int minPrice = 1000000;
-	for (int sIdx = 0; sIdx < MAX_NUMBER; sIdx++)
+	int minPrice = 2000000;
+	for (int oIdx = 1; oIdx <= owp; oIdx++)
 	{
-		//수량체크 필요
-		if (orders[sIdx].quantity == 0) continue;
+		// 매도 주문인가?
+		if (orders[oIdx].type == BUY) continue;
 
-		int price = orders[sIdx].price;
+		if (orders[oIdx].stock != mStock) continue;
+
+		//수량체크 필요
+		if (orders[oIdx].quantity == 0) continue;
+
+		int price = orders[oIdx].price;
 		if (price < minPrice)	minPrice = price;
 	}
+
+	if (minPrice == 2000000)	return -1;
 
 	// 2. '1.' 주문 번호가 가장 낮은 주문?
 	int idx = -1;
 	int minNumber = 300000;
-	for (int sIdx = 0; sIdx < MAX_NUMBER; sIdx++)
+	for (int oIdx = 1; oIdx < owp; oIdx++)
 	{
-		//수량체크 필요
-		if (orders[sIdx].quantity == 0) continue;
+		// 매도 주문인가?
+		if (orders[oIdx].type == BUY) continue;
 
-		int price = orders[sIdx].price;
+		//수량체크 필요
+		if (orders[oIdx].quantity == 0) continue;
+
+		int price = orders[oIdx].price;
 		if (price != minPrice) continue;
 
-		int number = sIdx;
+		int number = oIdx;
 		if (number < minNumber)
 		{
 			minNumber = number;
-			idx = sIdx;
+			idx = oIdx;
 		}
 	}
 	return idx;
@@ -277,35 +288,45 @@ int getSellOrder()
 //							600원(13)
 //							600원(20)
 
-int getBuyOrder()
+int getBuyOrder(int mStock)
 {
 	//1. 가장 높은 가격?
 	int maxPrice = 0;
-	for (int bIdx = 0; bIdx < MAX_NUMBER; bIdx++)
+	for (int oIdx = 1; oIdx < owp; oIdx++)
 	{
-		//수량체크 필요
-		if (orders[bIdx].quantity == 0) continue;
+		//매수주문인가?
+		if (orders[oIdx].type == SELL)	continue;
 
-		int price = orders[bIdx].price;
+		if (orders[oIdx].stock != mStock) continue;
+
+		//수량체크 필요
+		if (orders[oIdx].quantity == 0) continue;
+
+		int price = orders[oIdx].price;
 		if (price > maxPrice)	maxPrice = price;
 	}
+
+	if (maxPrice == 0)	return -1;
 
 	// 2. '1.' 주문 번호가 가장 낮은 주문?
 	int idx = -1;
 	int minNumber = 300000;
-	for (int bIdx = 0; bIdx < MAX_NUMBER; bIdx++)
+	for (int oIdx = 1; oIdx < MAX_NUMBER; oIdx++)
 	{
-		//수량체크 필요
-		if (orders[bIdx].quantity == 0) continue;
+		//매수주문인가?
+		if (orders[oIdx].type == SELL)	continue;
 
-		int price = orders[bIdx].price;
+		//수량체크 필요
+		if (orders[oIdx].quantity == 0) continue;
+
+		int price = orders[oIdx].price;
 		if (price != maxPrice) continue;
 
-		int number = bIdx;
+		int number = oIdx;
 		if (number < minNumber)
 		{
 			minNumber = number;
-			idx = bIdx;
+			idx = oIdx;
 		}
 	}
 	return idx;
@@ -367,10 +388,6 @@ void conclude(int mBID, int mSID, bool type) {
 	return;
 }
 
-int findIndex(bool isSell) {
-
-}
-
 void init() {
 	owp = 0;
 	for (int oIdx = 0; oIdx < MAX_NUMBER; oIdx++)
@@ -388,17 +405,20 @@ int buy(int mNumber, int mStock, int mQuantity, int mPrice) {
 
 	// 매수주문 생성
 	int oIdx = mNumber;
-	Order o = { mStock, mQuantity, mPrice };
+	Order o = { mStock, mQuantity, mPrice, BUY};
 	orders[oIdx] = o;
-
+	owp = oIdx;
 
 	// 체결 진행
 	int bIdx = oIdx;
+	int stock = mStock;
 	while (1) {
 		if (orders[bIdx].quantity == 0) break;
 
 		// 체결이 가능한가?
-		int sIdx = getSellOrder();
+		int sIdx = getSellOrder(stock);
+		if (sIdx == -1) break;
+
 		if (orders[sIdx].price > orders[bIdx].price) break;
 
 		// 체결
@@ -407,14 +427,16 @@ int buy(int mNumber, int mStock, int mQuantity, int mPrice) {
 	}
 
 	// 현재 매수 주문의 남은 수량 반환
-	return orders[oIdx].quantity;
+	return orders[bIdx].quantity;
 }
 
 int sell(int mNumber, int mStock, int mQuantity, int mPrice) {
+
 	// 매도 주문 생성
 	int oIdx = mNumber;
-	Order o = { mStock, mQuantity, mPrice };
+	Order o = { mStock, mQuantity, mPrice, SELL};
 	orders[oIdx] = o;
+	owp = oIdx;
 	
 	// 체결 진행
 	int sIdx = oIdx;
@@ -424,6 +446,7 @@ int sell(int mNumber, int mStock, int mQuantity, int mPrice) {
 
 		// 매수주문 찾기
 		int bIdx = getBuyOrder();
+		if (bIdx == -1)	break;
 
 		// 찾은 매수 주문으로 체결이 가능한가?
 		if (orders[sIdx].price > orders[bIdx].price) break;
@@ -434,7 +457,7 @@ int sell(int mNumber, int mStock, int mQuantity, int mPrice) {
 	}
 
 	// 현재 매수 주문의 남은 수량 반환
-	return orders[oIdx].quantity;
+	return orders[sIdx].quantity;
 }
 
 void cancel(int mNumber) {
