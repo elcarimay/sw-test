@@ -193,5 +193,17 @@ wo_STL_v1 195 ms
 vector적용시 220ms
 array적용시 205 ms
 unordered_map적용시 250 ms
-![image](https://github.com/elcarimay/sw-test/assets/103011254/f8880c9b-f510-4a0e-9fdb-07516b4b3e4b)
+(단위: ㎳)
+|Type|최적화 On|최적화 Off|
+|---|---|---|
+|STL버전_v1|206|298|
+|No STL버전_v1|208|207|
+|STL버전_v2|195|300|
+#### STL버전_v2 기준
+|Type|최적화 On|최적화 Off|
+|---|---|---|
+|array|213|275|
+|vector|210|270|
+|unordered_map|263|389|
+*. 참고로 vector는 emplace_back을 사용하였음.
 ```
