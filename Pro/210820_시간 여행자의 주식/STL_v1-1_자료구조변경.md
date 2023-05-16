@@ -201,7 +201,6 @@ unordered_map적용시 250 ms
 |STL버전_v1|206|298|
 |No STL버전_v1|208|207|
 |STL버전_v2|195|300|
-
 #### STL버전_v2 기준
 |Type|최적화 On|최적화 Off|
 |---|---|---|
@@ -209,4 +208,3 @@ unordered_map적용시 250 ms
 |vector|210|270|
 |unordered_map|263|389|
 *. 참고로 vector는 emplace_back을 사용하였음.
-
