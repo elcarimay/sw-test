@@ -178,7 +178,7 @@ int bestProfit(int mStock) {
 }
 ```
 
-### 시간여행자의 각 Case별 실행시간
+### 시간여행자의 각 Case별 실행시간(최적화 On)
 ```
 1. 
 정답만들기_v1-1 
@@ -186,11 +186,11 @@ int bestProfit(int mStock) {
 STL_v1-1 206 ms
 STL_v1-2 201 ms
 2. 
-STL_v2 208 ms
+STL_v2 195 ms
 3. 
-wo_STL_v1 195 ms
+No_STL_v1 208 ms
 
-vector적용시 220ms
+vector적용시 220 ms
 array적용시 205 ms
 unordered_map적용시 250 ms
 ```
