@@ -1,7 +1,7 @@
 ```cpp
 #define MAX_NUMBER       200001
-#define BUY             true
-#define SELL            false
+#define BUY             false
+#define SELL            true
 #define MAX_STOCK       6 // 1 - 5
 #define INVALID_VALUE   0
 #include <queue>
