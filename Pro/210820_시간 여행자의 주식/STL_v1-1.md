@@ -59,7 +59,7 @@ void init() {
     for (int i = 1; i < MAX_NUMBER; i++)
         orders[i].init();
 
-    for (int i = 0; i < MAX_STOCK; i++)
+    for (int i = 1; i < MAX_STOCK; i++)
     {
         minPrice[i] = 1000000;
         maxProfit[i] = 0;
