@@ -1,4 +1,4 @@
 # 우선순위큐
-```c++
+```cpp
 #include <iostream>
-c++```
+```
