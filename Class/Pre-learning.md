@@ -30,10 +30,7 @@ int main() {
 }
 ```
 
-
 ## Problem_11286  
-
-
 ```cpp
 #include <iostream>
 #include <queue>
