@@ -28,8 +28,7 @@ int main() {
 	}
 	cout << "NO";
 }
-```
-
+```  
 ## Problem_11286  
 ```cpp
 #include <iostream>
