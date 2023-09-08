@@ -14,9 +14,9 @@ https://www.youtube.com/playlist?list=PLRx0vPvlEmdAghTr5mXQxGpHjWqSz0dgC
 
 # 참고 Site
 ## By Nam
-<https:/github.com/nampluskr>
+<https:/github.com/nampluskr>  
 
-https://github.com/justiceHui/SSU-SCCC-Study/tree/master/2022-spring-basic
+https://github.com/justiceHui/SSU-SCCC-Study/tree/master/2022-spring-basic  
 
 ## 꾸준한 연습장
 https://my-coding-notes.tistory.com/
