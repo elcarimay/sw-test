@@ -1,8 +1,9 @@
+# 한국항공대 Koala 기초강의  
+https://kau-algorithm.tistory.com/category/Koala%20-%202%EA%B8%B0/%EA%B8%B0%EC%B4%88%20%EA%B0%95%EC%9D%98?page=1  
+
 # 코딩 테스트
 https://www.acmicpc.net/
-
 https://solved.ac/
-
 https://swexpertacademy.com/main/main.do
 
 # 한국외대 신찬수 교수님 강의
@@ -15,7 +16,6 @@ https://www.youtube.com/playlist?list=PLRx0vPvlEmdAghTr5mXQxGpHjWqSz0dgC
 # 참고 Site
 ## By Nam  
 https://github.com/nampluskr  
-
 https://github.com/justiceHui/SSU-SCCC-Study/tree/master/2022-spring-basic  
 
 ## 꾸준한 연습장
