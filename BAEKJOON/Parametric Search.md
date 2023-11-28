@@ -1,4 +1,4 @@
-```
+```cpp
 //백준 1654번 랜선자르기
 #define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
