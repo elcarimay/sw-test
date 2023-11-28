@@ -313,7 +313,7 @@ int main() {
 }
 ```
 
-## [BOJ] 2470 두 용액(파라메트릭 서치)
+## [BOJ] 2470 두 용액
 ```cpp
 // https://loosie.tistory.com/322
 #define _CRT_SECURE_NO_WARNINGS
