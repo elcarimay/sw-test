@@ -1,5 +1,5 @@
+## 백준 1654번 랜선자르기
 ```cpp
-//백준 1654번 랜선자르기
 #define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
 #include <vector>
@@ -53,8 +53,8 @@ int main() {
 }
 ```
 
-```
-// 백준 1939번 중량(STL)
+## 백준 1939번 중량(STL)
+```cpp
 #define _CRT_SECURE_NO_WARNINGS
 #include <vector>
 #include <queue>
@@ -122,8 +122,8 @@ int main() {
 }
 ```
 
-```
-// 백준 1939번 중량(Manual)
+## 백준 1939번 중량(Manual)
+```cpp
 #define _CRT_SECURE_NO_WARNINGS
 #include <vector>
 #include <queue>
@@ -257,8 +257,8 @@ int main() {
 }
 ```
 
-```
-// [BOJ] 2110번 공유기설치
+## [BOJ] 2110번 공유기설치
+```cpp
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <vector>
@@ -313,8 +313,8 @@ int main() {
 }
 ```
 
-```
-// [BOJ] 2470 두 용액(파라메트릭 서치)
+## [BOJ] 2470 두 용액(파라메트릭 서치)
+```cpp
 // https://loosie.tistory.com/322
 #define _CRT_SECURE_NO_WARNINGS
 #include <vector>
@@ -368,8 +368,8 @@ int main() {
 }
 ```
 
-```
-// [BOJ] 2512 예산
+## [BOJ] 2512 예산
+```cpp
 #define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
 #include <iostream>
@@ -421,8 +421,8 @@ int main() {
 }
 ```
 
-```
-// [BOJ] 2805번 나무 자르기
+## [BOJ] 2805번 나무 자르기
+```cpp
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <cstdio>
