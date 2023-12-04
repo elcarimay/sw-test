@@ -1,3 +1,6 @@
+# 바킹독 알고리즘 강의
+https://blog.encrypted.gg/
+
 # 연산자 오버로딩
 https://igh01ti.tistory.com/30
 https://sunandbean.github.io/2020/01/12/c-13-function-inputarray/
