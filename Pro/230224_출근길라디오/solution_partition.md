@@ -1,103 +1,93 @@
 ```cpp
-#if 1
-// STL 679 ms (Brute Force 1176 ms)
 #include <vector>
 using namespace std;
 
+#define MAX_ROADS 100001
+#define MAX_TYPES 1000
+
+int sqrt(int n) {
+    double x1 = n, x2 = (x1 + n / x1) / 2;
+    while (x1 - x2 > 0.01) { x1 = x2, x2 = (x1 + n / x1) / 2;}
+    return (int)x2;
+}
+int ceil(int a, int b) { return (a + b - 1) / b; }
+void swap(int& a, int& b) { int temp = a; a = b; b = temp; }
+
 struct Road {
-    int time;
-    int type;
+    int mTime;
 };
-vector<Road> roads;
 
-struct Type {
-    vector<int> roadList;
-};
-vector<Type> types;
+Road roads[MAX_ROADS];
+vector<int> roadList[MAX_TYPES];
 
-//////////////////////////////////////////////////////////////////////////
+// Point Update → Range Sum Query
 struct Partition {
-    vector<int> buckets;
-    vector<int> values;
+    int arr[MAX_ROADS], buckets[MAX_ROADS], bSize, bCnt;
     int N;    // bucket size
 
-    void init(int num_values) {
-        N = sqrt(num_values);
-        int num_buckets = ceil((double)num_values / N);
-        buckets.clear(); buckets.resize(num_buckets);
-        values.clear(); values.resize(num_values);
+    void init(int num_roads) {
+        N = num_roads;
+        bSize = sqrt(N);
+        bCnt = ceil((double)N / bSize);
+        for (int i = 0; i < N; i++) arr[i] = 0;
+        for (int i = 0; i < bCnt; i++) buckets[i] = 0;
+    }
+    void updatePoint(int idx, int value) {
+        buckets[idx / bSize] -= arr[idx];
+        arr[idx] = value;
+        buckets[idx / bSize] += value;
+    }
+    int queryRange(int left, int right) {
+        int res = 0;
+        int s = left / bSize;
+        int e = right / bSize;
 
-        // 초기화
-        for (int i = 0; i < num_values; i++) {
-            values[i] = roads[i].time;
-            buckets[i / N] += roads[i].time;
+        if (s == e) { // 같은 버킷내에 존재
+            for (int i = left; i <= right; i++) res += arr[i];
+            return res;
         }
+        for (int i = left; i < (s+1) * bSize; i++) res += arr[i];
+        for (int i = s + 1; i <= e - 1; i++) res += buckets[i]; // 완전 포함된 버킷
+        for (int i = e * bSize; i <= right; i++) res += arr[i];
+        return res;
     }
-    void update(int idx, int value) {
-        buckets[idx / N] -= values[idx];
-        values[idx] = value;
-        buckets[idx / N] += value;
-    }
-    int query(int left, int right) {
-        int ret = 0;
-        int s = left / N;
-        int e = right / N;
+}part;
 
-        if (s == e) {
-            for (int i = left; i <= right; i++) { ret += values[i]; }
-            return ret;
-        }
-        while (left / N == s) { ret += values[left++]; }
-        while (right / N == e) { ret += values[right--]; }
-        for (int i = s + 1; i <= e - 1; i++) { ret += buckets[i]; }
-
-        return ret;
-    }
-};
-Partition part;
-
-//////////////////////////////////////////////////////////////////////////
 void init(int N, int M, int mType[], int mTime[])
 {
-    roads.clear();    roads.resize(N - 1);
-    types.clear();    types.resize(M);
+    for (int i = 0; i < M; i++) roadList[i].clear();
 
-    for (int i = 0; i < N - 1; i++) {
-        roads[i].type = mType[i];
-        roads[i].time = mTime[i];
-        types[mType[i]].roadList.push_back(i);
-    }
     part.init(N - 1);
+    for (int i = 0; i < N - 1; i++) {
+        roads[i].mTime= mTime[i];
+        roadList[mType[i]].push_back(i);
+        part.updatePoint(i, mTime[i]);
+    }
 }
 
 void destroy() {}
 
 void update(int mID, int mNewTime)
 {
-    roads[mID].time = mNewTime;
-    part.update(mID, mNewTime);
+    roads[mID].mTime = mNewTime;
+    part.updatePoint(mID, mNewTime);
 }
 
 int updateByType(int mTypeID, int mRatio256)
 {
-    int ret = 0;
-    for (int rIdx : types[mTypeID].roadList) {
-        int temp = roads[rIdx].time * mRatio256 / 256;
-        roads[rIdx].time = temp;
-        part.update(rIdx, temp);
-        ret += roads[rIdx].time;
+    int res = 0;
+    for (int rIdx : roadList[mTypeID]) {
+        int mTime = roads[rIdx].mTime * mRatio256 / 256;
+        roads[rIdx].mTime = mTime;
+        part.updatePoint(rIdx, mTime);
+        res += mTime;
     }
-    return ret;
+    return res;
 }
 
 int calculate(int mA, int mB)
 {
-    int ret = 0;
-    if (mA > mB) { swap(mA, mB); }
-
-    //for (int i = mA; i < mB; i++) { ret += roads[i].time; }
-    ret = part.query(mA, mB - 1);
-    return ret;
+    if (mA > mB) swap(mA, mB);
+    return part.queryRange(mA, mB - 1);
 }
-#endif
 ```
