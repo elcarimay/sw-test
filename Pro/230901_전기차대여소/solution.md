@@ -86,7 +86,7 @@ int distance(int mFrom, int mTo) {
 }
 #endif
 
-#if 0
+#if 1
 #include<vector>
 #include<queue>
 
