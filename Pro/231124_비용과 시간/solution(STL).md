@@ -1,44 +1,43 @@
 ```cpp
+#include <vector>
 #include <queue>
 using namespace std;
 
 #define MAX_CITY 100
 
-struct Road {
-	int cost, time, destination;
-	bool operator<(const Road& road) const {
-		return this->time > road.time;
+int mTime[MAX_CITY];
+
+struct City
+{
+	int to, cost, time;
+	bool operator<(const City& data)const {
+		return time > data.time;
 	}
 };
 
-struct City {
-	vector<Road> roadInfo;
-};
-
-City cityInfo[MAX_CITY];
+vector<City> cities[MAX_CITY];
 
 void init(int N, int K, int sCity[], int eCity[], int mCost[], int mTime[]) {
-	for (int i = 0; i < MAX_CITY; i++) cityInfo[i].roadInfo.clear();
-	for (int i = 0; i < K; i++) cityInfo[sCity[i]].roadInfo.push_back({ mCost[i], mTime[i], eCity[i]});
+	for (int i = 0; i < MAX_CITY; i++) cities[i].clear();
+	for (int i = 0; i < K; i++)
+		cities[sCity[i]].push_back({ eCity[i], mCost[i], mTime[i] });
 	return;
 }
 
 void add(int sCity, int eCity, int mCost, int mTime) {
-	cityInfo[sCity].roadInfo.push_back({ mCost, mTime, eCity });
+	cities[sCity].push_back({ eCity, mCost, mTime });
 	return;
 }
 
 int cost(int M, int sCity, int eCity) {
-	priority_queue<Road> dataQ;
-	dataQ.push({ 0, 0, sCity });
-
-	while (dataQ.size()) {
-		Road cur_data = dataQ.top(); dataQ.pop();
-		if (M - cur_data.cost < 0) continue;
-		if (cur_data.destination == eCity) return cur_data.time;
-
-		for (auto road : cityInfo[cur_data.destination].roadInfo)
-			dataQ.push({ road.cost + cur_data.cost, road.time + cur_data.time, road.destination });
+	priority_queue<City> PQ;
+	PQ.push({ sCity, 0, 0 });
+	while (!PQ.empty()) {
+		auto cur = PQ.top(); PQ.pop();
+		if (M - cur.cost < 0) continue;
+		if (cur.to == eCity) return cur.time;
+		for (auto nx : cities[cur.to])
+			PQ.push({ nx.to, nx.cost + cur.cost, nx.time + cur.time });
 	}
 	return -1;
 }
