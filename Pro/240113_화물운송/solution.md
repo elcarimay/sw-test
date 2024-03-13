@@ -1,4 +1,6 @@
 ```cpp
+// 단방향이므로 한번만 지나가면 됨.
+// 비용이 높은 경로로 지나가면서 가장 낮은 비용을 반환하면 됨.
 #include <vector>
 #include <queue>
 using namespace std;
