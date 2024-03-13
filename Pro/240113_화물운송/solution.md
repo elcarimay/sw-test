@@ -1,7 +1,6 @@
 ```cpp
 #include <vector>
 #include <queue>
-#include <iostream>
 using namespace std;
 
 const int MAX = 4010;
@@ -27,8 +26,6 @@ void init(int N, int K, int sCity[], int eCity[], int mLimit[]) {
 void add(int sCity, int eCity, int mLimit) {
     adj[sCity].push_back({ mLimit, eCity});
 }
-
-int min(int a, int b) { return a < b ? a : b; }
 
 int calculate(int sCity, int eCity) {
     int visited[_N] = {}, minVal = INF;
