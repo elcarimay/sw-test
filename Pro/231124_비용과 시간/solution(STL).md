@@ -1,4 +1,6 @@
 ```cpp
+// 다익스트라로 모든 비용을 업데이트 하는데 비용을 계속 더해서 Q에 남게함.
+// 남아있는 Q들 중에서 M값내에 있는 Q만 선별해서 반환함.
 #include <vector>
 #include <queue>
 using namespace std;
