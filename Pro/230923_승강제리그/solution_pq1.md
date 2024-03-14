@@ -1,5 +1,6 @@
 ```cpp
-#if 1
+// push할때 갯수가 같으면 rightheap에 넣고 leftheap으로 넘김 → 항상 leftheap 개수가 큼.
+// med를 구할때는 갯수가 같으면 rightheap에서 구하고 다르면 leftheap에서 구함.
 #include <vector>
 #include <queue>
 using namespace std;
@@ -94,7 +95,7 @@ struct League
 			popped[top.idx] = true;
 			rightSize--;
 		}
-		else if (leftSize > rightSize) {
+		else {
 			refresh(leftHeap);
 			auto top = leftHeap.top(); leftHeap.pop();
 			player = top.player;
@@ -144,5 +145,4 @@ int trade() {
 	}
 	return res;
 }
-#endif
 ```
