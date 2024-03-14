@@ -1,7 +1,6 @@
 ```cpp
-#if 1 // 650 ms
+#if 1
 #include <vector>
-// #include <set>
 #include <queue>
 using namespace std;
 
@@ -19,62 +18,52 @@ struct Player
 		return (ability > player.ability) ||
 			(ability == player.ability && ID < player.ID);
 	}
-};
+}players[MAX_PLAYERS];
 
-Player players[MAX_PLAYERS];
 int N, L;
-
 struct League
 {
 	struct MaxPlayer
 	{
 		Player player;
 		int idx;
-		bool operator<(const MaxPlayer& max)const { return player < max.player; }
+		bool operator<(const MaxPlayer& max) const { return player < max.player; }
 	};
 	struct MinPlayer
 	{
 		Player player;
 		int idx;
-		bool operator<(const MinPlayer& min)const { return player > min.player; }
+		bool operator<(const MinPlayer& min) const { return player > min.player; }
 	};
 
-	priority_queue<MaxPlayer> maxHeap;
-	priority_queue<MinPlayer> minHeap;
+	priority_queue<MaxPlayer> maxHeap, leftHeap;
+	priority_queue<MinPlayer> minHeap, rightHeap;
 	vector<bool> popped;
-	int idx;
-	priority_queue<MaxPlayer> leftHeap;
-	priority_queue<MinPlayer> rightHeap;
-	int leftSize, rightSize;
-
-	void clear() {
-		while (!maxHeap.empty()) maxHeap.pop(); 
-		while (!minHeap.empty()) minHeap.pop();
+	int idx, leftSize, rightSize;
+	void init() {
+		while (!maxHeap.empty()) maxHeap.pop(); while (!minHeap.empty()) minHeap.pop();
 		popped.clear();
 		idx = 0;
-
-		while (!leftHeap.empty()) leftHeap.pop();
-		while (!rightHeap.empty()) rightHeap.pop();
+		while (!leftHeap.empty()) leftHeap.pop(); while (!rightHeap.empty()) rightHeap.pop();
 		leftSize = rightSize = 0;
 	}
-
 	template<typename Heap>
-	void refresh(Heap& Q) {	while (!Q.empty() && popped[Q.top().idx]) Q.pop();}
-
+	void refresh(Heap& Q) {
+		while (!Q.empty() && popped[Q.top().idx]) Q.pop();
+	}
+	 
 	void push(const Player& player) {
-		maxHeap.push({ player, idx });
-		minHeap.push({ player, idx });
+		maxHeap.push({ player, idx });minHeap.push({ player, idx });
 		popped.push_back(false);
-
 		if (leftSize == rightSize) {
-			rightHeap.push({ player, idx });
+			rightHeap.push({ player,idx });
 			refresh(rightHeap);
 			auto top = rightHeap.top(); rightHeap.pop();
-			leftHeap.push({ top.player, top.idx });
+			leftHeap.push({ top.player,top.idx });
 			leftSize++;
 		}
-		else { // leftSize > rightSize
-			leftHeap.push({ player,idx });
+		else {
+			leftHeap.push({ player, idx });
 			refresh(leftHeap);
 			auto top = leftHeap.top(); leftHeap.pop();
 			rightHeap.push({ top.player, top.idx });
@@ -114,27 +103,23 @@ struct League
 		}
 		return player;
 	}
-};
-League leagues[MAX_LEAGUES];
+}leagues[MAX_LEAGUES];
 
 Player maxPlayerList[MAX_LEAGUES], minPlayerList[MAX_LEAGUES], medPlayerList[MAX_LEAGUES];
 
 void init(int _N, int _L, int mAbility[]) {
 	N = _N; L = _L;
-	for (int i = 0; i < L; i++) leagues[i] = {};
-	for (int i = 0; i < N; i++)	leagues[i / (N / L)].push({ i, mAbility[i] });
+	for (int i = 0;i < L;i++) leagues[i] = {};
+	for (int i = 0; i < N;i++) leagues[i / (N / L)].push({ i,mAbility[i] });
 }
 
 int move() {
 	int res = 0;
 	for (int i = 0; i < L - 1; i++)
 	{
-		auto minPlayer = leagues[i].getMin();
-		auto maxPlayer = leagues[i + 1].getMax();
-
-		res += minPlayer.ID + maxPlayer.ID;
-		minPlayerList[i] = minPlayer;
-		maxPlayerList[i] = maxPlayer;
+		minPlayerList[i] = leagues[i].getMin();;
+		maxPlayerList[i] = leagues[i + 1].getMax();
+		res += minPlayerList[i].ID + maxPlayerList[i].ID;
 	}
 	for (int i = 0; i < L - 1; i++)
 	{
@@ -148,12 +133,9 @@ int trade() {
 	int res = 0;
 	for (int i = 0; i < L - 1; i++)
 	{
-		auto medPlayer = leagues[i].getMedian();
-		auto maxPlayer = leagues[i + 1].getMax();
-
-		res += medPlayer.ID + maxPlayer.ID;
-		medPlayerList[i] = medPlayer;
-		maxPlayerList[i] = maxPlayer;
+		medPlayerList[i] = leagues[i].getMedian();
+		maxPlayerList[i] = leagues[i + 1].getMax();
+		res += medPlayerList[i].ID + maxPlayerList[i].ID;
 	}
 	for (int i = 0; i < L - 1; i++)
 	{
