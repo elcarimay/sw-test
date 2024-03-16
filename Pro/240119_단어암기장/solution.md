@@ -1,6 +1,7 @@
 ```cpp
 #if 1
 #include <queue>
+#include <vector>
 using namespace std;
 
 #define MAX_WORDS 50001
