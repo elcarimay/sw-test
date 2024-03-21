@@ -62,8 +62,7 @@ void init(char mAncestor[], int mLastday)
 
 int add(char mName[], char mParent[], int mFirstday, int mLastday)
 {
-	nodeMapCnt++;
-	nodeMap[string(mName)] = nodeMapCnt;
+	nodeMap[string(mName)] = ++nodeMapCnt;
 	int pIdx = nodeMap[string(mParent)];
 	nodes.push_back({});
 	nodes[nodeMapCnt] = { string(mParent), pIdx,nodes[pIdx].mDepth + 1,mFirstday,mLastday };
