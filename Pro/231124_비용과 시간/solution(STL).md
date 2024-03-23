@@ -5,8 +5,6 @@
 #include <queue>
 using namespace std;
 
-#define MAX_N 100
-
 struct Edge
 {
 	int to, mCost, mTime;
@@ -15,10 +13,9 @@ struct Edge
 	}
 };
 
-vector<Edge> adj[MAX_N];
-int n;
+vector<Edge> adj[100];
+
 void init(int N, int K, int sCity[], int eCity[], int mCost[], int mTime[]) {
-	n = N;
 	for (int i = 0; i < N; i++) adj[i].clear();
 	for (int i = 0; i < K; i++)
 		adj[sCity[i]].push_back({ eCity[i],mCost[i], mTime[i] });
