@@ -31,21 +31,16 @@ void add(int sCity, int eCity, int mLimit) {
 }
 
 int calculate(int sCity, int eCity) {
-	int visited[MAX_N];
+	int visited[MAX_N], min_v = INF;
 	fill(visited, visited + n, -1);
-	int min_v = INF;
-	priority_queue<Edge> Q;
-	Q.push({ sCity,0 });
+	priority_queue<Edge> Q;	Q.push({ sCity,0 });
 	while (!Q.empty()) {
 		auto cur = Q.top(); Q.pop();
 		if (min_v > cur.mLimit && cur.to != sCity) min_v = cur.mLimit;
 		visited[cur.to] = 1;
 		if (cur.to == eCity) return min_v;
-		for (auto nx : adj[cur.to]) {
-			if (visited[nx.to] != 1) {
-				Q.push(nx);
-			}
-		}
+		for (auto nx : adj[cur.to])
+			if (visited[nx.to] != 1) Q.push(nx);
 	}
 	return -1;
 }
