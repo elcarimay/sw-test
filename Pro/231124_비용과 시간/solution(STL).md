@@ -5,41 +5,39 @@
 #include <queue>
 using namespace std;
 
-#define MAX_CITY 100
+#define MAX_N 100
 
-int mTime[MAX_CITY];
-
-struct City
+struct Edge
 {
-	int to, cost, time;
-	bool operator<(const City& data)const {
-		return time > data.time;
+	int to, mCost, mTime;
+	bool operator<(const Edge& edge)const {
+		return mTime > edge.mTime;
 	}
 };
 
-vector<City> cities[MAX_CITY];
-
+vector<Edge> adj[MAX_N];
+int n;
 void init(int N, int K, int sCity[], int eCity[], int mCost[], int mTime[]) {
-	for (int i = 0; i < MAX_CITY; i++) cities[i].clear();
+	n = N;
+	for (int i = 0; i < N; i++) adj[i].clear();
 	for (int i = 0; i < K; i++)
-		cities[sCity[i]].push_back({ eCity[i], mCost[i], mTime[i] });
-	return;
+		adj[sCity[i]].push_back({ eCity[i],mCost[i], mTime[i] });
 }
 
 void add(int sCity, int eCity, int mCost, int mTime) {
-	cities[sCity].push_back({ eCity, mCost, mTime });
-	return;
+	adj[sCity].push_back({ eCity,mCost, mTime });
 }
 
 int cost(int M, int sCity, int eCity) {
-	priority_queue<City> PQ;
-	PQ.push({ sCity, 0, 0 });
-	while (!PQ.empty()) {
-		auto cur = PQ.top(); PQ.pop();
-		if (M - cur.cost < 0) continue;
-		if (cur.to == eCity) return cur.time;
-		for (auto nx : cities[cur.to])
-			PQ.push({ nx.to, nx.cost + cur.cost, nx.time + cur.time });
+	priority_queue<Edge> Q;
+	Q.push({ sCity, 0, 0 });
+	while (!Q.empty()) {
+		auto cur = Q.top(); Q.pop();
+		if (M - cur.mCost < 0) continue;
+		if (cur.to == eCity) return cur.mTime;
+		for (auto nx : adj[cur.to]) {
+			Q.push({ nx.to, nx.mCost + cur.mCost, nx.mTime + cur.mTime});
+		}
 	}
 	return -1;
 }
