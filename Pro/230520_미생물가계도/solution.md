@@ -55,7 +55,7 @@ struct Partition
 void init(char mAncestor[], int mLastday)
 {
 	nodeMap[string(mAncestor)] = nodeMapCnt = 0;
-	nodes.push_back({ string(mAncestor), -1, 0, 0, mLastDay });
+	nodes.push_back({ string(mAncestor), -1, 0, 0, mLastday });
 	P.init();
 	P.update(0, mLastday, 1);
 }
