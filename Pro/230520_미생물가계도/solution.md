@@ -7,13 +7,12 @@ using namespace std;
 #define MAX_N 1'000'000
 
 inline int max(int a, int b) { return a < b ? b : a; }
-inline int min(int a, int b) { return a < b ? a : b; }
+inline int min(int a, int b) { return a > b ? b : a; }
 inline int ceil(int a, int b) { return (a + b - 1) / b; }
 
 struct Node
 {
-	string mName;
-	int mParent, mDepth, mFirstDay, mLastDay;
+	string mName; int mParent, mDepth, mFirstDay, mLastDay;
 };
 
 unordered_map<string, int> nodeMap;
@@ -31,11 +30,11 @@ int get_LCA(int x, int y) {
 
 struct Partition
 {
-	int bSize, arr[MAX_N], blocks[MAX_N];
+	int N, bSize, bCnt, arr[MAX_N], blocks[MAX_N];
 	void init() {
-		bSize = sqrt(MAX_N);
-		for (int i = 0; i < MAX_N; i++) arr[i] = 0;
-		for (int i = 0; i < ceil(MAX_N, bSize); i++) blocks[i] = 0;
+		N = MAX_N; bSize = sqrt(N); bCnt = ceil(N, bSize);
+		memset(arr, 0, sizeof arr);
+		for (int i = 0; i < bCnt; i++) blocks[i] = 0;
 	}
 	void update(int left, int right, int value) {
 		int s = left / bSize, e = right / bSize;
@@ -45,15 +44,17 @@ struct Partition
 		}
 		for (int i = left; i <= (s + 1) * bSize - 1; i++) arr[i] += value;
 		for (int i = s + 1; i <= e - 1; i++) blocks[i] += value;
-		for (int i = e * bSize; i <= right; i++) arr[i] += value;
+		for (int i = e*bSize; i <= right; i++) arr[i] += value;
 	}
 	int query(int idx) {
 		return arr[idx] + blocks[idx / bSize];
 	}
 }P;
 
+
 void init(char mAncestor[], int mLastday)
 {
+	nodeMap.clear(); nodes.clear();
 	nodeMap[string(mAncestor)] = nodeMapCnt = 0;
 	nodes.push_back({ string(mAncestor), -1, 0, 0, mLastday });
 	P.init();
@@ -64,8 +65,7 @@ int add(char mName[], char mParent[], int mFirstday, int mLastday)
 {
 	nodeMap[string(mName)] = ++nodeMapCnt;
 	int pIdx = nodeMap[string(mParent)];
-	nodes.push_back({});
-	nodes[nodeMapCnt] = { string(mParent), pIdx,nodes[pIdx].mDepth + 1,mFirstday,mLastday };
+	nodes.push_back({string(mParent), pIdx, nodes[pIdx].mDepth + 1, mFirstday, mLastday});
 	P.update(mFirstday, mLastday, 1);
 	return nodes[nodeMapCnt].mDepth;
 }
