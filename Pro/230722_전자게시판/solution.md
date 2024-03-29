@@ -30,6 +30,7 @@ struct User
 		return (totPoint < user.totPoint) ||
 			(totPoint == user.totPoint && strcmp(mUser, user.mUser) > 0);
 		// 문자열을 비교할때 아스키코드로 비교하기 때문에 사전순서로 앞이면 음수, 뒤면 양수
+                // 먼저 적어준 문자열(str1)이 뒤에 적어준 문자열(str2)보다 사전 순서로 앞이면 음수를 뒤면 양수를 반환한다.
 	}
 	bool operator==(const User& user) const {
 		return totPoint == user.totPoint && strcmp(mUser, user.mUser) == 0;
