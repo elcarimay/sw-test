@@ -1,3 +1,4 @@
+```cpp
 #if 1
 #include <vector>
 #include <queue>
@@ -147,3 +148,4 @@ int trade() {
 	return ret;
 }
 #endif // 1
+```
