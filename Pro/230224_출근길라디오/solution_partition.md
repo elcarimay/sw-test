@@ -42,9 +42,8 @@ void init(int N, int M, int mType[], int mTime[]) {
 	for (int i = 0; i < M; i++) roadList[i].clear();
 	P.init(N - 1);
 	for (int i = 0; i < N - 1; i++) {
-		roads[i] = mTime[i];
 		roadList[mType[i]].push_back(i);
-		P.update(i, mTime[i]);
+		P.update(i, roads[i] = mTime[i]);
 	}
 }
 
