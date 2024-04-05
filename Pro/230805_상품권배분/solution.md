@@ -8,26 +8,22 @@ using namespace std;
 #define NUM_GROUPS 1000
 #define DELETED 1
 
-struct Node
-{
+struct Node {
 	int mId, num, parent, state, num_children;
 	vector<int> childList;
 };
 
 unordered_map<int, int> nodeMap;
 int nodeCnt;
-vector<Node> nodes;
-
-vector<int> groups;
+Node nodes[NUM_NODES];
+int group[NUM_GROUPS];
 int groupCnt;
 
 int get_nodeIndex(int mId) {
 	int nIdx;
 	auto ptr = nodeMap.find(mId);
 	if (ptr == nodeMap.end()) {
-		nIdx = nodeCnt;
-		nodeMap[mId] = nIdx;
-		nodeCnt++;
+		nodeMap[mId] = nIdx = nodeCnt++;
 	}
 	else {
 		nIdx = ptr->second;
@@ -52,34 +48,22 @@ void remove_children(int nIdx) {
 }
 
 void init(int N, int mId[], int mNum[]) {
-	nodeMap.clear();
-	nodes.clear(); nodes.resize(NUM_NODES);
-	nodeCnt = 0;
-	groups.clear(); groups.resize(NUM_GROUPS);
+	nodeMap.clear(); nodeCnt = 0;
+	for (int i = 0; i < NUM_NODES; i++) nodes[i] = {};
+	for (int i = 0; i < NUM_GROUPS; i++) group[i] = 0;
 	groupCnt = N;
 	for (int i = 0; i < N; i++)
-	{
-		int nIdx = get_nodeIndex(mId[i]);
-		nodes[nIdx].mId = mId[i];
-		nodes[nIdx].num = mNum[i];
-		nodes[nIdx].parent = -1;
-	}
+		nodes[get_nodeIndex(mId[i])] = { mId[i],mNum[i], -1 };
 }
 
-int add(int mId, int mNum, int mParent)
-{
+int add(int mId, int mNum, int mParent) {
 	int ret = -1;
 	int nIdx = get_nodeIndex(mId);
 	int pIdx = get_nodeIndex(mParent);
-
 	if (nodes[pIdx].num_children < 3) {
 		nodes[pIdx].num_children += 1;
 		nodes[pIdx].childList.push_back(nIdx);
-
-		nodes[nIdx].mId = mId;
-		nodes[nIdx].num = mNum;
-		nodes[nIdx].parent = pIdx;
-
+		nodes[nIdx] = { mId,mNum, pIdx };
 		update_parents(nIdx, mNum);
 		ret = nodes[pIdx].num;
 	}
@@ -87,20 +71,18 @@ int add(int mId, int mNum, int mParent)
 	return ret;
 }
 
-
 int distribute(int K) {
 	int ret;
 	int start = 0, end = 0;
-	for (int i = 0; i < groupCnt; i++)
-	{
-		groups[i] = nodes[i].num;
-		end = max(end, groups[i]);
+	for (int i = 0; i < groupCnt; i++) {
+		group[i] = nodes[i].num;
+		end = max(end, group[i]);
 	}
 	while (start <= end) {
-		int mid = start + (end - start) / 2;
+		int mid = (start + end) / 2;
 		int sum = 0;
 		for (int i = 0; i < groupCnt; i++)
-			sum += min(mid, groups[i]);
+			sum += min(mid, group[i]);
 		if (sum <= K) {
 			ret = mid;
 			start = mid + 1;
@@ -110,15 +92,13 @@ int distribute(int K) {
 	return ret;
 }
 
-int remove(int mId)
-{
+int remove(int mId) {
 	int ret = -1;
 	int nIdx = get_nodeIndex(mId);
-
 	if (nIdx != -1) {
 		remove_children(nIdx);
 		update_parents(nIdx, -nodes[nIdx].num);
-		nodes[nodes[nIdx].parent].num_children -= 1;
+		nodes[nodes[nIdx].parent].num_children = -1;
 		ret = nodes[nIdx].num;
 	}
 	return ret;
