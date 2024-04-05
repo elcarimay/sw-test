@@ -61,7 +61,7 @@ int add(int mId, int mNum, int mParent) {
 	int nIdx = get_nodeIndex(mId);
 	int pIdx = get_nodeIndex(mParent);
 	if (nodes[pIdx].num_children < 3) {
-		nodes[pIdx].num_children += 1;
+		nodes[pIdx].num_children++;
 		nodes[pIdx].childList.push_back(nIdx);
 		nodes[nIdx] = { mId,mNum, pIdx };
 		update_parents(nIdx, mNum);
