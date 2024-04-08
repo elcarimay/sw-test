@@ -2,7 +2,6 @@
 #if 1
 #include <vector>
 #include <unordered_map>
-#include <map>
 #include <queue>
 using namespace std;
 
@@ -18,19 +17,9 @@ struct News {
 	}
 };
 
-struct User
-{
-	vector<int> newsList;
-};
-
-struct Channel
-{
-	vector<int> userList;
-};
-
-vector<News> news;
-vector<User> users;
-vector<Channel> channels;
+News news[NUM_NEWS];
+vector<int> users[NUM_USERS]; // newsList
+vector<int> channels[NUM_CHANNELS]; // userList
 
 unordered_map<int, int> newsMap, userMap, channelMap;
 int newsCnt, userCnt, channelCnt;
@@ -68,25 +57,24 @@ int get_userIndex(int mUID) {
 	return uIdx;
 }
 
-int get_channelIndex(int mchannelID) {
+int get_channelIndx(int mchannelID) {
 	int cIdx;
 	auto iter = channelMap.find(mchannelID);
 	if (iter == channelMap.end()) {
 		cIdx = channelCnt++;
 		channelMap[mchannelID] = cIdx;
 	}
-	else  cIdx = iter->second;
+	else cIdx = iter->second;
 	return cIdx;
 }
 
-void init(int N, int K){
+void init(int N, int K) {
 	newsMap.clear(); userMap.clear(); channelMap.clear();
-	news.clear(); news.resize(NUM_NEWS);
-	users.clear(); users.resize(N);
-	channels.clear(); channels.resize(K);
-
-	newsCnt = 0; userCnt = 0; channelCnt = 0;
-	while (!newsPQ.empty()) { newsPQ.pop(); }
+	newsCnt = userCnt = channelCnt = 0;
+	for (int i = 0; i < NUM_NEWS; i++) news[i] = {};
+	for (int i = 0; i < NUM_USERS; i++) users[i] = {};
+	for (int i = 0; i < NUM_CHANNELS; i++) channels[i] = {};
+	while (!newsPQ.empty()) newsPQ.pop();
 }
 
 void update_news(int mTime) {
@@ -97,60 +85,52 @@ void update_news(int mTime) {
 		if (news[nIdx].alarm_time != cur.alarm_time) continue;
 		if (news[nIdx].state != CANCELED) {
 			int cIdx = news[nIdx].channelIdx;
-			for (auto uIdx : channels[cIdx].userList)
-				users[uIdx].newsList.push_back(nIdx);
+			for (auto uIdx : channels[cIdx])
+				users[uIdx].push_back(nIdx);
 		}
 	}
 }
 
-// registerUser() 함수의 호출 횟수는 최대 5,000 이다.
-void registerUser(int mTime, int mUID, int mNum, int mChannelIDs[]){
+void registerUser(int mTime, int mUID, int mNum, int mChannelIDs[]) {
 	update_news(mTime);
 	int uIdx = get_userIndex(mUID);
-	for (int i = 0; i < mNum; i++)
-	{
-		int cIdx = get_channelIndex(mChannelIDs[i]);
-		channels[cIdx].userList.push_back(uIdx);
+	for (int i = 0; i < mNum; i++) {
+		int cIdx = get_channelIndx(mChannelIDs[i]);
+		channels[cIdx].push_back(uIdx);
 	}
 }
 
-// offerNews() 함수의 호출 횟수는 최대 30,000 이다.
-int offerNews(int mTime, int mNewsID, int mDelay, int mChannelID){
+int offerNews(int mTime, int mNewsID, int mDelay, int mChannelID) {
 	update_news(mTime);
-
 	int nIdx = get_newsIndex(mNewsID);
-	int cIdx = get_channelIndex(mChannelID);
+	int cIdx = get_channelIndx(mChannelID);
 
-	news[nIdx] = {mNewsID, cIdx, mTime + mDelay};
+	news[nIdx] = { mNewsID, cIdx, mTime + mDelay };
 	newsPQ.push(news[nIdx]);
-	int res = channels[cIdx].userList.size();
-	return res;
+	return channels[cIdx].size();
 }
 
-// cancelNews() 함수의 호출 횟수는 최대 3,000 이다.
-void cancelNews(int mTime, int mNewsID){
+void cancelNews(int mTime, int mNewsID) {
 	update_news(mTime);
 	int nIdx = get_newsIndex(mNewsID);
 	news[nIdx].state = CANCELED;
 }
 
-// checkUser() 함수의 호출 횟수는 최대 1,000 이다.
-int checkUser(int mTime, int mUID, int mRetIDs[]){
+int checkUser(int mTime, int mUID, int mRetIDs[]) {
 	update_news(mTime);
 	int res = 0;
 	int uIdx = get_userIndex(mUID);
 	priority_queue<NewsData> Q;
-  	for (int nIdx : users[uIdx].newsList)
+	for (int nIdx : users[uIdx])
 		if (news[nIdx].state != CANCELED)
 			Q.push({ news[nIdx].newsID, news[nIdx].alarm_time });
 	res = Q.size();
-
 	int cnt = 0;
 	while (!Q.empty() && cnt < 3) {
 		auto cur = Q.top(); Q.pop();
 		mRetIDs[cnt++] = cur.newsID;
 	}
-	users[uIdx].newsList.clear();
+	users[uIdx].clear();
 	return res;
 }
 #endif
