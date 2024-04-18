@@ -34,6 +34,8 @@ https://github.com/sejongresearch
 ## 세종대 최유경 교수님 강의(2020)
 https://www.youtube.com/watch?v=f69fB5dhHdQ&list=PL1xKqHsVFgvkjsEOlTU-h7HAOmD1Bpadd&index=3
 
+https://talenthub.samsungdisplay.net/kms/codeBrew
+
 mdm삭제 확인  
 기기 관리자 앱 samsung s1 mem off 및 삭제 확인  
 휴대폰 설정 -> 애플리케이션 메뉴 -> samsung mdm agent 삭제  
