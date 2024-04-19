@@ -1,76 +1,49 @@
 ```cpp
-#define MAX_EMPOLYEE 8000
-#include <queue>
+#include <set>
 #include <unordered_map>
+#include <queue>
 using namespace std;
-
-struct Employee
-{
-	int id, start, end;
-	bool isRemoved;
-}employee[MAX_EMPOLYEE];
-
-unordered_map<int, int> Map; // id, rownum
-int employeeRowCnt, removedEmployeeRowCnt;
-
-void init() {
-	Map.clear();
-	employeeRowCnt = removedEmployeeRowCnt = 0;
-	for (int i = 0; i < MAX_EMPOLYEE; i++) employee[i] = {};
-}
-
-int getEmployeeRownum(int id) {
-	auto it = Map.find(id);
-	if (it == Map.end()) return -1;
-	return it->second;
-}
-
-int add(int mId, int mStart, int mEnd) {
-	int rownum = getEmployeeRownum(mId);
-	if (rownum == -1) {
-		rownum = employeeRowCnt;
-		Map[mId] = rownum;
-		employeeRowCnt++;
-	}
-	else if(employee[rownum].isRemoved)
-		removedEmployeeRowCnt--;
-	employee[rownum] = { mId, mStart, mEnd };
-	return employeeRowCnt - removedEmployeeRowCnt;
-}
-
-int remove(int mId) {
-	int rownum = getEmployeeRownum(mId);
-	if (!employee[rownum].isRemoved) {
-		employee[rownum].isRemoved = true;
-		removedEmployeeRowCnt++;
-	}
-	return employeeRowCnt - removedEmployeeRowCnt;
-}
 
 struct Data
 {
-	int time, rownum;
+	int id, start, end;
 	bool operator<(const Data&data)const {
-		return time > data.time;
+		return (start < data.start)||
+			(start == data.start && id < data.id);
 	}
 };
 
-int announce(int mDuration, int M) {
-	priority_queue<Data> clockIn, clockOut;
-	for (int i = 0; i < employeeRowCnt; i++) {
-		if (employee[i].isRemoved) continue;
-		clockIn.push({ employee[i].start, i }); // 시작시간, rownum
+set<Data> s;
+unordered_map<int, int> hmap; // id, start
+priority_queue<int, vector<int>,greater<int>> pq;
+
+void init() {
+	s.clear(); hmap.clear();
+}
+
+int add(int mId, int mStart, int mEnd) {
+	if (hmap.count(mId)) s.erase({ mId,hmap[mId] });
+	s.insert({ mId, mStart, mEnd });
+	hmap[mId] = mStart;
+	return hmap.size();
+}
+
+int remove(int mId) {
+	if (hmap.count(mId)) {
+		s.erase({ mId,hmap[mId] });
+		hmap.erase(mId);
 	}
-	while (!clockIn.empty()) {
-		int startTime = clockIn.top().time;
-		int rownum = clockIn.top().rownum;
-		clockIn.pop();
-		int endTime = startTime + mDuration - 1;
-		clockOut.push({ employee[rownum].end,rownum });
-		while (!clockOut.empty() && clockOut.top().time < endTime)
-			clockOut.pop();
-		if (clockOut.size() >= M) return startTime;
+	return hmap.size();
+}
+
+int announce(int mDuration, int M) {
+	pq = {};
+	for (const Data& d: s){
+		pq.push(d.end);
+		int endTime = d.start + mDuration - 1;
+		while (!pq.empty() && pq.top() < endTime) pq.pop();
+		if (pq.size() >= M) return d.start;
 	}
 	return -1;
 }
-#endif
+```
