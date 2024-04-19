@@ -46,7 +46,7 @@ bool setPuzzle(int sr, int sc, int(*frame)[3]) {
 		for (int j = 0; j < 3; j++) {
 			puzzle[i][j] = 0;
 			if (frame[i][j]) { // frame이 게임판 밖으로 나갔는지 판별
-				if (sr + i >= R || sc + j >= C) return 0;
+				if (sr + i >= R || sc + j >= C) return false;
 				puzzle[i][j] = map[sr + i][sc + j];
 			}
 		}
@@ -98,13 +98,13 @@ bool putIfPossible(int(*puzzle)[3], int sr, int sc) {
 	// 아래와 같이 2개로 진행해야됨
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
-			if (puzzle[i][j] && used[sr + i][sc + j]) return 0;
+			if (puzzle[i][j] && used[sr + i][sc + j]) return false;
 
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
-			if (puzzle[i][j]) used[sr + i][sc + j] = 1;
+			if (puzzle[i][j]) used[sr + i][sc + j] = true;
 
-	return 1;
+	return true;
 }
 
 Result putPuzzle(int mPuzzle[3][3])
