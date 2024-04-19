@@ -1,5 +1,5 @@
 ```cpp
-#define MAX_EMPLOYEE 8000
+#define MAX_EMPOLYEE 8000
 #include <queue>
 #include <unordered_map>
 using namespace std;
@@ -8,36 +8,33 @@ struct Employee
 {
 	int id, start, end;
 	bool isRemoved;
-};
+}employee[MAX_EMPOLYEE];
 
-Employee employee[MAX_EMPLOYEE];
-unordered_map<int, int> employeeMap; // id, rownum
-int employeeRowCnt;
-int removedEmployeeRowCnt;
+unordered_map<int, int> Map; // id, rownum
+int employeeRowCnt, removedEmployeeRowCnt;
 
 void init() {
-	employeeMap.clear();
+	Map.clear();
 	employeeRowCnt = removedEmployeeRowCnt = 0;
-	for (int i = 0;i < MAX_EMPLOYEE;i++) employee[i] = {};
-	return;
+	for (int i = 0; i < MAX_EMPOLYEE; i++) employee[i] = {};
 }
 
 int getEmployeeRownum(int id) {
-	auto iter = employeeMap.find(id);
-	if (iter == employeeMap.end()) return -1;
-	return iter->second;
+	auto it = Map.find(id);
+	if (it == Map.end()) return -1;
+	return it->second;
 }
 
 int add(int mId, int mStart, int mEnd) {
 	int rownum = getEmployeeRownum(mId);
 	if (rownum == -1) {
 		rownum = employeeRowCnt;
-		employeeMap[mId] = rownum;
+		Map[mId] = rownum;
 		employeeRowCnt++;
 	}
-	else if (employee[rownum].isRemoved)
+	else if(employee[rownum].isRemoved)
 		removedEmployeeRowCnt--;
-	employee[rownum] = { mId, mStart, mEnd, false };
+	employee[rownum] = { mId, mStart, mEnd };
 	return employeeRowCnt - removedEmployeeRowCnt;
 }
 
@@ -53,26 +50,26 @@ int remove(int mId) {
 struct Data
 {
 	int time, rownum;
-	bool operator<(const Data& data)const {
+	bool operator<(const Data&data)const {
 		return time > data.time;
 	}
 };
 
 int announce(int mDuration, int M) {
-	priority_queue<Data> clockIn;
-	priority_queue<Data> clockOut;
-	for (int i = 0;i < employeeRowCnt;i++) {
+	priority_queue<Data> clockIn, clockOut;
+	for (int i = 0; i < employeeRowCnt; i++) {
 		if (employee[i].isRemoved) continue;
-		clockIn.push({ employee[i].start,i }); // 시작시간, rownum
+		clockIn.push({ employee[i].start, i }); // 시작시간, rownum
 	}
 	while (!clockIn.empty()) {
+		int startTime = clockIn.top().time;
 		int rownum = clockIn.top().rownum;
-		int i = clockIn.top().time;
-		int endtime = clockIn.top().time + mDuration - 1;
 		clockIn.pop();
-		clockOut.push({ employee[rownum].end, rownum });
-		while (!clockOut.empty() && clockOut.top().time < endtime) clockOut.pop();
-		if (clockOut.size() >= M) return i;
+		int endTime = startTime + mDuration - 1;
+		clockOut.push({ employee[rownum].end,rownum });
+		while (!clockOut.empty() && clockOut.top().time < endTime)
+			clockOut.pop();
+		if (clockOut.size() >= M) return startTime;
 	}
 	return -1;
 }
