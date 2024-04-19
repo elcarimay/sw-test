@@ -1,239 +1,125 @@
 ```cpp
-#include <vector>
-#include <unordered_map>
-
+#if 1
 #define MAX_ROW 40
 #define MAX_COL 30
-
+#include <cstdio>
+#include <queue>
+#include <string.h>
+#include <vector>
+#include <algorithm>
+#include <unordered_map>
 using namespace std;
 
-int initmap[MAX_ROW][MAX_COL];
-int map[MAX_ROW][MAX_COL];
-int R, C, idx;
-
-pair<int, int> answer;
-
 struct Result {
-    int row;
-    int col;
+	int row;
+	int col;
 };
 
-unordered_map<int, int> stidx;
+int frames[5][3][3] = {         // 조각 종류에 따른 틀
+	{{1,1,0},{0,0,0},{0,0,0}},  // type0 = 110 000 000
+	{{1,1,1},{0,0,0},{0,0,0}},  // type1 = 111 000 000
+	{{1},{1},{1}},              // type2 = 100 100 100
+	{{1,1},{0,1,1}},            // type3 = 110 011 000
+	{{1},{1,1,1},{0,0,1}}       // type4 = 100 111 001
+};
 
-int min(int a, int b) {
-    return a < b ? a : b;
+int R, C;
+int(*map)[MAX_COL];                       // 게임판
+
+unordered_map<int, vector<Result>> hmap;   // key => 놓을수있는 좌표 리스트
+bool used[40][30];                      // 놓여진 조각 표시
+
+/*
+* (sr,sc) 에 frame틀 놓을 수 있는지 판별
+* 놓을 수 있으면 puzzle에 틀 정보만 기록하고 return 1
+* 놓을 수 없으면 return 0
+* (놓을 수 없는 경우는 게임판 범위 벗어나는 경우)
+*
+* frame    A      puzzle
+* 110      342    340
+* 011   => 322 => 022
+* 000      345    000
+*/
+int puzzle[3][3];
+bool setPuzzle(int sr, int sc, int(*frame)[3]) {
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			puzzle[i][j] = 0;
+			if (frame[i][j]) { // frame이 게임판 밖으로 나갔는지 판별
+				if (sr + i >= R || sc + j >= C) return 0;
+				puzzle[i][j] = map[sr + i][sc + j];
+			}
+		}
+	}
+	return 1;
 }
+/*
+* key값 생성 반환
+* 0이 아닌 위치의 최소값을 1로 만들고 10진법 (6진법 이상이면 됨)
+*
+* 340    120
+* 035 => 013 => 120013000
+* 000    000
+*/
+int getKey(int(*puzzle)[3]) {
+	int minVal = 5;
+	for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++)
+		if (puzzle[i][j] && minVal > puzzle[i][j]) minVal = puzzle[i][j];
 
-struct searchtype {
-    vector < pair<int, int>> rc;
-};
-
-searchtype stlist[4030];
-
+	int key = 0;
+	for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) {
+		key *= 10;
+		if (puzzle[i][j]) key += puzzle[i][j] - minVal + 1;
+	}
+	return key;
+}
 
 void init(int mRows, int mCols, int mCells[MAX_ROW][MAX_COL])
 {
-    R = mRows;
-    C = mCols;
-    idx = 0;
-    stidx.clear(); //idx 생성 및 초기화
+	hmap.clear();
+	memset(used, 0, sizeof(used));
+	R = mRows, C = mCols, map = mCells;
 
-    for (int i = 0; i < 4030; i++) {//구조체 초기화
-        stlist[i].rc.clear();
-    }
-
-    int mindist;
-    for (int i = 0; i < R; i++) {//맵 생성
-        for (int j = 0; j < C; j++) {
-            initmap[i][j] = mCells[i][j];
-            map[i][j] = mCells[i][j];
-        }
-    }
-
-    for (int i = 0; i < R; i++) {//index값 구조체 추가//type1 100000, type2 200000, type3 300000, type4 400000, type5 500000, 
-        for (int j = 0; j < C; j++) {
-            if (C - j > 1) { //type1
-                mindist = map[i][j];
-                mindist = min(mindist, map[i][j + 1]);
-                idx = 100000 + ((map[i][j] - mindist) * 10) + map[i][j + 1] - mindist;
-
-                if (stidx[idx] == 0) {
-                    stidx[idx] = stidx.size();
-                }
-                stlist[stidx[idx]].rc.emplace_back(i, j);
-            }
-
-            if (C - j > 2) { //type2
-                mindist = map[i][j];
-                mindist = min(mindist, map[i][j + 1]);
-                mindist = min(mindist, map[i][j + 2]);
-                idx = 200000 + ((map[i][j] - mindist) * 100) + ((map[i][j + 1] - mindist) * 10) + map[i][j + 2] - mindist;
-
-                if (stidx[idx] == 0) {
-                    stidx[idx] = stidx.size();
-                }
-                stlist[stidx[idx]].rc.emplace_back(i, j);
-            }
-
-            if (R - i > 2) { //type3
-                mindist = map[i][j];
-                mindist = min(mindist, map[i + 1][j]);
-                mindist = min(mindist, map[i + 2][j]);
-
-                idx = 300000 + ((map[i][j] - mindist) * 100) + ((map[i + 1][j] - mindist) * 10) + (map[i + 2][j] - mindist);
-
-                if (stidx[idx] == 0) {
-                    stidx[idx] = stidx.size();
-                }
-                stlist[stidx[idx]].rc.emplace_back(i, j);
-            }
-
-            if (C - j > 2 && R - i > 1) { //type4
-                mindist = map[i][j];
-                mindist = min(mindist, map[i][j + 1]);
-                mindist = min(mindist, map[i + 1][j + 1]);
-                mindist = min(mindist, map[i + 1][j + 2]);
-
-                idx = 400000 + ((map[i][j] - mindist) * 1000) + ((map[i][j + 1] - mindist) * 100) + ((map[i + 1][j + 1] - mindist) * 10) + map[i + 1][j + 2] - mindist;
-                if (stidx[idx] == 0) {
-                    stidx[idx] = stidx.size();
-                }
-
-                stlist[stidx[idx]].rc.emplace_back(i, j);
-            }
-
-            if (C - j > 2 && R - i > 2) { //type5
-                mindist = map[i][j];
-                mindist = min(mindist, map[i + 1][j]);
-                mindist = min(mindist, map[i + 1][j + 1]);
-                mindist = min(mindist, map[i + 1][j + 2]);
-                mindist = min(mindist, map[i + 2][j + 2]);
-
-                idx = 500000 + ((map[i][j] - mindist) * 10000) + ((map[i + 1][j] - mindist) * 1000) + ((map[i + 1][j + 1] - mindist) * 100) + ((map[i + 1][j + 2] - mindist) * 10) + map[i + 2][j + 2] - mindist;
-                if (stidx[idx] == 0) {
-                    stidx[idx] = stidx.size();
-                }
-                stlist[stidx[idx]].rc.emplace_back(i, j);
-            }
-        }
-    }
+	for (int i = 0; i < R; i++) {               // sr
+		for (int j = 0; j < C; j++) {           // sc
+			for (int k = 0; k < 5; k++) {       // type
+				if (setPuzzle(i, j, frames[k]) == false) continue;
+				hmap[getKey(puzzle)].push_back({ i,j });
+			}
+		}
+	}
 }
+/*
+* 놓고자 하는 위치에 이미 놓여져 있으면 return 0
+* 놓을 수 있으면 놓고 return 1
+*/
+bool putIfPossible(int(*puzzle)[3], int sr, int sc) {
+	// false로 지정된 위치를 넘겼을때 다음에서 true로 할수 있기 때문에 
+	// 아래와 같이 2개로 진행해야됨
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			if (puzzle[i][j] && used[sr + i][sc + j]) return 0;
 
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			if (puzzle[i][j]) used[sr + i][sc + j] = 1;
 
-void search(int type, int sidx) {
-    for (int i = 0; i < stlist[stidx[sidx]].rc.size(); i++) {
-        if (type == 1) {
-            if (map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] != 9 && map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second + 1] != 9) {
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second + 1] = 9;
-                answer = pair<int, int>(stlist[stidx[sidx]].rc.at(i).first, stlist[stidx[sidx]].rc.at(i).second);
-                break;
-            }
-        }
-        else if (type == 2) {
-            if (map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] != 9 && map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second + 1] != 9 &&
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second + 2] != 9) {
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second + 1] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second + 2] = 9;
-                answer = pair<int, int>(stlist[stidx[sidx]].rc.at(i).first, stlist[stidx[sidx]].rc.at(i).second);
-                break;
-            }
-        }
-        else if (type == 3) {
-            if (map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] != 9 && map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second] != 9 &&
-                map[stlist[stidx[sidx]].rc.at(i).first + 2][stlist[stidx[sidx]].rc.at(i).second] != 9) {
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first + 2][stlist[stidx[sidx]].rc.at(i).second] = 9;
-                answer = pair<int, int>(stlist[stidx[sidx]].rc.at(i).first, stlist[stidx[sidx]].rc.at(i).second);
-                break;
-            }
-        }
-        else if (type == 4) {
-
-            if (map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] != 9 && map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second + 1] != 9 &&
-                map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second + 1] != 9 && map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second + 2] != 9) {
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second + 1] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second + 1] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second + 2] = 9;
-                answer = pair<int, int>(stlist[stidx[sidx]].rc.at(i).first, stlist[stidx[sidx]].rc.at(i).second);
-                break;
-            }
-        }
-        else if (type == 5) {
-
-            if (map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] != 9 && map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second] != 9 &&
-                map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second + 1] != 9 && map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second + 2] != 9 &&
-                map[stlist[stidx[sidx]].rc.at(i).first + 2][stlist[stidx[sidx]].rc.at(i).second + 2] != 9) {
-                map[stlist[stidx[sidx]].rc.at(i).first][stlist[stidx[sidx]].rc.at(i).second] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second + 1] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first + 1][stlist[stidx[sidx]].rc.at(i).second + 2] = 9;
-                map[stlist[stidx[sidx]].rc.at(i).first + 2][stlist[stidx[sidx]].rc.at(i).second + 2] = 9;
-                answer = pair<int, int>(stlist[stidx[sidx]].rc.at(i).first, stlist[stidx[sidx]].rc.at(i).second);
-                break;
-            }
-        }
-    }
+	return 1;
 }
-
 
 Result putPuzzle(int mPuzzle[3][3])
 {
-    Result ret = { -1, -1 };
-    int mindist, pzidx;
-    answer = pair<int, int>(-1, -1);
-    vector<int>block;
-
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            if (mPuzzle[i][j] != 0) {
-                block.emplace_back(mPuzzle[i][j]);
-            }
-            if (block.size() == 1 && mPuzzle[i][j] != 0) {
-                mindist = block.at(0);
-            }
-            else if (block.size() > 1 && mPuzzle[i][j] != 0) {
-                mindist = min(mindist, block.at(block.size() - 1));
-            }
-        }
-    }
-
-    int type;
-    if (mPuzzle[0][2] == 0 && mPuzzle[1][0] == 0 && mPuzzle[1][1] == 0 && mPuzzle[1][2] == 0) {
-        type = 1;
-        pzidx = 100000 + ((block.at(0) - mindist) * 10) + (block.at(1) - mindist);
-    }
-    else if (mPuzzle[0][2] != 0 && mPuzzle[1][0] == 0 && mPuzzle[1][1] == 0 && mPuzzle[1][2] == 0) {
-        type = 2;
-        pzidx = 200000 + ((block.at(0) - mindist) * 100) + ((block.at(1) - mindist) * 10) + (block.at(2) - mindist);
-    }
-    else if (mPuzzle[0][1] == 0 && mPuzzle[1][1] == 0 && mPuzzle[2][1] == 0) {
-        type = 3;
-        pzidx = 300000 + ((block.at(0) - mindist) * 100) + ((block.at(1) - mindist) * 10) + (block.at(2) - mindist);
-    }
-    else if (mPuzzle[0][2] == 0 && mPuzzle[1][0] == 0 && mPuzzle[1][1] != 0) {
-        type = 4;
-        pzidx = 400000 + ((block.at(0) - mindist) * 1000) + ((block.at(1) - mindist) * 100) + ((block.at(2) - mindist) * 10) + (block.at(3) - mindist);
-    }
-    else if (mPuzzle[0][1] == 0 && mPuzzle[0][2] == 0 && mPuzzle[1][1] != 0) {
-        type = 5;
-        pzidx = 500000 + ((block.at(0) - mindist) * 10000) + ((block.at(1) - mindist) * 1000) + ((block.at(2) - mindist) * 100) + ((block.at(3) - mindist) * 10) + (block.at(4) - mindist);
-    }
-    search(type, pzidx);
-    ret = { answer.first, answer.second };
-    return ret;
+	auto& v = hmap[getKey(mPuzzle)];
+	for (auto p : v) { // 최대 500, 평균 70
+		int r = p.row, c = p.col;
+		if (putIfPossible(mPuzzle, r, c)) return { r,c };
+	}
+	return { -1, -1 };
 }
 
 void clearPuzzles()
 {
-    for (int i = 0; i < R; i++) {
-        for (int j = 0; j < C; j++) {
-            map[i][j] = initmap[i][j];
-        }
-    }
-    return;
+	memset(used, 0, sizeof(used));
 }
+#endif
 ```
