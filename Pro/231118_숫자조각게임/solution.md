@@ -51,7 +51,7 @@ bool setPuzzle(int sr, int sc, int(*frame)[3]) {
 			}
 		}
 	}
-	return 1;
+	return true;
 }
 /*
 * key값 생성 반환
