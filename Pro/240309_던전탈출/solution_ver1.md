@@ -1,4 +1,5 @@
 ```cpp
+// 4월 S/W 수업 모범답안
 #if 1
 #define MAP_SIZE_MAX    350
 #define INF 987654321
