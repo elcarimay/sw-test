@@ -13,33 +13,28 @@ int N, M, maxStamina;
 struct Info
 {
 	int gid, cost;
-	bool operator < (const Info&info)const {
+	/*bool operator < (const Info& info)const {
 		return cost > info.cost;
-	}
-	bool operator == (const Info&info)const {
+	}*/
+	bool operator == (const Info& info)const {
 		return cost == info.cost && gid == info.gid;
 	}
 };
 vector<Info> adj[205];    // 인접배열
-struct Pos
-{
-	int r, c;
-}coord[205];
+struct Pos{	int r, c;}coord[205];
 
 void init(int _N, int mMaxStamina, int mMap[MAP_SIZE_MAX][MAP_SIZE_MAX])
 {
 	map = mMap, N = _N, M = 0, maxStamina = mMaxStamina;
-	for (auto&v : adj) v.clear();
+	for (auto& v : adj) v.clear();
 }
 
-struct Data {
-	int r, c, cost;
-} que[350 * 350];
+struct Data { int r, c, cost; } que[350 * 350];
 bool visit[350][350];
 int dr[] = { -1,0,1,0 }, dc[] = { 0,1,0,-1 };
 void addGate(int mGateID, int mRow, int mCol)
 {
-	M++; map[mRow][mCol] = ++mGateID;
+	M++; map[mRow][mCol] = mGateID + 1;
 	coord[mGateID] = { mRow, mCol };
 	int head = 0, tail = 0;
 	memset(visit, 0, sizeof(visit));
@@ -47,7 +42,7 @@ void addGate(int mGateID, int mRow, int mCol)
 	visit[mRow][mCol] = 1;
 
 	while (head < tail) {
-		Data&cur = que[head++];
+		Data& cur = que[head++];
 		if (cur.cost == maxStamina) break;
 		for (int i = 0; i < 4; i++) {
 			int nr = cur.r + dr[i];
@@ -70,14 +65,17 @@ void addGate(int mGateID, int mRow, int mCol)
 
 void removeGate(int mGateID)
 {
+	// 그래프 삭제
 	for (auto p : adj[mGateID])
 		adj[p.gid].erase(find(adj[p.gid].begin(), adj[p.gid].end(), Info{ mGateID, p.cost }));
 	adj[mGateID].clear();
+	// 맵 삭제
+	map[coord[mGateID].r][coord[mGateID].c] = 0;
 }
 
 struct Data2 {
 	int to, cost;
-	bool operator < (const Data2&data2)const {
+	bool operator < (const Data2& data2)const {
 		return cost > data2.cost;
 	}
 };
@@ -92,7 +90,9 @@ int getMinTime(int mStartGateID, int mEndGateID)
 	while (!pq.empty()) {
 		auto cur = pq.top(); pq.pop();
 		if (cur.cost > cost[cur.to]) continue;
-		if (cur.to == mEndGateID) return cost[cur.to];
+		if (cur.to == mEndGateID) {
+			return cost[cur.to];
+		}
 		for (auto nx : adj[cur.to]) {
 			int nextCost = cur.cost + nx.cost;
 			if (cost[nx.gid] > nextCost) {
