@@ -13,9 +13,6 @@ int N, M, maxStamina;
 struct Info
 {
 	int gid, cost;
-	/*bool operator < (const Info& info)const {
-		return cost > info.cost;
-	}*/
 	bool operator == (const Info& info)const {
 		return cost == info.cost && gid == info.gid;
 	}
