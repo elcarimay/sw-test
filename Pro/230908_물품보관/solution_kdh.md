@@ -9,10 +9,6 @@
 #include <cmath>
 using namespace std;
 
-inline int max(int a, int b) { return a < b ? b : a; }
-inline int min(int a, int b) { return a > b ? b : a; }
-inline int ceil(int a, int b) { return (a + b - 1) / b; }
-
 #define MAX_N 100005
 #define INF 987654321
 int goods[MAX_N];
@@ -45,7 +41,7 @@ struct SegmentTree
 	void update(int start, int end, int node, int idx, int diff) {
 		if (idx < start || end < idx) return;
 		if (start == end) {
-			tree[node] = { {node,tree[node].max.value + diff}};
+			tree[node] = { {idx,tree[node].max.value + diff} };
 			return;
 		}
 		int mid = (start + end) / 2;
@@ -53,7 +49,7 @@ struct SegmentTree
 		update(mid + 1, end, node * 2 + 1, idx, diff);
 		tree[node] = { max_pair(tree[node * 2].max, tree[node * 2 + 1].max) };
 	}
-	
+
 	Pair max_query(int start, int end, int node, int left, int right) {
 		if (left > end || right < start) return { -1, -INF };
 		if (left <= start && end <= right) return tree[node].max;
@@ -70,6 +66,7 @@ void init(int N)
 	::N = N;
 	for (int i = 1; i <= N; i++) goods[i] = 0;
 	for (int i = 1; i <= N * 4; i++) tree[i] = { {-1,-INF} };
+	S.init(1, N, 1);
 }
 
 Pair getMax(int left, int right) {
@@ -77,33 +74,36 @@ Pair getMax(int left, int right) {
 }
 
 int getArea() {
-	int ret = 0;
+	int ret = 0, cen_idx;
 	// 전체
-	Pair cur = getMax(1, N);
+	Pair cur = getMax(1, N); cen_idx = cur.idx;
 	ret += cur.value;
-	
+
 	// 왼쪽
-	Pair prev;
-	while (1) {
-		prev = getMax(1, cur.idx - 1);
+	Pair prev; cur.idx = cen_idx - 1;
+	while (cen_idx != 1) {
+		prev = getMax(1, cur.idx);
 		if (prev.value == 0) break;
-		ret += (cur.idx - prev.idx)*prev.value;
+		ret += (cur.idx + 1 - prev.idx) * prev.value;
 		cur.idx = prev.idx - 1;
+		if (prev.idx == 1) break;
 	}
 
 	// 오른쪽
-	while (1) {
-		prev = getMax(cur.idx + 1, N);
+	cur.idx = cen_idx + 1;
+	while (cen_idx != N) {
+		prev = getMax(cur.idx, N);
 		if (prev.value == 0) break;
-		ret += (prev.idx - cur.idx)*prev.value;
+		ret += (prev.idx - (cur.idx-1)) * prev.value;
 		cur.idx = prev.idx + 1;
+		if (prev.idx == N) break;
 	}
 	return ret;
 }
 
 int stock(int mLoc, int mBox)
 {
-	goods[mLoc] = mBox;
+	goods[mLoc] += mBox;
 	S.update(1, N, 1, mLoc, mBox);
 	int ret = getArea();
 	return ret;
@@ -111,12 +111,7 @@ int stock(int mLoc, int mBox)
 
 int ship(int mLoc, int mBox)
 {
-	int ret_a, ret_b;
-	ret_a = getArea();
-	goods[mLoc] -= mBox;
-	S.update(1, N, 1, mLoc, -mBox);
-	ret_b = getArea();
-	return ret_a - ret_b;
+	return stock(mLoc, -mBox);
 }
 
 int getHeight(int mLoc)
