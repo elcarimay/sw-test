@@ -103,12 +103,6 @@ int calculate(int sId, int eId) {
 }
 #endif
 
-#define	MAX_N	200001
-#define	INF		0x7fffffff
-
-inline int min(int a, int b) { return (a < b) ? a : b; }
-inline int max(int a, int b) { return (a < b) ? b : a; }
-
 int arr[MAX_N];
 
 struct Tree {
