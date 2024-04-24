@@ -1,5 +1,5 @@
 ```cpp
-#if 0
+#if 1
 #define	S_SIZE	200001
 #define	INF		0x7FFFFFFF
 
