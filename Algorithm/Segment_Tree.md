@@ -1,7 +1,7 @@
 ```cpp
 #if 1
 #define	S_SIZE	200001
-#define	INF		0x7FFFFFFF
+#define	INF	987654321
 
 int min(int a, int b) { return a < b ? a : b; }
 int max(int a, int b) { return a < b ? b : a; }
