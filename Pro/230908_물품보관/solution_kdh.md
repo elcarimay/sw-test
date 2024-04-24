@@ -65,7 +65,6 @@ void init(int N)
 {
 	::N = N;
 	for (int i = 1; i <= N; i++) goods[i] = 0;
-	for (int i = 1; i <= N * 4; i++) tree[i] = { {-1,-INF} };
 	S.init(1, N, 1);
 }
 
@@ -75,28 +74,28 @@ Pair getMax(int left, int right) {
 
 int getArea() {
 	int ret = 0, cen_idx;
-	// 전체
-	Pair cur = getMax(1, N); cen_idx = cur.idx;
+	// 중앙부 천막을 덮음.
+	Pair cur = S.max_query(1, N, 1, 1, N); cen_idx = cur.idx;
 	ret += cur.value;
 
-	// 왼쪽
-	Pair prev; cur.idx = cen_idx - 1;
+	// 왼쪽으로 천막을 덮으면서 면적을 구함.
+	Pair left; cur.idx = cen_idx - 1;
 	while (cen_idx != 1) {
-		prev = getMax(1, cur.idx);
-		if (prev.value == 0) break;
-		ret += (cur.idx + 1 - prev.idx) * prev.value;
-		cur.idx = prev.idx - 1;
-		if (prev.idx == 1) break;
+		left = S.max_query(1, N, 1, 1, cur.idx);
+		if (left.value == 0) break;
+		ret += (cur.idx + 1 - left.idx) * left.value;
+		cur.idx = left.idx - 1;
+		if (left.idx == 1) break;
 	}
 
-	// 오른쪽
-	cur.idx = cen_idx + 1;
+	// 오른쪽으로 천막을 덮으면서 면적을 구함.
+	Pair right;  cur.idx = cen_idx + 1;
 	while (cen_idx != N) {
-		prev = getMax(cur.idx, N);
-		if (prev.value == 0) break;
-		ret += (prev.idx - (cur.idx-1)) * prev.value;
-		cur.idx = prev.idx + 1;
-		if (prev.idx == N) break;
+		right = S.max_query(1, N, 1, cur.idx, N);
+		if (right.value == 0) break;
+		ret += (right.idx - (cur.idx - 1)) * right.value;
+		cur.idx = right.idx + 1;
+		if (right.idx == N) break;
 	}
 	return ret;
 }
@@ -105,8 +104,7 @@ int stock(int mLoc, int mBox)
 {
 	goods[mLoc] += mBox;
 	S.update(1, N, 1, mLoc, mBox);
-	int ret = getArea();
-	return ret;
+	return getArea();
 }
 
 int ship(int mLoc, int mBox)
