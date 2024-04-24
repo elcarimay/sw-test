@@ -9,6 +9,6 @@ https://ansohxxn.github.io/stl/map/
 https://modoocode.com/224
 (C 및 C++ 강의가 잘 정리되어 있음.)  
 
-알고리즘 설명
-Union-Find, Segment Tree
+알고리즘 설명  
+Union-Find, Segment Tree  
 https://yoongrammer.tistory.com/102  
