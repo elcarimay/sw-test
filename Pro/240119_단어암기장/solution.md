@@ -15,8 +15,8 @@ const int psize = 100;
 struct Data
 {
 	int col, len;
-	bool operator<(const Data&data)const {
-		return col > data.col;
+	bool operator<(const Data& data)const {
+        return col < data.col;
 	}
 };
 
@@ -28,7 +28,7 @@ struct Word
 {
 	int r, c, len; // 단어 등록된 행,열,크기
 	void erase() {
-		auto&v = blank[r];
+		auto& v = blank[r];
 		int i = lower_bound(v.begin(), v.end(), Data{ c,0 }) - v.begin();
 
 		// 오른쪽 노드 합치기
@@ -78,7 +78,7 @@ int writeWord(int mId, int mLen) {
 				if (v[i].len == 0) v.erase(v.begin() + i);
 
 				int maxLen = 0;
-				for (auto p : v) maxLen = max(maxLen, p.col);
+				for (auto p : v) maxLen = max(maxLen, p.len);
 				rowMax[r] = maxLen;
 
 				maxLen = 0;
