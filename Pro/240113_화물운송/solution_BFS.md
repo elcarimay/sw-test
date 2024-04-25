@@ -33,7 +33,7 @@ void add(int sCity, int eCity, int mLimit) {
 
 // 단방향이므로 한번만 지나가면 됨.
 // 비용이 높은 경로로 지나가면서 가장 낮은 비용을 반환하면 됨.
-// BFS only버전(120 ms)
+// 1) BFS only버전(120 ms)
 int calculate1(int sCity, int eCity) {
 	bool visit[MAX_N]; int min_v = INF;
 	fill(visit, visit + n + 1, false);
@@ -82,13 +82,13 @@ int binary_search(int low, int high, int sCity, int eCity) {
 }
 
 // 일정비용(mid)보다 큰 도로는 bfs시 제외하면서 결정문제로 만듬.
-// BFS + binary search버전( 300 ms)
+// 2) BFS + binary search버전( 300 ms)
 int calculate2(int sCity, int eCity) {
 	return binary_search(1, MAX_mLimit, sCity, eCity);
 }
 
 // 초기값을 INF로 정하고 현재비용과 다음 비용과의 최소값을 갱신해주고 다음지점의 비용값이 갱신값보다 작으면 update함.
-// dijkstra 버전 ( 105 ms)
+// 3) dijkstra 버전 ( 105 ms)
 int cost[MAX_N];
 int calculate(int sCity, int eCity) {
 	fill(cost, cost + n + 1, 0);
