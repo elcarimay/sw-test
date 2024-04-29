@@ -14,53 +14,46 @@ struct Data
 };
 
 unordered_map<int, int> idmap; // mid, fid
-int idCnt, N;
-vector<Data> flist[36000 + 5];
+int idCnt, freeSize;
+vector<Data> flist[12005];
 priority_queue<Data> pq;
 
-void init(int _N) {
-	N = _N, idCnt = 0, pq = {}, pq.push({ 1,N });
+void init(int N) {
+	idCnt = 0, pq = {},	pq.push({ 1,freeSize = N });
 	idmap.clear();
+	for (int i = 0; i < 12005; i++) flist[i].clear();
 }
 
 int add(int mId, int mSize) {
-	int rest = 0;
+	if (freeSize < mSize) return -1;
+	freeSize -= mSize;
 	idmap[mId] = idCnt;
-	while (!pq.empty()) {
+	flist[idCnt].clear();
+
+	while (mSize) {
 		auto cur = pq.top(); pq.pop();
+		int len = cur.len;
 		if (cur.len > mSize) {
-			flist[idCnt].push_back({ cur.sIdx, mSize });
-			cur.len -= mSize, cur.sIdx += mSize;
-			pq.push(cur);
-			return flist[idCnt++][0].sIdx;
+			len = mSize;
+			pq.push({ cur.sIdx + len, cur.len - len});
 		}
-		else if (cur.len == mSize) {
-			for (auto nx : flist[idCnt]) {
-				if (nx.sIdx == cur.sIdx + cur.len) {
-					cur.len += nx.len;
-					flist[idCnt].push_back(cur);
-					return flist[idCnt++][0].sIdx;
-				}
+		if (flist[idCnt].size() != 0) {
+			int size = flist[idCnt][flist[idCnt].size() - 1].sIdx + flist[idCnt][flist[idCnt].size() - 1].len;
+			if (size == cur.sIdx) {
+				flist[idCnt][flist[idCnt].size() - 1].len += len;
 			}
+			else flist[idCnt].push_back({ cur.sIdx, len });
 		}
-		else {
-			if (flist[idCnt].size() != 0) {
-				int size = flist[idCnt][flist[idCnt].size() - 1].sIdx + flist[idCnt][flist[idCnt].size() - 1].len;
-				if (size == cur.sIdx) {
-					flist[idCnt][flist[idCnt].size() - 1].len + cur.len;
-				}
-			}
-			else flist[idCnt].push_back(cur);
-			mSize -= cur.len;
-		}
+		else flist[idCnt].push_back({ cur.sIdx, len });
+		mSize -= len;
 	}
-	return -1;
+	return flist[idCnt++][0].sIdx;
 }
 
 int remove(int mId) {
 	int ret = flist[idmap[mId]].size();
 	for (auto nx : flist[idmap[mId]]) {
-		pq.push(nx);
+		pq.push(nx); freeSize += nx.len;
 	}
 	flist[idmap[mId]].clear();
 	return ret;
@@ -71,7 +64,7 @@ int count(int mStart, int mEnd) {
 	for (int i = 0; i < idCnt; i++){
 		if (flist[i].size() == 0) continue;
 		for (auto next : flist[i]) {
-			int s1 = next.sIdx, e1 = next.sIdx + next.len;
+			int s1 = next.sIdx, e1 = next.sIdx + next.len-1;
 			if (s1 <= mEnd && mStart <= e1) {
 				cnt++; break;
 			}
