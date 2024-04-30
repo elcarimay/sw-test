@@ -37,113 +37,113 @@ extern int count(int mStart, int mEnd);
 
 static bool run() {
 
-int q;
+	int q;
 
-scanf("%d", &q);
-
-
-
-int mid, msize, mstart, mend, n;
-
-int cmd, ans, ret = 0;
-
-bool okay = false;
+	scanf("%d", &q);
 
 
 
-for (int i = 0; i < q; ++i) {
+	int mid, msize, mstart, mend, n;
 
-scanf("%d", &cmd);
+	int cmd, ans, ret = 0;
 
-switch (cmd) {
+	bool okay = false;
 
-case CMD_INIT:
 
-scanf("%d", &n);
 
-init(n);
+	for (int i = 0; i < q; ++i) {
 
-okay = true;
+		scanf("%d", &cmd);
 
-break;
+		switch (cmd) {
 
-case CMD_ADD:
+		case CMD_INIT:
 
-scanf("%d %d %d", &mid, &msize, &ans);
+			scanf("%d", &n);
 
-ret = add(mid, msize);
+			init(n);
 
-if (ans != ret)
+			okay = true;
 
-okay = false;
+			break;
 
-break;
+		case CMD_ADD:
 
-case CMD_REMOVE:
+			scanf("%d %d %d", &mid, &msize, &ans);
 
-scanf("%d %d", &mid, &ans);
+			ret = add(mid, msize);
 
-ret = remove(mid);
+			if (ans != ret)
 
-if (ans != ret)
+				okay = false;
 
-okay = false;
+			break;
 
-break;
+		case CMD_REMOVE:
 
-case CMD_COUNT:
+			scanf("%d %d", &mid, &ans);
 
-scanf("%d %d %d", &mstart, &mend, &ans);
+			ret = remove(mid);
 
-ret = count(mstart, mend);
+			if (ans != ret)
 
-if (ans != ret)
+				okay = false;
 
-okay = false;
+			break;
 
-break;
+		case CMD_COUNT:
 
-default:
+			scanf("%d %d %d", &mstart, &mend, &ans);
 
-okay = false;
+			ret = count(mstart, mend);
 
-break;
+			if (ans != ret)
+
+				okay = false;
+
+			break;
+
+		default:
+
+			okay = false;
+
+			break;
+
+		}
+
+	}
+
+	return okay;
 
 }
 
-}
-
-return okay;
-
-}
-
-
+#include <time.h>
 
 int main() {
+	clock_t start = clock();
+	setbuf(stdout, NULL);
 
-setbuf(stdout, NULL);
-
-//freopen("sample_input.txt", "r", stdin);
-
-
-
-int T, MARK;
-
-scanf("%d %d", &T, &MARK);
+	freopen("sample_input.txt", "r", stdin);
 
 
 
-for (int tc = 1; tc <= T; tc++) {
+	int T, MARK;
 
-int score = run() ? MARK : 0;
-
-printf("#%d %d\n", tc, score);
-
-}
+	scanf("%d %d", &T, &MARK);
 
 
 
-return 0;
+	for (int tc = 1; tc <= T; tc++) {
+
+		int score = run() ? MARK : 0;
+
+		printf("#%d %d (%d ms)\n", tc, score, (clock() - start) / (CLOCKS_PER_SEC / 1000));
+
+	}
+
+	printf("Performance = %d ms\n", (clock() - start) / (CLOCKS_PER_SEC / 1000));
+
+	return 0;
 
 }
 ```
