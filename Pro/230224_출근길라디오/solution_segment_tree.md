@@ -1,109 +1,79 @@
 ```cpp
 #if 1
-
+#include <cstdio>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
-const int MAX = 100'000;
-const int MAX_M = 10'000;
+#define MAX_ROADS 100005
+#define MAX_TYPES 1005
 
-int time[MAX + 10]; // 구간의 시간정보
-vector<int> type[MAX_M + 10];
+int time[MAX_ROADS];
+vector<int> type[MAX_TYPES];
+int tree[4 * MAX_ROADS];
+
+struct SegmentTree
+{
+	void init(int s, int e, int n) {
+		if (s == e) {
+			tree[n] = time[s]; return;
+		}
+		int m = (s + e) / 2;
+		init(s, m, 2 * n);
+		init(m + 1, e, 2 * n + 1);
+		tree[n] = tree[2 * n] + tree[2 * n + 1];
+		return;
+	}
+	void update(int s, int e, int n, int idx, int diff) {
+		if (idx < s || e < idx) return;
+		if (s == e) {
+			tree[n] = diff; return;
+		}
+		int m = (s + e) / 2;
+		update(s, m, 2 * n, idx, diff);
+		update(m + 1, e, 2 * n + 1, idx, diff);
+		tree[n] = tree[2 * n] + tree[2 * n + 1];
+		return;
+	}
+	int sum_query(int s, int e, int n, int l, int r) {
+		if (r < s || e < l) return 0;
+		if (l <= s && e <= r) return tree[n];
+		int m = (s + e) / 2;
+		int sum_left = sum_query(s, m, 2 * n, l, r);
+		int sum_right = sum_query(m + 1, e, 2 * n + 1, l, r);
+		return sum_left + sum_right;
+	}
+}S;
+
 int N;
-typedef long long ll;
-
-struct Segtree
-{
-    vector<int> tree;
-
-    void resize(int N) {
-        tree.resize(N * 4 + 1);
-    }
-
-    // s~e까지 초기화 처리
-    ll init(int n, int s, int e) {
-        if (s == e) return tree[n] = time[s];
-        int m = (s + e) / 2;
-        return tree[n] = init(n * 2, s, m) + init(n * 2+1, m+1,e);
-    }
-
-    // s~e까지 범위를 갖는 segment tree에서 idx에 해당하는 값을 업데이트 해라
-    void update(int n, int s, int e, int idx) {
-        /* s~e < idx or idx < s~e */
-        if (e < idx || idx < s)
-            return;
-        
-        if (s == idx && idx == e) {
-            tree[n] = time[idx];
-            return;
-        }
-        int m = (s + e) / 2;
-        update(n * 2, s, m, idx);
-        update(n * 2 + 1, m + 1, e, idx);
-        tree[n] = tree[n * 2] + tree[n * 2 + 1];
-    }
-
-    // s~e까지 범위를 갖는 segment tree에서 left~right에 해당하는 값을 업데이트 해라
-    int query(int n, int s, int e, int left, int right) {
-        /* s - e < left - right < s - e */
-        if(e < left || right < s)
-            return 0;
-        if (left <= s && e <= right)
-            return tree[n];
-        int m = (s + e) / 2;
-        return query(n * 2, s, m, left, right) +
-            query(n * 2 + 1, m + 1, e, left, right);
-    }
-}segtree;
-
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-void init(int _N, int M, int mType[], int mTime[])
-{
-    N = _N;
-    
-    for (int i = 0; i < M; i++)
-        type[i].clear();
-
-    for (int i = 0; i < N - 1; i++)
-    {
-        time[i] = mTime[i];
-        type[mType[i]].push_back(i);
-    }
-    segtree.resize(N);
-    segtree.init(1, 0, N - 2);
+void init(int N, int M, int mType[], int mTime[]) {
+	::N = N;
+	for (int i = 0; i < M; i++) type[i].clear();
+	for (int i = 0; i < N - 1; i++) {
+		type[mType[i]].push_back(i);
+		time[i] = mTime[i];
+	}
+	S.init(0, N - 2, 1);
 }
 
 void destroy() {}
 
-void update(int mID, int mNewTime)
-{
-    time[mID] = mNewTime;
-    segtree.update(1, 0, N - 2, mID);
+void update(int mID, int mNewTime) {
+	S.update(0, N - 2, 1, mID, time[mID] = mNewTime);
 }
 
-int updateByType(int mTypeID, int mRatio256)
-{
-    int ret = 0;
-    for (auto t:type[mTypeID])
-    {
-        time[t] = time[t] * mRatio256 / 256;
-        ret += time[t];
-        segtree.update(1, 0, N - 2, t);
-    }
-    return ret;
+int updateByType(int mTypeID, int mRatio256) {
+	int ret = 0;
+	for (auto t : type[mTypeID]) {
+		S.update(0, N - 2, 1, t, time[t] = time[t] * mRatio256 / 256);
+		ret += time[t];
+	}
+	return ret;
 }
 
-int calculate(int mA, int mB)
-{
-    if (mA < mB) {
-        return segtree.query(1, 0, N - 2, mA, mB - 1);
-    }
-    else {
-        return segtree.query(1, 0, N - 2, mB, mA - 1);
-    }
-    return -1;
+int calculate(int mA, int mB) {
+	if (mA > mB) swap(mA, mB);
+	return S.sum_query(0, N - 2, 1, mA, mB - 1);
 }
-#endif // 0
+#endif // 1
 ```
