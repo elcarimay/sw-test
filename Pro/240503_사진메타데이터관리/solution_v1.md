@@ -1,5 +1,5 @@
 ```cpp
-#if 0
+#if 1
 #include <cstdio>
 #include <vector>
 #include <string>
