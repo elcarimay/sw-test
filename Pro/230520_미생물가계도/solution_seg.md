@@ -1,4 +1,5 @@
 ```cpp
+// 1. mapCnt대신 size()사용, 2. 공통조상을 찾으면서 거리계산하기
 #include <map>
 #include <unordered_map>
 #include <string>
