@@ -48,7 +48,6 @@ struct Node
 };
 
 unordered_map<string, int> nodeMap;
-int nodeCnt = 0;
 
 // LCA를 위한 정보, 부모정보, depth
 const int MAX = 120000 + 1; // add로 부터 생성될 수 있는 자식의 수 + 최초 조상
@@ -56,19 +55,19 @@ Node nodes[MAX];
 
 void init(char mAncestor[], int mLastday){
 	nodeMap.clear();
-	nodeMap[string(mAncestor)] = nodeCnt;
-	nodes[nodeCnt++] = { string(mAncestor), -1, 0, 0, mLastday };
+	nodeMap[string(mAncestor)] = nodeMap.size();
+	nodes[nodeMap.size() - 1] = { string(mAncestor), -1, 0, 0, mLastday };
 	segmentTree.init();
 	segmentTree.update(0, 1000000, 1, 0, mLastday, 1);
 	return;
 }
 
 int add(char mName[], char mParent[], int mFirstday, int mLastday){
-	nodeMap[string(mName)] = nodeCnt;
+	nodeMap[string(mName)] = nodeMap.size();
 	int pIdx = nodeMap[string(mParent)];
-	nodes[nodeCnt] = { string(mParent), pIdx, nodes[pIdx].depth + 1, mFirstday, mLastday };
+	nodes[nodeMap.size() - 1] = { string(mParent), pIdx, nodes[pIdx].depth + 1, mFirstday, mLastday };
 	segmentTree.update(0, 1000000, 1, mFirstday, mLastday, 1);
-	return nodes[nodeCnt++].depth;
+	return nodes[nodeMap.size() - 1].depth;
 }
 
 int get_LCA(int x, int y) {
