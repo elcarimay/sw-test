@@ -41,17 +41,16 @@ struct SegmentTree
 	}
 }segmentTree;
 
+// LCA를 위한 정보, 부모정보, depth
+const int MAX = 120000 + 1; // add로 부터 생성될 수 있는 자식의 수 + 최초 조상
+
 struct Node
 {
 	string name;
 	int parent, depth, firstDay, lastDay;
-};
+}nodes[MAX];
 
 unordered_map<string, int> nodeMap;
-
-// LCA를 위한 정보, 부모정보, depth
-const int MAX = 120000 + 1; // add로 부터 생성될 수 있는 자식의 수 + 최초 조상
-Node nodes[MAX];
 
 void init(char mAncestor[], int mLastday){
 	nodeMap.clear();
