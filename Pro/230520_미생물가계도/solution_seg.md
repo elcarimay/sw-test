@@ -69,23 +69,40 @@ int add(char mName[], char mParent[], int mFirstday, int mLastday){
 	return nodes[nodeMap.size() - 1].depth;
 }
 
-int get_LCA(int x, int y) {
+//int get_LCA(int x, int y) {
+//	if (nodes[x].depth < nodes[y].depth) swap(x, y);
+//	while (nodes[x].depth != nodes[y].depth)
+//		x = nodes[x].parent;
+//	while (x != y) {
+//		x = nodes[x].parent;
+//		y = nodes[y].parent;
+//	}
+//	return x;
+//}
+//
+//// LCA
+//int distance(char mName1[], char mName2[]){
+//	int x = nodeMap[string(mName1)];
+//	int y = nodeMap[string(mName2)];
+//	int lca = get_LCA(x, y);
+//	return nodes[x].depth + nodes[y].depth - 2 * nodes[lca].depth;
+//}
+
+int distance(char mName1[], char mName2[]) {
+	int dist = 0;
+	int x = nodeMap[string(mName1)];
+	int y = nodeMap[string(mName2)];
 	if (nodes[x].depth < nodes[y].depth) swap(x, y);
-	while (nodes[x].depth != nodes[y].depth)
-		x = nodes[x].parent;
+	while (nodes[x].depth != nodes[y].depth) {
+		x = nodes[x].parent; dist++;
+	}
+	if (x == y) return dist;
 	while (x != y) {
 		x = nodes[x].parent;
 		y = nodes[y].parent;
+		dist += 2;
 	}
-	return x;
-}
-
-// LCA
-int distance(char mName1[], char mName2[]){
-	int x = nodeMap[string(mName1)];
-	int y = nodeMap[string(mName2)];
-	int lca = get_LCA(x, y);
-	return nodes[x].depth + nodes[y].depth - 2 * nodes[lca].depth;
+	return dist;
 }
 
 int count(int mDay){
