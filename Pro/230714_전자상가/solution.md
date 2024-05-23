@@ -8,7 +8,7 @@ struct Result {
 #include<algorithm>
 using namespace std;
 using pii = pair<int, int>;
-const int INF = 1e6;
+const int INF = 1e6; // 987654321로 하면 안됨
  
 int charge;             // 운송비
 vector<pii> A[2][3];    // A[w][t] = w창고, t타입 부품 리스트 {price, performance}
