@@ -7,8 +7,7 @@ struct Result {
 #include<vector>
 #include<algorithm>
 using namespace std;
-using pii = pair<int, int>;
-const int INF = 1e6; // 987654321로 하면 안됨
+const int INF = 1e6; // 주어진 한계가 있기때문에 987654321로 하면 안됨
  
 int charge;             // 운송비
 vector<pii> A[2][3];    // A[w][t] = w창고, t타입 부품 리스트 {price, performance}
@@ -31,9 +30,9 @@ Result order(int mBudget) {
         for (int i = 0; i < 2; i++)
             for (int j = 0; j < 3; j++) {
                 P[i][j] = INF;
-                for (pii p : A[i][j]) {
+                for (auto nx : A[i][j]) {
                     int price = p.first, performance = p.second;
-                    if (performance >= mid) P[i][j] = min(P[i][j], price);
+                    if (nx.mPerformance >= mid) p[i][j] = min(p[i][j], nx.mPrice);
                 }
             }
  
