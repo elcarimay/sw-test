@@ -99,7 +99,7 @@ bool putIfPossible(int(*puzzle)[3], int sr, int sc) {
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
 			if (puzzle[i][j] && used[sr + i][sc + j]) return false;
-
+	// 먼저 상기와 같이 못넣는지를 파악한 후에 아래와 같이 방문했는지를 체크해야 함.
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
 			if (puzzle[i][j]) used[sr + i][sc + j] = true;
