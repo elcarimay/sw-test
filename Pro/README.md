@@ -12,3 +12,4 @@ https://modoocode.com/224
 알고리즘 설명  
 Union-Find, Segment Tree  
 https://yoongrammer.tistory.com/102  
+https://cafe.naver.com/pssasa/1543?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InBzc2FzYSIsImFydGljbGVJZCI6MTU0MywiaXNzdWVkQXQiOjE3MTcyMjg2MzI4MzZ9.DoiSyloi4rN6aS2OWlXk3gFItnUMjR8VqdYfjiHw-CI  
