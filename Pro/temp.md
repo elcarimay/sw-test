@@ -1,77 +1,77 @@
 ```cpp
 #if 1
 #define _CRT_SECURE_NO_WARNINGS
-#include <cstdio>
+#include <vector>
 #include <string.h>
 #include <string>
-#include <vector>
 #include <algorithm>
 using namespace std;
+#define MAX_N 16
 
-#define INF 987654321
+int map[MAX_N][MAX_N];
+string s;
 
-vector<string> d;
-int map[8][8];
-int main() {
-	// char c[] = "(((0101)(0110)(1100)1)((0101)(0110)(1100)1)((0101)(0110)(1100)1)((0101)(0110)(1100)1))";
-	char c[] = "((1010)(1010)(1010)(1010))";
-	char deli[] = "()";
-	char* p = strtok(c, deli); // 0101
-	d.push_back(p);
-	int n = 8;
-	while (1) {
-		p = strtok(nullptr, deli); // 0110
-		if (p == NULL) break;
-		d.push_back(p);
+void decompressed(string::iterator& it, int r, int c, int size) {
+	char head = *(it++);
+	if (head == '0' || head == '1') {
+		for (int dr = 0;dr < size;dr++)
+			for (int dc = 0;dc < size;dc++)
+				map[r + dr][c + dc] = head - '0';
 	}
-	
-	int total_num = n * n; // 전체갯수
-	int num = d.size(); // 분류갯수
-	int lev = total_num / num / 4; // 단계
+	else {
+		int half = size / 2;
+		decompressed(it, r, c, half);
+		decompressed(it, r, c + half, half);
+		decompressed(it, r + half, c, half);
+		decompressed(it, r + half, c + half, half);
+	}
+}
 
+void compress(int a[MAX_N][MAX_N], int r, int c, int size, string& temp) {
 	int cnt = 0;
-	while (lev != 4) {
-		lev = total_num / num;
-		cnt++;
+	for (int i = r;i < r + size;i++)
+		for (int j = c;j < c + size;j++)
+			cnt += a[i][j];
+	if (cnt == 0) temp += "0";
+	else if (cnt == size*size) temp += "1";
+	else {
+		int half = size / 2;
+		temp += "(";
+		compress(a, r, c, half, temp);
+		compress(a, r, c + half, half, temp);
+		compress(a, r + half, c, half, temp);
+		compress(a, r + half, c + half, half, temp);
+		temp += ")";
 	}
 
-	vector<string> temp; 
+}
+
+int main() {
+	memset(map, 0, sizeof(map));
+	if (1) {
+		//char c[] = "((1010)(1110)(1011)(1111))";
+		char c[] = "(1010)";
+		s += "x";
+		for (int i = 1;i < strlen(c);i++) {
+			if (c[i] == '(') s += "x";
+			else if (c[i] == ')') continue;
+			else s += c[i];
+		}
+		
+		auto it = s.begin();
+		decompressed(it, 0, 0, MAX_N);
+	}
 	
-	temp.resize(d.size());
-	copy(d.begin(), d.end(), temp.begin());
-	d.resize(d.size() * 4);
-	cnt = 0; fill(d.begin(), d.end(), "\0");
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i].size() == 4)
-			for (int j = 0; j < 4; j++) {
-				d[cnt++].push_back(temp[i][j]);
-			}
-		else
-			for (int j = 0; j < 4; j++) {
-				d[cnt++].push_back(temp[i][0]);
-			}
+	if (0) {
+		string temp;
+		char ch[] = "xx0001x0x011100xxx00111000011";
+		temp = string(ch);
+		auto it = temp.begin();
+		decompressed(it, 0, 0, MAX_N);
 	}
 
-	temp.resize(d.size());
-	copy(d.begin(), d.end(), temp.begin());
-	d.resize(d.size() * 4);
-	cnt = 0; fill(d.begin(), d.end(), "\0");
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i].size() == 4)
-			for (int j = 0; j < 4; j++) {
-				d[cnt++].push_back(temp[i][j]);
-			}
-		else
-			for (int j = 0; j < 4; j++) {
-				d[cnt++].push_back(temp[i][0]);
-			}
-	}
-
-	for (int i = 0; i < 8; i++)
-		for (int j = 0; j < 8; j++)
-			map[i][j] = stoi(d[i + j]);
-
-
+	s = {};
+	compress(map, 0, 0, MAX_N, s);
 	return 0;
 }
 #endif
