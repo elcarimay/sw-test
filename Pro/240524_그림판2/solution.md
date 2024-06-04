@@ -85,7 +85,7 @@ int encode(char mCode[]){
 
 void makeDot(int mR, int mC, int mSize, int mColor){
 	bfs(mR, mC, mSize, mColor);
-	if (0) {
+	if (0) { // 하기 적용시 178 ms정도 나옴.
 		for (int i = max(0, mR - mSize + 1); i < min(N, mR + mSize); i++)
 			for (int j = max(0, mC - mSize + 1); j < min(N, mC + mSize); j++)
 				if (abs(i - mR) + abs(j - mC) < mSize) map[i][j] = mColor;
