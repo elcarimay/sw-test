@@ -62,7 +62,7 @@ void bfs(int r, int c, int d, int color) {
 			int nr = cur.r + dr[i];
 			int nc = cur.c + dc[i];
 			if (nr < 0 || nr > N - 1 || nc < 0 || nc > N - 1) continue;
-			if (d == INF && map[nr][nc] == color) continue;
+			if (d == INF && map[nr][nc] == bool(color)) continue;
 			if (!visit[nr][nc]) {
 				que[tail].r = nr, que[tail].c = nc, que[tail++].d = cur.d + 1;
 				map[nr][nc] = color, visit[nr][nc] = 1;
@@ -93,7 +93,7 @@ void makeDot(int mR, int mC, int mSize, int mColor){
 }
 
 void paint(int mR, int mC, int mColor){
-	if (map[mR][mC] == mColor) return;
+	if (map[mR][mC] == bool(mColor)) return;
 	bfs(mR, mC, INF, mColor);
 }
 
