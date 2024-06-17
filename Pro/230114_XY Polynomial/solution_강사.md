@@ -1,5 +1,5 @@
 ```cpp
-#if 1
+#if 1 // 강사코드에서 참조(&)를 없애고 수정함.
 #include<unordered_map>
 #include<string>
 using namespace std;
