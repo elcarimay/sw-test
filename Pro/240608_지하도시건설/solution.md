@@ -47,7 +47,8 @@ int dropBox(int mId, int mLen, int mExitA, int mExitB, int mCol){
     box[mId] = { mLen, mExitA, mExitB, mCol }; // 좌우 출구는 0, mLen-1에 위치
     auto& b = box[mId]; bool flag = 1; head = tail = 0;
     while (1) {
-        for (auto nx : v[currentRow]) {
+        for (int i = 0;i < v[currentRow].size();i++) {
+            auto& nx = v[currentRow][i];
             if (nx.col <= b.col + b.len - 1 && b.col + b.len - 1 < nx.col + nx.len) { // 오른쪽이 걸릴때
                 currentRow--; flag = 0; break;
             }
@@ -65,7 +66,8 @@ int dropBox(int mId, int mLen, int mExitA, int mExitB, int mCol){
         else break;
     }
     while (head == tail){
-        for (auto nx : v[currentRow + 1]) {
+        for (int i = 0;i < v[currentRow + 1].size();i++) {
+            auto& nx = v[currentRow + 1][i];
             if (nx.col <= b.col + b.len - 1 && b.col + b.len - 1 < nx.col + nx.len) { // 오른쪽이 걸릴때
                 connect[tail++] = nx.id; continue;
             }
@@ -84,8 +86,7 @@ int dropBox(int mId, int mLen, int mExitA, int mExitB, int mCol){
     } 
     
     for (int i = 0;i < tail;i++) { // 하부
-        int id = connect[i];
-        bool f1 = 0, f2= 0, f3 = 0, f4 = 0; // f1: 신규 ea, f2: 신규: eb, f3: 기존: ea, f4:기존 eb
+        int id = connect[i];  bool f1 = 0, f2= 0, f3 = 0, f4 = 0; // f1: 신규 ea, f2: 신규: eb, f3: 기존: ea, f4:기존 eb
         if (box[id].col <= b.col + b.ea && b.col + b.ea < box[id].col + box[id].len) {
             f1 = 1;
             if (b.col + b.ea == box[id].ea) f3 = 1;
@@ -109,7 +110,8 @@ int dropBox(int mId, int mLen, int mExitA, int mExitB, int mCol){
         if(f1 || f2) adj[mId].push_back({ id, 1 });
         if(f3 || f4) adj[id].push_back({ mId, 1 });
     }
-    for (auto nx : v[currentRow]) {
+    for (int i = 0;i < v[currentRow].size();i++) {
+        auto& nx = v[currentRow][i];
         if (nx.col + nx.len == b.col) {
             adj[nx.id].push_back({ mId, 1 });
             adj[mId].push_back({ nx.id, 1 });
