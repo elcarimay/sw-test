@@ -97,7 +97,6 @@ int distance(char mName1[], char mName2[]) {
 	while (nodes[x].depth != nodes[y].depth) {
 		x = nodes[x].parent; dist++;
 	}
-	if (x == y) return dist;
 	while (x != y) {
 		x = nodes[x].parent;
 		y = nodes[y].parent;
