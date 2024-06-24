@@ -6,7 +6,7 @@
 #include <queue>
 using namespace std;
 
-struct Day {
+struct Date {
 	int in, out;
 	bool operator<(const Day r)const {
 		return (in > r.in) ||
@@ -17,7 +17,7 @@ struct Day {
 vector<int> roomList[1003];
 struct RoomInfo {
 	int hash, price;
-	vector<Day> date;
+	vector<Date> date;
 }room[100003];
 
 struct Data {
