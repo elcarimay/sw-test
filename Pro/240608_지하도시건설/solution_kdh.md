@@ -21,9 +21,6 @@ int H, W;
 struct Data
 {
     int to, cost;
-    bool operator<(const Data& r)const {
-        return cost > r.cost;
-    }
 };
 
 vector<Data> adj[10001];
