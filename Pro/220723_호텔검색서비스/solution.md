@@ -8,7 +8,7 @@ using namespace std;
 
 struct Date {
 	int in, out;
-	bool operator<(const Day r)const {
+	bool operator<(const Date r)const {
 		return (in > r.in) ||
 			(in == r.in && out > r.out);
 	}
