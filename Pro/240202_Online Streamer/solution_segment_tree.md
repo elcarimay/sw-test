@@ -46,7 +46,7 @@ struct SegmentTree
 	// node: 세그먼트 트리 시작 node index
 	// left, right: 구하고자하는 구간의 시작/끝
 	int sum_query(int start, int end, int node, int left, int right) {
-		if (left > end || right < start) return 0;
+		if (end < left || right < start) return 0;
 		if (left <= start && end <= right) return tree[node].sum;
 		int mid = (start + end) / 2;
 		return sum_query(start, mid, node * 2, left, right) + sum_query(mid + 1, end, node * 2 + 1, left, right);
