@@ -1,3 +1,16 @@
+# 전자기학
+https://slidesplayer.org/slide/16723186/  
+
+# 전계와 전속밀도
+https://blog.naver.com/beaver1659/221885331061  
+
+https://search.naver.com/search.naver?ssc=tab.image.all&where=image&sm=tab_jum&query=%EC%9C%A0%EC%A0%84%EC%B2%B4%EB%82%B4+%EC%A0%84%EA%B3%84  
+https://blog.naver.com/beaver1659/221885331061  
+https://blog.naver.com/beaver1659/221885331061  
+https://blog.naver.com/baby767/222874630549  
+https://blog.naver.com/kjh012947/223205848871  
+https://blog.naver.com/rlawodnjs090/222800543817  
+
 # 문자열  
 https://codechacha.com/ko/cpp-string-to-int/  
 
