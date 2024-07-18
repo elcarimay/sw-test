@@ -9,6 +9,7 @@ using namespace std;
 
 struct Tra {
 	int s, e, i;
+	bool state;
 }trr[205];
 
 unordered_map<int, int> trMap; // mid, id
@@ -16,9 +17,8 @@ unordered_map<int, int> stMap; // station number, id
 int stCnt;
 
 int get_stid(int num) {
-	int id = stMap.find(num)->second;
-	if (id == stMap.end()->second) return ++stCnt;
-	else return id;
+	if (stMap.find(num) == stMap.end()) return stCnt++;
+	else return stMap.find(num)->second;
 }
 
 struct Edge
@@ -35,13 +35,13 @@ void init(int N, int K, int mId[], int sId[], int eId[], int mInterval[]) {
 	for (int i = 0; i < 200; i++) adj[i].clear();
 	for (int i = 0; i < N; i++) st[i].clear();
 	for (int i = 0; i < K; i++) {
-		trr[trCnt] = { sId[i], eId[i], mInterval[i] };
+		trr[trCnt] = { sId[i], eId[i], mInterval[i], 1 };
 		trMap[mId[i]] = trCnt;
 		for (int j = 0; j < trCnt; j++) {
 			flag = 0;
 			for (int ii = trr[j].s; ii <= trr[j].e; ii = ii + trr[j].i) {
 				int id = get_stid(ii);
-				stMap[id] = j, st[id].insert(trCnt);
+				stMap[ii] = id, st[id].insert(j);
 				for (int jj = trr[trCnt].s; jj <= trr[trCnt].e; jj = jj + trr[trCnt].i) {
 					if (ii == jj) { flag = 1; break; }
 				}
@@ -53,18 +53,22 @@ void init(int N, int K, int mId[], int sId[], int eId[], int mInterval[]) {
 			}
 		}
 		for (int ii = trr[trCnt].s; ii <= trr[trCnt].e; ii = ii + trr[trCnt].i) {
-			st[get_stid(ii)].insert(trCnt);
+			int id = get_stid(ii);
+			stMap[ii] = id, st[id].insert(trCnt);
+		}
 		trCnt++;
 	}
 }
 
 void add(int mId, int sId, int eId, int mInterval) {
-	trr[trCnt] = { sId, eId, mInterval };
-	trMap[mId[i]] = trCnt;
+	trr[trCnt] = { sId, eId, mInterval, 1};
+	trMap[mId] = trCnt;
 	for (int j = 0; j < trCnt; j++) {
 		flag = 0;
 		for (int ii = trr[j].s; ii <= trr[j].e; ii = ii + trr[j].i) {
-			st[get_stid(ii)].insert(j);
+			if (!trr[j].state) continue;
+			int id = get_stid(ii);
+			stMap[ii] = id, st[id].insert(j);
 			for (int jj = trr[trCnt].s; jj <= trr[trCnt].e; jj = jj + trr[trCnt].i) {
 				if (ii == jj) { flag = 1; break; }
 			}
@@ -76,7 +80,9 @@ void add(int mId, int sId, int eId, int mInterval) {
 		}
 	}
 	for (int ii = trr[trCnt].s; ii <= trr[trCnt].e; ii = ii + trr[trCnt].i) {
-		st[get_stid(ii)].insert(trCnt);
+		int id = get_stid(ii);
+		stMap[ii] = id, st[id].insert(trCnt);
+	}
 	trCnt++;
 }
 
@@ -85,12 +91,14 @@ void remove(int mId) {
 	for (Edge nx : adj[id])
 		for (int i = 0; i < adj[nx.to].size(); i++)
 			if (adj[nx.to][i].to == id) adj[nx.to].erase(adj[nx.to].begin() + i);
-	for (auto nx : st) {
-		if(nx)
-	}
 	adj[id].clear();
-	trr[id] = {};
 	trMap.erase(mId);
+	for (int i = trr[id].s; i <= trr[id].e; i = i + trr[id].i) {
+		int id2 = stMap[i];
+		if (st[id2].find(id) != st[id2].end())
+			st[id2].erase(id);
+	}
+	trr[id].state = 0;
 }
 
 Edge que[205];
@@ -115,7 +123,14 @@ void bfs(int s) {
 
 int calculate(int sId, int eId) {
 	int ret = INF;
-	
+	if (stMap.find(sId) == stMap.end())	return -1;
+	if (stMap.find(eId) == stMap.end())	return -1;
+	int s = stMap[sId], e = stMap[eId];
+	for (int nx : st[s]) {
+		bfs(nx);
+		for (int nx2 : st[e])
+			ret = min(ret, cost[nx2]);
+	}
 	return ret == INF ? -1 : ret;
 }
 ```
