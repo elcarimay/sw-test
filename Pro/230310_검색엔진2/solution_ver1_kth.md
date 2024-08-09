@@ -1,5 +1,5 @@
 ```cpp
-#if 0 // 173 ms
+// 173 ms
 /*
 * 접두사별 문자열 리스트업
 * 많은 양의 문자열 비교가 필요하여
@@ -76,5 +76,4 @@ void rank(char mPrefix[], int mRank, char mReturnStr[]) {
 	partial_sort(pre.begin(), pre.begin() + mRank, pre.end(), comp);
 	strcpy(mReturnStr, pre[mRank - 1].c_str());
 }
-#endif
 ```
