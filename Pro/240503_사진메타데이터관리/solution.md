@@ -13,11 +13,11 @@ map[key].push_back(value);
 
 2. 정렬을 위한 Time 값 처리
 year  1x12x31x24x60x60	= 32140800
-month 1x31x24x60x60		= 2678400
-day   1x24x60x60		= 86400
-hh	  1x6x60			= 3600
-mm	  1x60				= 60
-ss	  1					= 1
+month 1x31x24x60x60     = 2678400
+day   1x24x60x60        = 86400
+hh    1x6x60            = 3600
+mm    1x60              = 60
+ss    1                 = 1
 
 위의값을 다 더해서 사용, 자료형은 일단 unsigned long long으로 사용.
 = > data와 time으로 분기해서 사용하면 if문 2개를 사용해야 하기때문에 느려짐.
