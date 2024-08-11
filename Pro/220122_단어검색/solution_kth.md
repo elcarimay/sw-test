@@ -1,5 +1,7 @@
 ```cpp
 #if 1
+// 앞자리 두개만으로 hash를 만들었고 나머지를 strcmp로 비교함.
+// 와일드카드 문자는 최대3개이므로 상기 hash를 3개로 만들어야 할거 같은데 이유 모르겠음
 #define _CRT_SECURE_NO_WARNINGS
 #include <string.h>
 #include <vector>
