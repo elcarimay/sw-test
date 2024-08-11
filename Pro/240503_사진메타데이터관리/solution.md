@@ -1,5 +1,6 @@
 ```cpp
 #if 1 // 230 ms
+// year, month, day, hh, mm, ss로 hash키를 만들고 unordermap<string, vector<int>> 로 hash chainning하였음.
 /*
 1. Chained Hash Table 생성
 unordered_map<string, int> map;
