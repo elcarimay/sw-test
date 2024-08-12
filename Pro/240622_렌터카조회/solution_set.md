@@ -1,6 +1,7 @@
 ```cpp
 #if 1 // 500 ms
 // color, seat, type, size로 hash키를 만들고 set으로 chainning하였음
+// set<pii> S[hash]에다 price, carid를 입력
 #include<vector>
 #include<iostream>
 #include<queue>
