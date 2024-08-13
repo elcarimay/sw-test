@@ -1,4 +1,10 @@
 ```cpp
+// row: (seat - 1) / W, col = (seat - 1) % W
+// 초기에 행(row[r]), 열(col[c]), 좌상대각(ltop[r-c+W]), 우상대각(rtop[r+c])별 좌석들을 set으로 저장
+// lower_bound 통해 직전좌석, 직후좌석 구할 수 있음
+// 좌석번호 차이가 delta라면 거리는
+// row: sub, col: sub/W, ltop: sub/(W+1), rtop: sub/(W-1)
+// 거리, 방향이 낮은 순으로 우선순위를 가져가고 선택하면 모든 방향에서 제거
 #if 1 // 186 ms
 #include<set>
 using namespace std;
