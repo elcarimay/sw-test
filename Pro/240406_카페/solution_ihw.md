@@ -94,9 +94,7 @@ void run(int mTime) {
 }
 
 void init(int N, int mCookingTimeList[]) {
-	::N = N;
-	ocnt = 1;
-	numorder = 0;
+	::N = N, ocnt = numorder = 0;
 
 	// kitchen setting
 	for (int i = 1; i <= N; ++i) {
@@ -114,7 +112,7 @@ int order(int mTime, int mID, int M, int mDishes[]) {
 	run(mTime);
 
 	// add order
-	Order& order = orders[ocnt];
+	Order& order = orders[++ocnt];
 	order.t = mTime;
 	order.mID = mID;
 	order.m = M;
@@ -132,7 +130,6 @@ int order(int mTime, int mID, int M, int mDishes[]) {
 		kit.queue[kit.qe++] = ocnt;
 		if (kit.t == 0) kit.t = mTime + kit.cooktime;
 	}
-	++ocnt;
 	return ++numorder;
 }
 
