@@ -1,6 +1,8 @@
 ```cpp
 #if 1
 // 관리파견도시 선정: linear search
+#if 1
+// 관리파견도시 선정: linear search
 #include <queue>
 #include <math.h>
 #include <string.h>
@@ -43,29 +45,30 @@ void update(int tStamp) {
         switch (cur.type) {
         case EXPECT:
             expected[cur.cid] += cur.cnt;
-            pq.push({ SEND, cur.T });
+            pq.push({ SEND, cur.T }); break;
         case ADD:
-            storage[cur.cid] += cur.cnt;
+            storage[cur.cid] += cur.cnt; break;
         case ARRIVE:
             pq.push({ BACK, cur.T + cur.cid, cur.cid, storage[cur.cid] });
             expected[cur.cid] -= storage[cur.cid];
-            storage[cur.cid] = 0;
+            storage[cur.cid] = 0; break;
         case BACK:
             waitWorker++;
             used[cur.cid] = 0;
             storage[0] += cur.cnt;
-            pq.push({ SEND, cur.T });
+            pq.push({ SEND, cur.T }); break;
         case SEND:
             while (waitWorker) {
                 int cid = 0, maxCnt = 0;
                 for (int i = 1; i < N; i++)
-                    if (!used[i])
-                        cid = i, maxCnt = max(maxCnt, expected[i]);
+                    if (!used[i] && maxCnt < expected[i])
+                        cid = i, maxCnt = expected[i];
                 if (!cid) break;
                 used[cid]++;
                 waitWorker--;
                 pq.push({ ARRIVE, cur.T + cid, cid });
             }
+            break;
         }
     }
 }
@@ -85,5 +88,6 @@ int check(int tStamp) {
 }
 
 void destroy() {}
+#endif
 #endif
 ```
