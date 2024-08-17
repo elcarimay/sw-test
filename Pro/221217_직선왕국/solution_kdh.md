@@ -1,8 +1,6 @@
 ```cpp
 #if 1
 // 관리파견도시 선정: linear search
-#if 1
-// 관리파견도시 선정: linear search
 #include <queue>
 #include <math.h>
 #include <string.h>
@@ -88,6 +86,5 @@ int check(int tStamp) {
 }
 
 void destroy() {}
-#endif
 #endif
 ```
