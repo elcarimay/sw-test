@@ -1,5 +1,5 @@
 ```cpp
-#if 1
+#if 1 // 90 ms
 /*Overview
 관리파견도시 선정: linear search
 Type별 우선순위
