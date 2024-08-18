@@ -9,7 +9,7 @@ using namespace std;
 const int LM = 203;
 
 int N, waitWorker, storage[LM], expected[LM];
-bool used[LM];
+bool used[LM]; // 관리가 존재하는지 여부
 
 enum TYPE {
     ADD, // 곡물량 추가
