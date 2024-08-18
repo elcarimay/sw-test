@@ -1,6 +1,26 @@
 ```cpp
 #if 1
-// 관리파견도시 선정: linear search
+/*Overview
+관리파견도시 선정: linear search
+Type별 우선순위
+Expect / Back > Send > Add > Arrive
+Expect / Back → Send → Arrive → Back → Send
+Expect: 도착도시에 도착하지 않아도 기대해야 하기 때문에 도착도시 시간만큼 빼줌
+
+Expect:
+    expected 배열에 기대값입력후 pq(Send, 현재시간)
+Add:(시간필요 x)
+    storage[도착마을] += 곡물량
+Arrive: (곡물량 필요x)
+    pq(Back, 현재시간 + 도착마을시간, 도착마을, storage[도착마을]
+    expected 배열에서 제거
+Back:
+    관리자증가, used[도착마을] = false, storage[0]에 더하기
+    pq(Send, 현재시간)
+Send: (곡물량 필요x)
+    보낼때가 있는지 검색해서 보내고 보냈으면 관리자감소
+    pq(Arrive, 현재시간 + 도착마을, 도착마을)
+*/
 #include <queue>
 #include <math.h>
 #include <string.h>
@@ -9,7 +29,7 @@ using namespace std;
 const int LM = 203;
 
 int N, waitWorker, storage[LM], expected[LM];
-bool used[LM]; // 관리가 존재하는지 여부
+bool used[LM]; // 관리가 있는지 여부
 
 enum TYPE {
     ADD, // 곡물량 추가
