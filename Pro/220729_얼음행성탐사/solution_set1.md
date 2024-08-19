@@ -1,5 +1,5 @@
 ```cpp
-#if 0 // 105 ms
+#if 1 // 105 ms
 /*
 * set, lower_bound
 * 목표 위치 set에 등록 후, 그 위치 만나면 종료, set에서 삭제
