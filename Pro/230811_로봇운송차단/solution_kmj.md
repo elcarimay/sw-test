@@ -1,5 +1,5 @@
 ```cpp
-#if 0
+#if 1
 #include <queue>
 #include <unordered_map>
 #define MAX_N 20
