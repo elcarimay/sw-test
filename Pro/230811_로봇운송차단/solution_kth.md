@@ -83,7 +83,7 @@ void push(int r, int c) {
     visit[r][c] = vcnt;
 }
 
-int bfs(int dir) {
+int bfs(int dir) { // 도착지점부터 시작해서 bfs탐색후 전체 가능수에서 뺌
     vcnt++;
     head = tail = 0;
     for (int i = 0; i < N; i++) { // mapSize에 따라 시작위치를 우큐에 넣음
