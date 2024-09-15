@@ -1,6 +1,6 @@
 ```cpp
 #include <iostream>
-#include<string.h>
+#include <string.h>
 #include <algorithm>
 #include <vector>
 #include <unordered_map>
