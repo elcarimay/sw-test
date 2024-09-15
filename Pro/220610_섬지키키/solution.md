@@ -9,67 +9,42 @@
 using namespace std;
 using pii = pair<int, int>; // r, c
 
-int map[20][20];
-int cmap[20][20];
+int map[20][20], cmap[20][20];
 bool visit[20][20];
 int N;
 priority_queue<int> pq;
 
-void init(int N, int mMap[20][20]){
+void init(int N, int mMap[20][20]) {
 	::N = N;
-	for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
+	for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) 
 		map[i][j] = mMap[i][j];
-	}
 }
 
-int numberOfCandidate(int M, int mStructure[5]){
+int numberOfCandidate(int M, int mStructure[5]) {
 	if (M == 1) return N * N;
-	int ret = 0, value = 0;
+	int ret = 0, value = 0, value_rev = 0, rev = 0;
+	for (int k = 0; k < M; k++)
+		if (mStructure[k] == mStructure[M - 1 - k]) rev++;
+
 	for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
-		if (i == 4 && j == 2) {
-			i = i;
-		}
-		int same = 1, sym = 0;
-		for (int k = 0; k < M; k++) { // hor
+		int h = 1, hr = 1, v = 1, vr = 1;
+		for (int k = 0; k < M; k++) {
 			if (k == 0) {
-				if (j + k == N) break;
-				value = map[i][j + k] + mStructure[k];
+				h = hr = v = vr = 1;
+				value = map[i][j] + mStructure[0]; value_rev = map[i][j] + mStructure[M - 1];
 			}
-			else if(value == (map[i][j + k] + mStructure[k])) same++;
-			if (mStructure[k] == mStructure[M - 1 - k]) sym++;
-		}
-		if (same == M) ret++;
-		same = 1;
-		if (sym != M) {
-			for (int k = 0; k < M; k++) { // hor,reverse
-				if (j + k == N) break;
-				if (k == 0) {
-					value = map[i][j + k] + mStructure[M - 1 - k];
+			else {
+				if (j < N - M + 1) {
+					if (value == (map[i][j + k] + mStructure[k])) h++;
+					if (rev != M && value_rev == (map[i][j + k] + mStructure[M - 1 - k])) hr++;
 				}
-				else if (value == (map[i][j + k] + mStructure[M - 1 - k])) same++;
-			}
-			if (same == M) ret++;
-		}
-		same = 1;
-		for (int k = 0; k < M; k++) { // ver
-			if (i + k == N) break;
-			if (k == 0) {
-				value = map[i + k][j] + mStructure[k];
-			}
-			else if (value == (map[i + k][j] + mStructure[k])) same++;
-		}
-		if (same == M) ret++;
-		same = 1;
-		if (sym != M) {
-			for (int k = 0; k < M; k++) { // ver,reverse
-				if (i + k == N) break;
-				if (k == 0) {
-					value = map[i + k][j] + mStructure[M - 1 - k];
+				if (i < N - M + 1) {
+					if (value == (map[i + k][j] + mStructure[k])) v++;
+					if (rev != M && value_rev == (map[i + k][j] + mStructure[M - 1 - k])) vr++;
 				}
-				else if (value == (map[i + k][j] + mStructure[M - 1 - k])) same++;
 			}
-			if (same == M) ret++;
 		}
+		if (h == M) ret++; if (hr == M) ret++; if (v == M) ret++; if (vr == M) ret++;
 	}
 	return ret;
 }
@@ -98,12 +73,7 @@ int bfs(int r, int c, int level) {
 }
 
 void make_map(int r, int c, int M, int mSt[], int type) { // type 1:hor,2:hor_reverse,3:ver,4:ver_reverse
-	if (r == 0 && c == 2) {
-		r = r;
-	}
-	for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
-		cmap[i][j] = map[i][j];
-	}
+	for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) cmap[i][j] = map[i][j];
 	if (M == 1) {
 		cmap[r][c] = map[r][c] + mSt[0]; return;
 	}
@@ -112,109 +82,75 @@ void make_map(int r, int c, int M, int mSt[], int type) { // type 1:hor,2:hor_re
 	else if (type == 3) for (int i = 0; i < M; i++) cmap[r + i][c] += mSt[i];
 	else for (int i = 0; i < M; i++) cmap[r + i][c] += mSt[M - 1 - i];
 }
-int total = 0;
-int maxArea(int M, int mStructure[5], int mSeaLevel){
+
+void cal(int level) {
+	memset(visit, 0, sizeof(visit));
+	int total = 0;
+	for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
+		if (i != 0 && j != 0 && i != N - 1 && j != N - 1) continue;
+		if (visit[i][j] || cmap[i][j] >= level) continue;
+		total += bfs(i, j, level);
+	}
+	pq.push(N * N - total);
+}
+
+int maxArea(int M, int mStructure[5], int mSeaLevel) {
 	while (!pq.empty()) pq.pop();
 	if (M == 1) {
 		for (int ii = 0; ii < N; ii++) for (int jj = 0; jj < N; jj++) {
 			if (map[ii][jj] >= mSeaLevel) continue;
 			memset(visit, 0, sizeof(visit));
 			make_map(ii, jj, M, mStructure, 1);
-			total = 0;
+			int total = 0;
 			for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
 				if (i != 0 && j != 0 && i != N - 1 && j != N - 1) continue;
 				if (visit[i][j] || cmap[i][j] >= mSeaLevel) continue;
 				total += bfs(i, j, mSeaLevel);
 			}
-			pq.push(N*N - total);
+			pq.push(N * N - total);
 		}
-		return pq.top();
+		return pq.empty() ? -1 : pq.top();
 	}
-	int value = 0;
-	for (int iii = 0; iii < N; iii++) for (int jjj = 0; jjj < N; jjj++) {
-		int same = 1, sym = 0;
+	int ret = 0, value = 0, value_rev = 0, rev = 0;
+	for (int k = 0; k < M; k++)
+		if (mStructure[k] == mStructure[M - 1 - k]) rev++;
+
+	for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
+		int h = 1, hr = 1, v = 1, vr = 1;
 		for (int k = 0; k < M; k++) { // hor
 			if (k == 0) {
-				if (jjj + k == N) break;
-				value = map[iii][jjj + k] + mStructure[k];
+				h = hr = v = vr = 1;
+				value = map[i][j] + mStructure[0];
+				value_rev = map[i][j] + mStructure[M - 1];
 			}
-			else if (value == (map[iii][jjj + k] + mStructure[k])) same++;
-			if (mStructure[k] == mStructure[M - 1 - k]) sym++;
-		}
-		if (same == M) {
-			make_map(iii, jjj, M, mStructure, 1);
-			memset(visit, 0, sizeof(visit));
-			total = 0;
-			for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
-				if (i != 0 && j != 0 && i != N - 1 && j != N - 1) continue;
-				if (visit[i][j] || cmap[i][j] >= mSeaLevel) continue;
-				total += bfs(i, j, mSeaLevel);
-			}
-			pq.push(N * N - total);
-		}
-		same = 1;
-		if (sym != M) {
-			for (int k = 0; k < M; k++) { // hor, reverse
-				if (jjj + k == N) break;
-				if (k == 0) {
-					value = map[iii][jjj + k] + mStructure[M - 1 - k];
+			else {
+				if (j < N - M + 1) {
+					if (value == (map[i][j + k] + mStructure[k])) h++;
+					if (rev != M && value_rev == (map[i][j + k] + mStructure[M - 1 - k])) hr++;
 				}
-				else if (value == (map[iii][jjj + k] + mStructure[M - 1 - k])) same++;
-			}
-			if (same == M) {
-				make_map(iii, jjj, M, mStructure, 2);
-				memset(visit, 0, sizeof(visit));
-				total = 0;
-				for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
-					if (i != 0 && j != 0 && i != N - 1 && j != N - 1) continue;
-					if (visit[i][j] || cmap[i][j] >= mSeaLevel) continue;
-					total += bfs(i, j, mSeaLevel);
+				if (i < N - M + 1) {
+					if (value == (map[i + k][j] + mStructure[k])) v++;
+					if (rev != M && value_rev == (map[i + k][j] + mStructure[M - 1 - k])) vr++;
 				}
-				pq.push(N * N - total);
 			}
 		}
-		
-		same = 1;
-		for (int k = 0; k < M; k++) { // ver
-			if (iii + k == N) break;
-			if (k == 0) {
-				value = map[iii + k][jjj] + mStructure[k];
-			}
-			else if (value == (map[iii + k][jjj] + mStructure[k])) same++;
+		if (h == M) {
+			make_map(i, j, M, mStructure, 1);
+			cal(mSeaLevel);
 		}
-		if (same == M) {
-			make_map(iii, jjj, M, mStructure, 3);
-			memset(visit, 0, sizeof(visit));
-			total = 0;
-			for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
-				if (i != 0 && j != 0 && i != N - 1 && j != N - 1) continue;
-				if (visit[i][j] || cmap[i][j] >= mSeaLevel) continue;
-				total += bfs(i, j, mSeaLevel);
-			}
-			pq.push(N * N - total);
+		if (hr == M) {
+			make_map(i, j, M, mStructure, 2);
+			cal(mSeaLevel);
 		}
-		same = 1;
-		if (sym != M) {
-			for (int k = 0; k < M; k++) { // ver, reverse
-				if (iii + k == N) break;
-				if (k == 0) {
-					value = map[iii + k][jjj] + mStructure[M - 1 - k];
-				}
-				else if (value == (map[iii + k][jjj] + mStructure[M - 1 - k])) same++;
-			}
-			if (same == M) {
-				make_map(iii, jjj, M, mStructure, 4);
-				memset(visit, 0, sizeof(visit));
-				total = 0;
-				for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) {
-					if (i != 0 && j != 0 && i != N - 1 && j != N - 1) continue;
-					if (visit[i][j] || cmap[i][j] >= mSeaLevel) continue;
-					total += bfs(i, j, mSeaLevel);
-				}
-				pq.push(N* N - total);
-			}
+		if (v == M) {
+			make_map(i, j, M, mStructure, 3);
+			cal(mSeaLevel);
+		}
+		if (vr == M) {
+			make_map(i, j, M, mStructure, 4);
+			cal(mSeaLevel);
 		}
 	}
-	return pq.empty() ? -1: pq.top();
+	return pq.empty() ? -1 : pq.top();
 }
 ```
