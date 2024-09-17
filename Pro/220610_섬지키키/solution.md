@@ -5,11 +5,8 @@
    3. MaxArea -> bfs할때 visit에 방문해야할 외곽땅들만 que에 넣고 진행
 */
 #include <iostream>
-#include <string.h>
 #include <algorithm>
-#include <vector>
 #include <unordered_map>
-#include <set>
 #include <queue>
 using namespace std;
 using pii = pair<int, int>; // r, c
