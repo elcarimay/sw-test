@@ -4,12 +4,6 @@
    2. Candiate -> 땅에 반대되는 hash key의 사이즈를 반환
    3. MaxArea -> bfs할때 visit에 방문해야할 외곽땅들만 que에 넣고 진행
 */
-
-/* 1. 맨처음 init에 모든 위치에서 땅특성 hash key생성
-   2. Candiate -> 땅에 반대되는 hash key의 사이즈를 반환
-   3. MaxArea -> bfs할때 visit에 방문해야할 외곽땅들만 que에 넣고 진행
-*/
-
 #include <iostream>
 #include <string.h>
 #include <algorithm>
