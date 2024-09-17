@@ -4,10 +4,12 @@
    2. Candiate -> 땅에 반대되는 hash key의 사이즈를 반환
    3. MaxArea -> bfs할때 visit에 방문해야할 외곽땅들만 que에 넣고 진행
 */
+
 #include <iostream>
 #include <algorithm>
 #include <unordered_map>
 #include <queue>
+#include <vector>
 using namespace std;
 using pii = pair<int, int>; // r, c
 
@@ -20,14 +22,21 @@ int N;
 priority_queue<int> pq;
 unordered_map<int, vector<Data>> hmap;				// vector<Data> hmap[60000]
 
-int getKey(vector<int>& v, bool rev = 0) {
+int getKey(vector<int>& v, bool rev = 0) {				// 가장 작은 값을 1로 표현
+	int minv = *min_element(v.begin(), v.end()) - 1;
 	int key = 0;
-	if (rev == 0)
-		for (int i = 1; i < v.size(); i++)
-			key = key * 10 + v[i] - v[i - 1] + 5;
-	else
-		for (int i = v.size() - 2; i >= 0; i--)
-			key = key * 10 + v[i] - v[i + 1] + 5;
+	for (int i = 0; i < v.size(); i++) {
+		if (rev == 0) key = key * 10 + v[i] - minv;
+		else key = key * 10 + v[v.size() - i - 1] - minv;
+	}
+	return key;
+}
+
+int getKey2(int M, int s[]) {					// 구조물을 설치할 수 있는 땅의 고도를 가장 작은 값 1로 표현
+	int maxv = *max_element(s, s + M) + 1;
+	int key = 0;
+	for (int i = 0; i < M; i++)
+		key = key * 10 + maxv - s[i];
 	return key;
 }
 
@@ -54,13 +63,6 @@ void init(int N, int mMap[20][20]) {
 			}
 		}
 	}
-}
-
-int getKey2(int M, int s[]) {					// 구조물을 설치할 수 있는 땅의 고도를 가장 작은 값 1로 표현
-	int key = 0;
-	for (int i = 1; i < M; i++)
-		key = key * 10 + s[i - 1] - s[i] + 5;
-	return key;
 }
 
 int numberOfCandidate(int M, int mStructure[5]) {
