@@ -5,6 +5,11 @@
    3. MaxArea -> bfs할때 visit에 방문해야할 외곽땅들만 que에 넣고 진행
 */
 
+/* 1. 맨처음 init에 모든 위치에서 땅특성 hash key생성
+   2. Candiate -> 땅에 반대되는 hash key의 사이즈를 반환
+   3. MaxArea -> bfs할때 visit에 방문해야할 외곽땅들만 que에 넣고 진행
+*/
+
 #include <iostream>
 #include <string.h>
 #include <algorithm>
@@ -22,7 +27,7 @@ struct Data {
 int map[20][20], cmap[20][20];
 int N;
 priority_queue<int> pq;
-vector<Data> hmap[10000];
+unordered_map<int, vector<Data>> hmap;				// vector<Data> hmap[60000]
 
 int getKey(vector<int>& v, bool rev = 0) {
 	int key = 0;
@@ -37,7 +42,7 @@ int getKey(vector<int>& v, bool rev = 0) {
 
 void init(int N, int mMap[20][20]) {
 	::N = N;
-	for (auto& v : hmap) v.clear();
+	hmap.clear();
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
 			map[i][j] = mMap[i][j];
