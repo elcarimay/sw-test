@@ -1,4 +1,6 @@
 ```cpp
+// 따로 대기열 배열을 만들지 않고 valid로 체크
+// 3자리까지 hash로 등록하고 이후 3자리를 검색해서 같은지 확인하여 처리
 #define _CRT_SECURE_NO_WARNINGS
 #include <vector>
 #include <string.h>
