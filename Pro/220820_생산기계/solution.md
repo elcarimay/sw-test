@@ -63,8 +63,7 @@ bool check(int m, int M) {
 }
 
 int produce(int M) {
-	int s = 3, e = 1200 * 3000;
-	int m = 0;
+	int s = 3, e = 1200 * 3000, m = 0;
 	while (s <= e) {
 		m = (s + e) / 2;
 		if (check(m, M)) e = m - 1;
