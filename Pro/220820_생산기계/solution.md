@@ -1,4 +1,7 @@
 ```cpp
+/*
+	Parametric Search, 지울때 pq 및 unordered_map에 있는것도 같이 지워야 함
+*/
 #include <vector>
 #include <iostream>
 #include <string.h>
