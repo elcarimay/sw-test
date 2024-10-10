@@ -101,9 +101,8 @@ Result reserveSeats(int mID, int K){
 }
 
 Result cancelReservation(int mID){
-	Result res = { 0,0 };
 	mid = mID; tid = tID[mID];
-	res = { tid, 0 };
+	Result res = { tid, 0 };
 
 	for(int i = 0; i < 10; i++)
 		for (int j = 0; j < 10; j++)
