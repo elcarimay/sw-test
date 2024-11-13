@@ -1,120 +1,119 @@
 ```cpp
-#include <string>
-#include <unordered_map>
-#include <queue>
-using namespace std;
-
+#if 1
 #define MAX_BCNT 100
 #define MAX_NAME 10
-#define MAX_ADD 15000
+#define MAXB 15000
+#include <unordered_map>
+#include <vector>
+#include <queue>
+#include <iostream>
+#include <algorithm>
+using namespace std;
 
-struct Bacteria
-{
-	int mHalfTime, mCnt;
-}bacteria[MAX_BCNT];
-int bacCnt;
-unordered_map<string, int> bacMap;
+struct Bacteria {
+	int halfTime, cnt;
+}bacteria[MAXB];
 
-struct Sample
-{
-	int bIdx, mCnt, mLife, addTime;
-}samples[MAX_ADD];
+unordered_map<string, int> idmap;
+int idmapCnt;
+
+struct Sample {
+	int bIdx, cnt, life, addTime;
+}samples[MAXB];
 int sIdx;
 
-int curTime, totalCnt;
+int cTime, totalCnt;
 
-struct TimeData {
-	int mHalfTime, sIdx;
+struct TimeData { // 반감기가 왔을때 갯수 축소를 위해 우선순위 정렬 필요
+	int halfTime, sIdx;
 	bool operator<(const TimeData& r)const {
-		return mHalfTime > r.mHalfTime;
+		return halfTime > r.halfTime;
 	}
 };
 priority_queue<TimeData> timePQ;
 
-struct LifeData {
-	int mLife, addTime, sIdx;
+struct LifeData { // takeout시 생명력이 가장 작은 순서 정렬 필요
+	int life, addTime, sIdx;
 	bool operator<(const LifeData& r)const {
-		return (mLife > r.mLife) ||
-			(mLife == r.mLife && addTime > r.addTime);
+		if (life != r.life) return life > r.life;
+		return addTime > r.addTime;
 	}
 };
 priority_queue<LifeData> lifePQ;
 
-void update(int curTime) {
-	while (!timePQ.empty() && timePQ.top().mHalfTime == curTime) {
+void update(int cTime) {
+	while (!timePQ.empty() && timePQ.top().halfTime == cTime) {
 		int sIdx = timePQ.top().sIdx; timePQ.pop();
 		auto& s = samples[sIdx];
-		s.mLife /= 2;
-		
+		s.life /= 2;
 		int bIdx = s.bIdx;
-		if (s.mLife < 10) {
-			bacteria[bIdx].mCnt -= s.mCnt;
-			s.mCnt = 0;
-			totalCnt -= s.mCnt;
+		if (s.life < 10) {
+			bacteria[bIdx].cnt -= s.cnt;
+			s.cnt = 0;
+			totalCnt -= s.cnt;
 		}
 		else {
-			timePQ.push({ curTime + bacteria[bIdx].mHalfTime, sIdx });
-			lifePQ.push({ s.mLife, s.addTime, sIdx });
+			timePQ.push({ cTime + bacteria[bIdx].halfTime, sIdx });
+			lifePQ.push({ s.life, s.addTime, sIdx });
 		}
 	}
 }
 
-int get_bacIndex(const char bName[]) {
-	int bIdx;
-	auto iter = bacMap.find(bName);
-	if (iter == bacMap.end()) {
-		bIdx = bacCnt++;
-		bacMap.insert({ bName, bIdx });
+int getid(char bName[]) {
+	int id;
+	auto it = idmap.find(bName);
+	if (it == idmap.end()) {
+		id = idmapCnt++;
+		idmap[bName] = id;
 	}
-	else bIdx = iter->second;
-	return bIdx;
+	else id = it->second;
+	return id;
 }
 
-void init(int N, char bNameList[MAX_BCNT][MAX_NAME], int mHalfTime[MAX_BCNT]){
-	curTime = totalCnt = sIdx = bacCnt = 0;
-	bacMap.clear();	timePQ = {}; lifePQ = {};
-	for (int i = 0; i < N; i++){
-		int bIdx = get_bacIndex(bNameList[i]);
+void init(int N, char bNameList[MAX_BCNT][MAX_NAME], int mHalfTime[MAX_BCNT]) {
+	cTime = totalCnt = sIdx = idmapCnt = 0;
+	idmap.clear(); timePQ = {}; lifePQ = {};
+	for (int i = 0; i < N; i++) {
+		int bIdx = getid(bNameList[i]);
 		bacteria[bIdx] = { mHalfTime[i], 0 };
 	}
 }
 
-void addBacteria(int tStamp, char bName[MAX_NAME], int mLife, int mCnt){
-	while (curTime < tStamp) update(++curTime);
-	int bIdx = get_bacIndex(bName);
+void addBacteria(int tStamp, char bName[MAX_NAME], int mLife, int mCnt) {
+	while (cTime < tStamp) update(++cTime);
+	int bIdx = getid(bName);
 	samples[sIdx] = { bIdx, mCnt, mLife, tStamp };
-	bacteria[bIdx].mCnt += mCnt;
+	bacteria[bIdx].cnt += mCnt;
 	totalCnt += mCnt;
-	timePQ.push({ curTime + bacteria[bIdx].mHalfTime, sIdx });
+	timePQ.push({ cTime + bacteria[bIdx].halfTime, sIdx });
 	lifePQ.push({ mLife, tStamp, sIdx++ });
 }
 
 int takeOut(int tStamp, int mCnt) {
-	while (curTime < tStamp) update(++curTime);
-
+	while (cTime < tStamp) update(++cTime);
 	int takeOutCnt = min(totalCnt, mCnt);
 	int res = 0;
 	while (!lifePQ.empty() && takeOutCnt > 0) {
 		auto cur = lifePQ.top(); lifePQ.pop();
-		int sIdx = cur.sIdx; auto& s = samples[sIdx];
-		if (s.mLife != cur.mLife) continue;
-
-		int cnt = min(s.mCnt, takeOutCnt);
+		int sIdx = cur.sIdx;
+		auto& s = samples[sIdx];
+		if (s.life != cur.life) continue;
+		int cnt = min(s.cnt, takeOutCnt);
 		takeOutCnt -= cnt;
-		s.mCnt -= cnt;
+		s.cnt -= cnt;
 		int bIdx = s.bIdx;
-		bacteria[bIdx].mCnt -= cnt;
-		res += s.mLife * cnt;
-		if (s.mCnt > 0)
-			lifePQ.push({ s.mLife, s.addTime, sIdx });
+		bacteria[bIdx].cnt -= cnt;
+		res += s.life * cnt;
+		if (s.cnt > 0) lifePQ.push({ s.life, s.addTime, sIdx });
 	}
 	return res;
 }
 
-int checkBacteria(int tStamp, char bName[MAX_NAME]){
-	while (curTime < tStamp) update(++curTime);
-	int bIdx = get_bacIndex(bName);
-	return bacteria[bIdx].mCnt;
+int checkBacteria(int tStamp, char bName[MAX_NAME]) {
+	while (cTime < tStamp) update(++cTime);
+	int bIdx = getid(bName);
+	return bacteria[bIdx].cnt;
 }
 
+#endif // 1
 ```
