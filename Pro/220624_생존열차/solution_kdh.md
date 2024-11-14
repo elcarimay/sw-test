@@ -51,7 +51,7 @@ int updateByJob(int mJobID, int mPoint) {
 }
 
 int move(int mNum) {
-    int sum = 0, mid;
+    int sum = 0;
     vector<int> tmp[10];
     for (int i = 1; i < int(N / M); i++) {
         for (int j = 0; j < mNum; j++) {
