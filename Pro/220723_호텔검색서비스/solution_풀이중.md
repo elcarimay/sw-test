@@ -48,13 +48,12 @@ int findRoom(int mFilter[]){
 	for (int i = 0; i < 4; i++) tmp[i] = mFilter[i + 2];
 	int hash_val = hash_fun(tmp);
 	int in = mFilter[0], out = mFilter[1];
-	for (int i = 0; i < roomCnt; i++){
-		if (hMap[rid.rid] == hash_val) {
-
-			if (out <= nx.check_in || in >= nx.check_out) {
+	for (auto nx:r){
+		if (hMap[nx.rid] == hash_val) {
+			if (out <= room[rMap[nx.rid]].check_in || in >= room[rMap[nx.rid]].check_in) {
 				return nx.rid;
 			}
-			else if (nx.check_in == 0 && nx.check_out == 0) {
+			else if (room[rMap[nx.rid]].check_in && room[rMap[nx.rid]].check_in) {
 				return nx.rid;
 			}
 		}
@@ -63,10 +62,16 @@ int findRoom(int mFilter[]){
 }
 
 int riseCosts(int mHotelID){
-	for (auto nx : hotel[mHotelID]) {
-		nx
+	int sum = 0;
+	for (int rid : hotel[mHotelID]) {
+		int rcnt = rMap[rid];
+		int cost = room[rcnt].it->cost;
+		cost *= 1.1;
+		r.erase(room[rcnt].it);
+		room[rcnt].it = r.insert({ rid,cost}).first;
+		sum += cost;
 	}
-	return 0;
+	return sum;
 }
 #endif // 1
 ```
