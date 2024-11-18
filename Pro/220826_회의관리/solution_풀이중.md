@@ -36,22 +36,26 @@ void init() {
 	memberMap.clear(); memberCnt = 0; meetingMap.clear(); meetingCnt = 0;
 }
 
-int getId(unordered_map<string,int>& m, char name[MAXL], int& cnt) {
+int getId(char name[MAXL]) {
 	int id;
-	auto it = m.find(name);
-	if (it == m.end()) {
-		id = cnt;
-		m[name] = cnt++;
+	auto it = memberMap.find(name);
+	if (it == memberMap.end()) {
+		id = memberCnt;
+		memberMap[name] = memberCnt++;
 	}
-	else id = m[name];
+	else id = memberMap[name];
 	return id;
 }
 
 int addMeeting(char mMeeting[MAXL], int M, char mMemberList[MAXM][MAXL], int mStartTime, int mEndTime) {
 	int meetingid = meetingCnt++;
 	meetingMap[mMeeting] = meetingid;
+	for(auto )
+
+
+
 	for (int i = 0; i < M; i++) {
-		int mid = getId(memberMap, mMemberList[i], memberCnt);
+		int mid = getId(mMemberList[i]);
 		bool flag = true;
 		if (member[mid].size()) {
 			for (auto time : member[mid])
