@@ -36,9 +36,14 @@ ll getHash(char w[MAX_L]) {
 	ll ret = 0; int len = strlen(w);
 	int idx = len;
 	for (int i = 8; 0 < i; i--) {
-		if (len >= 0) {
-			ret += (27 - (w[idx - len--] - 'a') + 1) * pow(27, i);
-		}else ret += 27 ^ i;
+		if (len > 0) {
+			int a = w[idx - len--] - 'a'; a++;
+			ret += (27 - a) * pow(27, i);
+		}
+		else {
+			int a = 27 * pow(27, i);
+			ret += a;
+		}
 	}
 	return ret;
 }
