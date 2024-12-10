@@ -7,71 +7,83 @@ using namespace std;
 
 struct Data
 {
-	int sIdx, len;
+	int sIdx, len; // start idx, file size
 	bool operator<(const Data& r)const {
 		return sIdx > r.sIdx;
 	}
 };
 
-unordered_map<int, int> idmap; // mId, fid
-int idCnt, freeSize; // fid, free space
-vector<Data> flist[12005]; // vector<{start, size}> flist[fid]
-priority_queue<Data> pq; // 빈조각들 priority_queue<{시작지점, 남은공간}> pq, top => start 작은값
+unordered_map<int, int> m; // id, fid
+int idCnt, freeSize;
+vector<Data> flist[12005]; // fid, data(start, size)
+priority_queue<Data> pq;
 
 void init(int N) {
-	idCnt = 0, pq = {}, pq.push({ 1,freeSize = N });
-	idmap.clear();
+	m.clear(); idCnt = 0; pq = {};
 	for (int i = 0; i < 12005; i++) flist[i].clear();
+	pq.push({ 1, freeSize = N });
+}
+
+int getID(int mid) {
+	int id;
+	auto it = m.find(mid);
+	if (it == m.end()) {
+		id = idCnt;
+		m[mid] = idCnt++;
+	}
+	else id = m[mid];
+	return id;
 }
 
 int add(int mId, int mSize) {
 	if (freeSize < mSize) return -1;
 	freeSize -= mSize;
-	idmap[mId] = idCnt;
-	flist[idCnt].clear();
+	int id = getID(mId);
 
 	while (mSize) {
-		auto cur = pq.top(); pq.pop(); // 남아있는 공간에 대한 정보
+		auto cur = pq.top(); pq.pop();
 		int len = cur.len;
 		if (cur.len > mSize) {
 			len = mSize;
 			pq.push({ cur.sIdx + len, cur.len - len });
 		}
-		if (flist[idCnt].size() != 0) {
-			// 채워져있는 공간바로뒤 idx가 cur.sIdx와 같으면 cur.sIdx, mSize를 더해서 하나로 합침
-			int size = flist[idCnt][flist[idCnt].size() - 1].sIdx + flist[idCnt][flist[idCnt].size() - 1].len;
-			if (size == cur.sIdx) {
-				flist[idCnt][flist[idCnt].size() - 1].len += len;
+		int size = flist[id].size();
+		if (size != 0) {
+			int sIdx = flist[id][size - 1].sIdx + flist[id][size - 1].len;
+			if (sIdx == cur.sIdx) {
+				flist[id][size - 1].len += len;
 			}
-			else flist[idCnt].push_back({ cur.sIdx, len });
+			else flist[id].push_back({ cur.sIdx, len });
 		}
-		else flist[idCnt].push_back({ cur.sIdx, len });
+		else flist[id].push_back({ cur.sIdx, len });
 		mSize -= len;
 	}
-	return flist[idCnt++][0].sIdx;
+	return flist[id][0].sIdx;
 }
 
 int remove(int mId) {
-	int ret = flist[idmap[mId]].size();
-	for (auto nx : flist[idmap[mId]]) {
-		pq.push(nx); freeSize += nx.len;
+	int id = getID(mId);
+	for (auto nx : flist[id]) {
+		freeSize += nx.len;
+		pq.push(nx);
 	}
-	flist[idmap[mId]].clear();
+	int ret = flist[id].size();
+	flist[id].clear();
 	return ret;
 }
 
 int count(int mStart, int mEnd) {
-	int cnt = 0;
+	int ret = 0;
 	for (int i = 0; i < idCnt; i++) {
-		if (flist[i].size() == 0) continue;
-		for (auto next : flist[i]) {
-			int s1 = next.sIdx, e1 = next.sIdx + next.len - 1;
-			if (s1 <= mEnd && mStart <= e1) { // 구간이 겹치는 조건
-				cnt++; break;
+		if (flist[i].empty()) continue;
+		for (auto nx : flist[i]) {
+			int s = nx.sIdx, e = nx.sIdx + nx.len - 1;
+			if (!(e < mStart || mEnd < s)) {
+				ret++; break;
 			}
 		}
 	}
-	return cnt;
+	return ret;
 }
 #endif
 ```
