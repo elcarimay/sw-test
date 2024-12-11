@@ -30,10 +30,15 @@ struct Result {
 
 unordered_map<int, vector<Result>> hmap; // hash, position(놓을수 있는 자리)
 
-int getHash(int puzzle[3][3]) {
+int getHash(int puzzle[3][3], int t) {
+    int min_v = 5;
+    for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) {
+        if (frame[t][i][j]) min_v = min(min_v, puzzle[i][j]);
+    }
     int key = 0;
     for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) {
-        key += puzzle[i][j]; key *= 10;
+        if (frame[t][i][j]) key += (puzzle[i][j] - min_v);
+        key *= 10;
     }
     return key / 10;
 }
@@ -45,13 +50,17 @@ bool isPossible(int r, int c, int(*puzzle)[3]) {
     return true;
 }
 
-int cells[MAX_ROW][MAX_COL];
+int cells[MAX_ROW][MAX_COL], puzzle[3][3];
 void init(int mRows, int mCols, int mCells[MAX_ROW][MAX_COL]) {
     R = mRows, C = mCols; hmap.clear();
     for (int i = 0; i < 5; i++) {
-        int key = getHash(frame[i]);
-        for (int r = 0; r < mRows; r++) for (int c = 0; c < mCols; c++)
-            if (isPossible(r, c, frame[i])) hmap[key].push_back({ r,c });
+        for (int r = 0; r < mRows; r++) for (int c = 0; c < mCols; c++) {
+            for (int ii = r; ii < r + 3; ii++) for (int jj = c; jj < c + 3; jj++) {
+                if(frame[i][ii-r][jj-r]) puzzle[ii-r][jj-c] = mCells[r][c];
+            }
+            int key = getHash(puzzle, i);
+            hmap[key].push_back({ r,c });
+        }
     }
     for (int r = 0; r < mRows; r++) for (int c = 0; c < mCols; c++) {
         cells[r][c] = mCells[r][c];
@@ -117,6 +126,8 @@ void clearPuzzles() {
     for (int r = 0; r < R; r++) for (int c = 0; c < C; c++) visit[r][c] = false;
 }
 #endif // 1
+
+
 
 
 ```
