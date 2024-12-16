@@ -12,7 +12,7 @@ struct Pos {
 };
 
 vector<Pos> p[MAXRC][MAXRC][MAXCOL];
-
+int distMap[MAXRC][MAXRC];
 int M;
 void init(int N) {
 	M = N / SIZE;
@@ -50,33 +50,41 @@ int countTower(int mRow, int mCol, int mColor, int mDis) { // 좌우 8개만 조
 	return ret;
 }
 
-int dr[] = { 1,1,-1,-1 }, dc[] = { 1,-1,-1,1 };
-int minDist;
-void setMinDist(int R, int C, int mRow, int mCol, int mColor) {
+int minDist, partitionDist, minpartitionDist;
+void getMinDist(int r, int c, int partR, int partC, int mColor) {
 	for (int i = 1; i <= 5; i++) {
 		if (mColor != 0 && mColor != i) continue;
-		for (auto& nx : p[R][C][i]) {
-			int dist = abs(nx.r - mRow) + abs(nx.c - mCol);
-			minDist = min(minDist, dist);
+		for (auto& nx : p[partR][partC][i]) {
+			int dist = abs(nx.r - r) + abs(nx.c - c);
+			if (minDist > dist) {
+				minDist = dist;
+				minpartitionDist = partitionDist;
+			}
 		}
 	}
 }
 
+int dr[] = { 0,-1,0,1 }, dc[] = { 1,0,-1,0 };
+Pos que[10003]; int head, tail;
 int getClosest(int mRow, int mCol, int mColor) {
 	int R = mRow / SIZE, C = mCol / SIZE;
-	int maxD = max(R, M - R) + max(C, M - C);
+	for (int i = 0; i <= M; i++) for (int j = 0; j <= M; j++) distMap[i][j] = INT_MAX;
+	distMap[R][C] = head = tail = 0;
 	minDist = INT_MAX;
-	setMinDist(R, C, mRow, mCol, mColor);
-	for (int D = 1; D <= maxD; D++) {
-		if (minDist <= (D - 2) * SIZE + 2) break;
-
-		int curR = R - D, curC = C;
-		for (int j = 0; j < 4; j++)
-			for (int k = 0; k < D; k++) {
-				curR += dr[j], curC += dc[j];
-				if (curR < 0 || curR > M || curC < 0 || curC > M) continue;
-				setMinDist(curR, curC, mRow, mCol, mColor);
-			}
+	minpartitionDist = -1;
+	que[tail++] = { R,C };
+	while (head < tail) {
+		Pos cur = que[head++];
+		partitionDist = distMap[cur.r][cur.c];
+		getMinDist(mRow, mCol, cur.r, cur.c, mColor);
+		if (minDist != INT_MAX && partitionDist - minpartitionDist > 2) break;
+		for (int i = 0; i < 4; i++) {
+			int nr = cur.r + dr[i], nc = cur.c + dc[i];
+			if (nr < 0 || nr > M || nc < 0 || nc > M) continue;
+			if (distMap[nr][nc] <= partitionDist + 1) continue;
+			distMap[nr][nc] = partitionDist + 1;
+			que[tail++] = { nr, nc };
+		}
 	}
 	return minDist == INT_MAX ? -1 : minDist;
 }
