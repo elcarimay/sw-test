@@ -10,7 +10,7 @@ using namespace std;
 
 
 unordered_map<string, int> hmap; // hmap[str] = id(0~) 순서대로 번호 부여
-vector<int> V[26 * 26 * 26]; // V[hash] = {id,...} 앞 세자기라 같은 값끼리 분류
+vector<int> V[26 * 26 * 26]; // V[hash] = {id,...} 앞 세자리가 같은 값끼리 분류
 char S[50003][10]; // S[id] = str
 bool valid[50003]; // valid[id] = 1/0
 int head, tail;
