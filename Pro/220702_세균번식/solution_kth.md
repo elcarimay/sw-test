@@ -1,4 +1,5 @@
 ```cpp
+// 활성화된 세균에 대한 map을 하나 더 만듬
 #include <vector>
 #include <set>
 #include <queue>
