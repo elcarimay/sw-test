@@ -2,6 +2,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <unordered_map>
 #include <vector>
+#include <string>
 using namespace std;
 
 struct DB {
@@ -12,23 +13,17 @@ struct DB {
 #define MAX_N			(5)
 #define MAX_L			(8)
 
-struct Result{
-	int size;
-	char mNameList[MAX_N][MAX_L + 1];
-	char mTelephoneList[MAX_N][MAX_L + 1];
-};
-
 unordered_map<string, vector<int>> idMap;
 int idCnt;
 
 vector<int> lg;
 
-void init(){
+void init() {
 	idCnt = 0, idMap.clear();
 	return;
 }
 
-void add(char mName[], char mTelephone[]){
+void add(char mName[], char mTelephone[]) {
 	char temp[20];
 	int id = idCnt++;
 	int ln = strlen(mName), lt = strlen(mTelephone);
@@ -44,25 +39,37 @@ void add(char mName[], char mTelephone[]){
 	}
 }
 
-void remove(char mStr[]){
+void remove(char mStr[]) {
 	for (auto id : idMap[mStr]) {
 		db[id].state = false;
 	}
 }
 
-void call(char mTelephone[]){
+void call(char mTelephone[]) {
 	for (auto id : idMap[mTelephone]) {
 		lg.push_back(id);
 	}
 }
 
-Result search(char mStr[]){
+struct Result {
+	int size;
+	char mNameList[MAX_N][MAX_L + 1];
+	char mTelephoneList[MAX_N][MAX_L + 1];
+};
+
+Result search(char mStr[]) {
 	Result ret;
 	ret.size = -1;
 	auto& v = idMap[mStr];
-	for(vector<int>::iterator it = v.rbegin(); it != v.rend();it++){
-		
+	int cnt = 0;
+	for (vector<int>::reverse_iterator it = v.rbegin(); it != v.rend(); it++) {
+		if (!db[*it].state) continue;
+		strcpy(ret.mNameList[cnt], db[*it].name);
+		strcpy(ret.mTelephoneList[cnt], db[*it].tel);
+		cnt++;
+		if (cnt == 5) break;
 	}
+	if (cnt) ret.size = cnt;
 	return ret;
 }
 ```
