@@ -45,15 +45,13 @@ void add(char mName[], char mTelephone[]){
 }
 
 void remove(char mStr[]){
-	auto& v = idMap[mStr];
-	for (auto id : v) {
+	for (auto id : idMap[mStr]) {
 		db[id].state = false;
 	}
 }
 
 void call(char mTelephone[]){
-	auto& v = idMap[mTelephone];
-	for (auto id : v) {
+	for (auto id : idMap[mTelephone]) {
 		lg.push_back(id);
 	}
 }
@@ -62,7 +60,9 @@ Result search(char mStr[]){
 	Result ret;
 	ret.size = -1;
 	auto& v = idMap[mStr];
-
+	for(vector<int>::iterator it = v.rbegin(); it != v.rend();it++){
+		
+	}
 	return ret;
 }
 ```
