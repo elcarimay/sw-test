@@ -47,7 +47,7 @@ void remove(char mStr[]) {
 
 void call(char mTelephone[]) {
 	for (auto id : idMap[mTelephone]) {
-		lg.push_back(id);
+		if (!db[id].state) lg.push_back(id);
 	}
 }
 
