@@ -19,12 +19,12 @@ unordered_map<string, int> dbMap;
 unordered_map<string, int> logMap;
 int dbCnt, logCnt;
 
-vector<int> lg[13000*2];
+vector<int> lg[13000 * 2];
 
 void init() {
 	dbCnt = logCnt = 0, dbMap.clear(), logMap.clear();
 	for (int i = 0; i < 13000; i++) db[i] = {};
-	for (int i = 0; i < 13000*2; i++) lg[i].clear();
+	for (int i = 0; i < 13000 * 2; i++) lg[i].clear();
 }
 
 int getID(char prefix[]) {
