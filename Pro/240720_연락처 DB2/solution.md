@@ -7,6 +7,7 @@
 #include <string.h>
 using namespace std;
 
+#define ll long long
 #define MAX_N			(5)
 #define MAX_L			(8)
 
@@ -15,8 +16,16 @@ struct DB {
 	bool REMOVED; // false: ADDED, true: REMOVED
 }db[13003];
 
-unordered_map<string, int> dbMap;
-unordered_map<string, int> logMap;
+ll getHash(char c[]) {
+	ll value = 0;
+	for (int i = 0; c[i]; i++) {
+		value *= 26;
+		value += c[i];
+	}
+	return value;
+}
+
+unordered_map<ll, int> dbMap, logMap;
 int dbCnt, logCnt;
 
 vector<int> lg[13000 * 2];
@@ -28,12 +37,14 @@ void init() {
 }
 
 int getID(char prefix[]) {
-	if (!logMap.count(prefix)) return logMap[prefix] = logCnt++;
-	return logMap[prefix];
+	ll value = getHash(prefix);
+	if (!logMap.count(value)) return logMap[value] = logCnt++;
+	return logMap[value];
 }
 
 void add(char mName[], char mTelephone[]) {
-	int dbIdx = dbMap[mTelephone] = dbMap[mName] = dbCnt++;
+	ll nv = getHash(mName), tv = getHash(mTelephone);
+	int dbIdx = dbMap[nv] = dbMap[tv] = dbCnt++;
 	strcpy(db[dbIdx].name, mName);
 	strcpy(db[dbIdx].tel, mTelephone);
 
@@ -49,18 +60,19 @@ void add(char mName[], char mTelephone[]) {
 }
 
 void remove(char mStr[]) {
-	db[dbMap[mStr]].REMOVED = true;
+	db[dbMap[getHash(mStr)]].REMOVED = true;
 }
 
 void call(char mTelephone[]) {
+	ll value = getHash(mTelephone);
 	int dbIdx;
-	if (!dbMap.count(mTelephone)) { // db에 없을때
-		dbIdx = dbMap[mTelephone] = dbCnt++;
+	if (!dbMap.count(value)) { // db에 없을때
+		dbIdx = dbMap[value] = dbCnt++;
 		strcpy(db[dbIdx].name, "");
 		strcpy(db[dbIdx].tel, mTelephone);
 	}
 	else
-		dbIdx = dbMap[mTelephone];// db에 있을때
+		dbIdx = dbMap[value];// db에 있을때
 	char prefix[MAX_L + 1];
 	for (int i = 1; i <= strlen(db[dbIdx].name); i++) {
 		strncpy_s(prefix, db[dbIdx].name, i);
@@ -80,9 +92,10 @@ struct Result {
 
 Result search(char mStr[]) {
 	Result ret = {};
-	if (!logMap.count(mStr)) return ret;
+	ll value = getHash(mStr);
+	if (!logMap.count(value)) return ret;
 
-	for (vector<int>::reverse_iterator it = lg[logMap[mStr]].rbegin(); it != lg[logMap[mStr]].rend(); it++) {
+	for (vector<int>::reverse_iterator it = lg[logMap[value]].rbegin(); it != lg[logMap[value]].rend(); it++) {
 		auto& d = db[*it];
 		if (d.REMOVED || strlen(d.name) && d.REMOVED) continue;
 		bool duplicated = false;
