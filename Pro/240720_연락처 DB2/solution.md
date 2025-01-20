@@ -82,8 +82,7 @@ Result search(char mStr[]) {
 	Result ret = {};
 	if (!logMap.count(mStr)) return ret;
 
-	auto& log = lg[logMap[mStr]];
-	for (vector<int>::reverse_iterator it = log.rbegin(); it != log.rend(); it++) {
+	for (vector<int>::reverse_iterator it = lg[logMap[mStr]].rbegin(); it != lg[logMap[mStr]].rend(); it++) {
 		auto& d = db[*it];
 		if (d.REMOVED || strlen(d.name) && d.REMOVED) continue;
 		bool duplicated = false;
