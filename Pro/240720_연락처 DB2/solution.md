@@ -37,17 +37,14 @@ void add(char mName[], char mTelephone[]) {
 	strcpy(db[dbIdx].name, mName);
 	strcpy(db[dbIdx].tel, mTelephone);
 
-	int logIdx;
 	char prefix[MAX_L + 1];
 	for (int i = 1; i <= strlen(mName); i++) {
 		strncpy_s(prefix, mName, i);
-		logIdx = getID(prefix);
-		lg[logIdx].push_back(dbIdx);
+		lg[getID(prefix)].push_back(dbIdx);
 	}
 	for (int i = 1; i <= strlen(mTelephone); i++) {
 		strncpy_s(prefix, mTelephone, i);
-		logIdx = getID(prefix);
-		lg[logIdx].push_back(dbIdx);
+		lg[getID(prefix)].push_back(dbIdx);
 	}
 }
 
