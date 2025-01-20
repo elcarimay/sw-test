@@ -1,154 +1,128 @@
 ```cpp
 #if 1
-#define MAX_N			(5)
-#define MAX_L			(8)
-#define MAX_DB      (13000)         // add 3,000 + call 10,000
-#define MAX_LOG     (13000 * 8)     // (add 3,000 + call 10,000) * MAX_L
 #define _CRT_SECURE_NO_WARNINGS
-#include <string>
-#include <cstring>
 #include <unordered_map>
 #include <vector>
+#include <string>
+#include <string.h>
 using namespace std;
 
-enum State { EMPTY, ADDED, REMOVED };
+#define EMPTY 0
+#define ADDED 1
+#define REMOVED -1
 
-struct Result
-{
+struct DB {
+	char name[10], tel[10];
+	int state;
+}db[13003];
+
+#define MAX_N			(5)
+#define MAX_L			(8)
+
+unordered_map<string, int> dbMap;
+unordered_map<string, int> logMap;
+int dbCnt, logCnt;
+
+vector<DB> lg[13003*8];
+
+void init() {
+	dbCnt = logCnt = 0, dbMap.clear(), logMap.clear();
+	for (int i = 0; i < 13000; i++) db[i] = {};
+	for (int i = 0; i < 13000 * 8; i++) lg[i].clear();
+	return;
+}
+
+int getID(char prefix[]) {
+	if (!logMap.count(prefix)) return logMap[prefix] = logCnt++;
+	return logMap[prefix];
+}
+
+void add(char mName[], char mTelephone[]) {
+	int dbIdx = dbCnt++;
+	strcpy(db[dbIdx].name, mName);
+	strcpy(db[dbIdx].tel, mTelephone);
+	db[dbIdx].state = ADDED;
+	dbMap[mTelephone] = dbIdx;
+	if (strlen(mName)) dbMap[mName] = dbIdx;
+
+	int logIdx;
+	char prefix[10];
+	DB tmp;
+	strcpy(tmp.name, mName);
+	strcpy(tmp.tel, mTelephone);
+	tmp.state = ADDED;
+	for (int i = 1; i <= strlen(mName); i++) {
+		strncpy_s(prefix, mName, i);
+		logIdx = getID(prefix);
+		lg[logIdx].push_back(tmp);
+	}
+	for (int i = 1; i <= strlen(mTelephone); i++) {
+		strncpy_s(prefix, mTelephone, i);
+		logIdx = getID(prefix);
+		lg[logIdx].push_back(tmp);
+	}
+}
+
+void remove(char mStr[]) {
+	db[dbMap[mStr]].state = REMOVED;
+}
+
+void call(char mTelephone[]) {
+	DB tmp;
+	strcpy(tmp.tel, mTelephone);
+	tmp.state = ADDED;
+	if (!dbMap.count(mTelephone)) { // db에 없을때
+		strcpy(tmp.name, "");
+		char prefix[10];
+		int dbIdx = dbCnt++;
+		strcpy(db[dbIdx].name, tmp.name);
+		strcpy(db[dbIdx].tel, tmp.tel);
+		db[dbIdx].state = ADDED;
+		dbMap[tmp.tel] = dbIdx;
+		if (strlen(tmp.name)) dbMap[tmp.name] = dbIdx;
+	}
+	else strcpy(tmp.name, db[dbMap[mTelephone]].name); // db에 있을때
+	int logIdx;
+	char prefix[20];
+	for (int i = 1; i <= strlen(tmp.name); i++) {
+		strncpy_s(prefix, tmp.name, i);
+		logIdx = getID(prefix);
+		lg[logIdx].push_back(tmp);
+	}
+	for (int i = 1; i <= strlen(tmp.tel); i++) {
+		strncpy_s(prefix, tmp.tel, i);
+		logIdx = getID(prefix);
+		lg[logIdx].push_back(tmp);
+	}
+}
+
+struct Result {
 	int size;
 	char mNameList[MAX_N][MAX_L + 1];
 	char mTelephoneList[MAX_N][MAX_L + 1];
 };
 
-struct DB {
-	char mName[MAX_L + 1];
-	char mTelephone[MAX_L + 1];
-	State state;
-
-	DB(const char mName[], const char mTelephone[], State state) {
-		strcpy(this->mName, mName);
-		strcpy(this->mTelephone, mTelephone);
-		this->state = state;
-	}
-	DB() {
-		strcpy(this->mName, "");
-		strcpy(this->mTelephone, "");
-		this->state = EMPTY;
-	}
-}db[MAX_DB];
-int dbCnt;
-unordered_map<string, int> dbMap;
-
-struct LOG {
-	char mName[MAX_L + 1];
-	char mTelephone[MAX_L + 1];
-
-	LOG(const char mName[], const char mTelephone[]) {
-		strcpy(this->mName, mName);
-		strcpy(this->mTelephone, mTelephone);
-	}
-	LOG() {
-		strcpy(this->mName, "");
-		strcpy(this->mTelephone, "");
-	}
-};
-vector<LOG> logs[MAX_LOG];
-int logCnt;
-unordered_map<string, int> logMap;
-
-int get_logIndex(const char mStr[]) {
-	int idx;
-	auto iter = logMap.find(mStr);
-	if (iter == logMap.end()) {
-		idx = logCnt++;
-		logMap.emplace(mStr, idx);
-	}
-	else idx = iter->second;
-	return idx;
-}
-
-void add_db(char mName[], char mTelephone[]) {
-	int dbIdx = dbCnt++;
-	db[dbIdx] = { mName, mTelephone, ADDED };
-	dbMap.emplace(mTelephone, dbIdx);
-	if (strlen(mName)) dbMap.emplace(mName, dbIdx);
-}
-
-void add_log(char mName[], char mTelephone[]) {
-	int logIdx;
-	char prefix[MAX_L + 1];
-
-	for (int i = 1; i <= strlen(mName); i++) {
-		strncpy_s(prefix, mName, i);
-		logIdx = get_logIndex(prefix);
-		logs[logIdx].push_back({ mName, mTelephone });
-	}
-	for (int i = 1; i <= strlen(mTelephone); i++) {
-		strncpy_s(prefix, mTelephone, i);
-		logIdx = get_logIndex(prefix);
-		logs[logIdx].push_back({ mName, mTelephone });
-	}
-}
-
-void init()
-{
-	for (int i = 0; i < dbCnt; i++) db[i] = {};
-	dbCnt = 0;
-	dbMap.clear();
-
-	for (int i = 0; i < logCnt; i++) logs[i].clear();
-	logCnt = 0;
-	logMap.clear();
-}
-
-void add(char mName[], char mTelephone[])
-{
-	add_db(mName, mTelephone);
-	add_log(mName, mTelephone);
-}
-
-void remove(char mStr[])
-{
-	db[dbMap[mStr]].state = REMOVED;
-}
-
-void call(char mTelephone[])
-{
-	char mName[MAX_L + 1];
-	if (dbMap.find(mTelephone) != dbMap.end())
-		strcpy(mName, db[dbMap[mTelephone]].mName);
-	else {
-		strcpy(mName, "");
-		add_db(mName, mTelephone);
-	}
-	add_log(mName, mTelephone);
-}
-
-Result search(char mStr[])
-{
+Result search(char mStr[]) {
 	Result ret = {};
-	if (logMap.find(mStr) == logMap.end()) return ret;
+	if (!logMap.count(mStr)) return ret;
 
-	auto& log = logs[logMap[mStr]];
-	int cnt = 0;
-	for (int i = (int)log.size() - 1; i >= 0 && cnt < 5; i--) {
-		if (db[dbMap[log[i].mTelephone]].state == REMOVED) continue;
-		if (strlen(log[i].mName) && db[dbMap[log[i].mName]].state == REMOVED) continue;
+	auto& log = lg[logMap[mStr]];
+	for (vector<DB>::reverse_iterator it = log.rbegin(); it != log.rend(); it++) {
+		if (db[dbMap[it->tel]].state == REMOVED) continue;
+		if (strlen(it->name) && db[dbMap[it->name]].state == REMOVED) continue;
 		bool duplicated = false;
-		for (int j = 0; j < cnt; j++) {
-			if (strcmp(ret.mTelephoneList[j], log[i].mTelephone) == 0) {
-				duplicated = true;
-				break;
+		for (int j = 0; j < ret.size; j++) {
+			if (!strcmp(ret.mTelephoneList[j], it->tel)) {
+				duplicated = true; break;
 			}
 		}
 		if (duplicated) continue;
-		strcpy(ret.mNameList[cnt], log[i].mName);
-		strcpy(ret.mTelephoneList[cnt], log[i].mTelephone);
+		strcpy(ret.mNameList[ret.size], it->name);
+		strcpy(ret.mTelephoneList[ret.size], it->tel);
 		ret.size++;
-		cnt++;
+		if (ret.size == 5) break;
 	}
 	return ret;
 }
 #endif // 1
-
 ```
