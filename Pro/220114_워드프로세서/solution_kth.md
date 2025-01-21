@@ -133,7 +133,7 @@ void destroy(char result[])
     }
     result[len - 1] = 0;
     /*for (int i = 0; i < n; i++) { 문자열 함수를 쓰면 매우 느려짐
-        strcat(result, S[i]);
+        strcat(result, S[i]); // 기존 문자열에 최종 문자열을 붙이기 할때마다 기존 문자열의 끝을 탐색하여 뒤에 이어 붙이므로 매우 느림
         strcat(result, "_");
     }
     result[strlen(result) - 1] = '\0';*/
