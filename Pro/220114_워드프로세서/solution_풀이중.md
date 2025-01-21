@@ -13,11 +13,11 @@ using ull = unsigned long long;
 int n, m, dictCnt;
 int wordID[40003];
 
-char S[10003][13];
-char dictS[1003][13];
-unordered_set<ull> dict;
-unordered_map<ull, int> dict2;
-vector<char*> v[10003];
+char S[10003][13]; // 전체 단어 저장
+char dictS[1003][13]; // 추가된 단어 저장
+unordered_set<ull> dict; // 단어를 정렬하기 위함 hash
+unordered_map<ull, int> dict2; // 정렬된 단어에 대한 id, hash / id
+vector<char*> v[10003]; // 한글자를 지웠던 단어가 어떤단어를 포함하는지 확인 idx / char
 
 ull getHash(char* str) {
     ull hash = 0;
@@ -35,16 +35,13 @@ void init(int N, char str[])
     n = m = dictCnt = 0;
     dict.clear();
     dict2.clear();
-    int len = 0;
     char delim[] = "_";
     char* p = strtok(str, delim);
-    int i = strlen(p) + 1;
-    wordID[i] = n + 1;
-    strcpy(S[n++], p);
+    int index = 0;
     while (p) {
-        p = strtok(nullptr, delim);
-        wordID[i += strlen(p) + 1] = n + 1;
         strcpy(S[n++], p);
+        wordID[index += strlen(p) + 1] = n;
+        p = strtok(nullptr, delim);
     }
     /*str[N] = '_';
     for (int i = 0; i <= N; i++) {
@@ -89,7 +86,9 @@ void removeWord(char word[])
         str[i] = '*';
         ull hash = getHash(str);
         int id = getId(str, hash);
-        v[id].erase(find_if(v[id].begin(), v[id].end(), [&](auto x) {return !strcmp(x, word); }));
+        //v[id].erase(find_if(v[id].begin(), v[id].end(), [&](auto x) {return !strcmp(x, word); }));
+        for (int i = 0; i < v[id].size(); i++)
+            if (!strcmp(v[id][i], word)) v[id].erase(v[id].begin() + i);
         if (v[id].empty()) dict2.erase(hash);
         str[i] = word[i];
     }
@@ -104,15 +103,16 @@ int correct(int start, int end)
         if (dict.count(hash)) continue;
 
         strcpy(str, S[i]);
-        char ret[13] = { 'z' + 1 };
+        char ret[13] = { 'z' + 1 }; // 사전순으로 앞서는지 확인해야 하므로 z에서 하나 더한값을 넣어야 함.
         for (int j = 0; str[j]; j++) {
             str[j] = '*';
             hash = getHash(str);
             if (dict2.count(hash)) {
                 int id = dict2[hash];
-
-                auto it = min_element(v[id].begin(), v[id].end(), [&](auto l, auto r) { return strcmp(l, r) < 0; });
-                if (strcmp(ret, *it) > 0) strcpy(ret, *it);
+                //auto it = min_element(v[id].begin(), v[id].end(), [&](auto l, auto r) { return strcmp(l, r) < 0; });
+                //if (strcmp(ret, *it) > 0) strcpy(ret, *it);
+                partial_sort(v[id].begin(), v[id].begin() + 1, v[id].end(), [](auto& l, auto& r) { return strcmp(l, r) < 0; });
+                if (strcmp(ret, v[id][0]) > 0) strcpy(ret, v[id][0]);
             }
             str[j] = S[i][j];
         }
@@ -132,7 +132,11 @@ void destroy(char result[])
         result[len++] = '_';
     }
     result[len - 1] = 0;
+    /*for (int i = 0; i < n; i++) { 문자열 함수를 쓰면 매우 느려짐
+        strcat(result, S[i]);
+        strcat(result, "_");
+    }
+    result[strlen(result) - 1] = '\0';*/
 }
 #endif // 1
-
 ```
