@@ -1,115 +1,132 @@
 ```cpp
 #if 1
-#include <iostream>
-#include <string.h>
 #include <vector>
-#include <queue>
+#include <algorithm>
 #include <set>
 using namespace std;
-using pii = pair<int, int>;
 
+#define MAXN 20003
 struct Data {
-	int id, sum;
+	int point, id;
 	bool operator<(const Data& r)const {
-		if(sum!= r.sum) return sum > r.sum;
+		if (point != r.point) return point > r.point;
 		return id < r.id;
 	}
 };
 
-vector<int> adj[20001];
-int power[20001];
-int effect[] = { 10, 5, 3, 2 };
-int N, vcnt;
-set<Data> S;
-set<Data>::iterator it[20001]; // it[mID]로 mID의 영향령 파악과 S에서 빠르게 삭제
+int N, db[MAXN];
+vector<int> adj[MAXN];
 
-pii que[20001];
-int head, tail;
-int visit[20001];
-int bfs(int s) {
-	int sum = 0;
-	head = tail = 0;
-	que[tail++] = { s, 0 };
-	vcnt++;
-	visit[s] = vcnt;
-	while (head < tail) {
-		pii cur = que[head++];
-		if (cur.second + 1 == 5) continue;
-		sum += power[cur.first] * effect[cur.second];
-		for (int nx : adj[cur.first]) {
-			if (visit[nx] == vcnt) continue;
-			que[tail++] = { nx, cur.second + 1 };
-			visit[nx] = vcnt;
-		}
-	}
-	return sum;
+void add(int a, int b) {
+	adj[a].push_back(b), adj[b].push_back(a);
 }
 
+struct Edge {
+	int to, chon;
+};
+
+Edge que[MAXN];
+int head, tail;
+bool visit[MAXN];
+int bfs(int s) {
+	int ret = 0, p;
+	for (int i = 0; i < N; i++) visit[i] = false;
+	head = tail = 0;
+	que[tail++] = { s,0 };
+	visit[s] = true;
+	while (head < tail) {
+		Edge cur = que[head++];
+		p = db[cur.to];
+		if (cur.chon == 0) ret += p * 10;
+		else if (cur.chon == 1) ret += p * 5;
+		else if (cur.chon == 2) ret += p * 3;
+		else ret += p * 2;
+		for (int nx : adj[cur.to]) {
+			if (visit[nx]) continue;
+			if (cur.chon + 1 <= 3) {
+				que[tail++] = { nx, cur.chon + 1 };
+				visit[nx] = true;
+			}
+		}
+	}
+	return ret;
+}
+set<Data>::iterator iter[20003];
+set<Data> S;
 void init(int N, int mPurchasingPower[20000], int M, int mFriend1[20000], int mFriend2[20000]) {
-	for (int i = 0; i < N; i++) {
-		adj[i].clear();
-		power[i] = mPurchasingPower[i];
-	}
-	for (int i = 0; i < M; i++) {
-		adj[mFriend1[i]].push_back(mFriend2[i]);
-		adj[mFriend2[i]].push_back(mFriend1[i]);
-	}
+	::N = N;
+	for (int i = 0; i < N; i++)
+		db[i] = mPurchasingPower[i], adj[i].clear();
+	for (int i = 0; i < M; i++)
+		add(mFriend1[i], mFriend2[i]);
 	S.clear();
-	for (int i = 0; i < N; i++) it[i] = S.insert({ i, bfs(i) }).first;
+	for (int i = 0; i < N; i++)
+		iter[i] = S.insert({ bfs(i), i }).first;
 }
 
 int influencer(int mRank) {
-	auto iter = S.begin();
-	for (int i = 0; i < mRank - 1; i++) iter++;
-	return iter->id;
+	return next(S.begin(), mRank - 1)->id;
+}
+
+int bfs2(int s, int power) {
+	int ret = 0;
+	for (int i = 0; i < N; i++) visit[i] = false;
+	head = tail = 0;
+	que[tail++] = { s,0 };
+	visit[s] = true;
+	while (head < tail) {
+		auto cur = que[head++];
+		int sum = iter[cur.to]->point;
+		if (cur.chon == 0) sum += power * 10;
+		else if (cur.chon == 1) sum += power * 5;
+		else if (cur.chon == 2) sum += power * 3;
+		else sum += power * 2;
+		S.erase(iter[cur.to]);
+		iter[cur.to] = S.insert({ sum, cur.to }).first;
+		for (int nx : adj[cur.to]) {
+			if (visit[nx]) continue;
+			if (cur.chon + 1 <= 3) {
+				que[tail++] = { nx, cur.chon + 1 };
+				visit[nx] = true;
+			}
+		}
+	}
+	return iter[s]->point;
 }
 
 int addPurchasingPower(int mID, int mPower) {
-	power[mID] += mPower;
+	db[mID]+= mPower;
+	int ret = bfs2(mID, mPower);
+	return ret;
+}
+
+int bfs(int s1, int s2) {
+	vector<int> t;
+	for (int i = 0; i < N; i++) visit[i] = false;
 	head = tail = 0;
-	vcnt++;
-	que[tail++] = { mID, 0 };
-	visit[mID] = vcnt;
+	que[tail++] = { s1,0 }, que[tail++] = { s2,0 };
+	visit[s1] = true, visit[s2] = true;
 	while (head < tail) {
-		int id = que[head].first, chon = que[head++].second;
-		int newSum = it[id]->sum + mPower * effect[chon]; // id상 새롭게 추가되는 영향력 계산
-		S.erase(it[id]);
-		it[id] = S.insert({ id, newSum }).first;
-		if (chon == 3) continue;
-		for (int nx : adj[id]) {
-			if (visit[nx] == vcnt) continue;
-			que[tail++] = { nx, chon + 1 };
-			visit[nx] = vcnt;
+		auto cur = que[head++];
+		t.push_back(cur.to);
+		S.erase(iter[cur.to]);
+		for (int nx : adj[cur.to]) {
+			if (visit[nx]) continue;
+			if (cur.chon + 1 <= 3) {
+				que[tail++] = { nx, cur.chon + 1 };
+				visit[nx] = true;
+			}
 		}
 	}
-	return it[mID]->sum;
+	for (int nx : t)
+		iter[nx] = S.insert({ bfs(nx), nx }).first;
+	return iter[s1]->point + iter[s2]->point;
 }
 
-vector<int> updateID;
 int addFriendship(int mID1, int mID2) {
-	adj[mID1].push_back(mID2);
-	adj[mID2].push_back(mID1);
-	que[tail++] = { mID1, 0 };
-	que[tail++] = { mID2, 0 };
-	vcnt++;
-	visit[mID1] = visit[mID2] = vcnt;
-	updateID.clear();
-	while (head < tail) {
-		int id = que[head].first, chon = que[head++].second;
-		updateID.push_back(id);
-		if (chon == 3) continue;
-		for (int nx : adj[id]) {
-			if (visit[nx] == vcnt) continue;
-			que[tail++] = { nx, chon + 1 };
-			visit[nx] = vcnt;
-		}
-	}
-	for (int nx : updateID) {
-		S.erase(it[nx]);
-		it[nx] = S.insert({ nx, bfs(nx)}).first;
-	}
-	return it[mID1]->sum + it[mID2]->sum;
+	add(mID1, mID2);
+	int ret = bfs(mID1, mID2);
+	return ret;
 }
-#endif // 0
-
+#endif // 1
 ```
