@@ -96,8 +96,7 @@ int bfs2(int s, int power) {
 
 int addPurchasingPower(int mID, int mPower) {
 	db[mID]+= mPower;
-	int ret = bfs2(mID, mPower);
-	return ret;
+	return bfs2(mID, mPower);
 }
 
 int bfs(int s1, int s2) {
@@ -125,8 +124,7 @@ int bfs(int s1, int s2) {
 
 int addFriendship(int mID1, int mID2) {
 	add(mID1, mID2);
-	int ret = bfs(mID1, mID2);
-	return ret;
+	return bfs(mID1, mID2);
 }
 #endif // 1
 ```
