@@ -52,7 +52,7 @@ void query(Point mA, Point mB, int mCount, Point mTop[]){
 	mA.r--, mA.c--, mB.r--, mB.c--;
 	for (int i = mA.r / K; i <= mB.r / K; i++)
 		for (int j = mA.c / K; j <= mB.c / K; j++)
-			for (Data nx : v[i][j]) tmp.push_back(nx);
+			for (Data nx : v[i][j]) tmp.push_back({ nx.r, nx.c, nx.h + update[i][j] });
 	partial_sort(tmp.begin(), tmp.begin() + mCount, tmp.end());
 	for (int i = 0; i < tmp.size();i++) {
 		mTop[i].r = tmp[i].r + 1, mTop[i].c = tmp[i].c + 1;
@@ -71,5 +71,4 @@ void work(Point mA, Point mB, int mH){
 		for (int j = mA.c / K; j <= mB.c / K; j++)
 			update[i][j] += mH;
 }
-
 ```
