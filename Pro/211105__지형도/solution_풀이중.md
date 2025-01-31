@@ -1,9 +1,7 @@
 ```cpp
-#if 1
 #include <vector>
 #include <algorithm>
 #include <string.h>
-#include <set>
 using namespace std;
 
 #define MAX_MAP_SIZE 2000
@@ -63,5 +61,4 @@ void work(Point mA, Point mB, int mH) {
 		for (int j = mA.c / K; j <= mB.c / K; j++)
 			update[i][j] += mH;
 }
-#endif // 1
 ```
