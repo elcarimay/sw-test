@@ -148,7 +148,7 @@ void backGo(set<Pos>& s, int opt) {
 				pq.push({ mid , diagonal_dist(mid, r, c) }); return;
 			}
 		}
-		if (it == --s.end()) break;
+		if (it == --s.end()) return;
 		it++;
 	}
 }
