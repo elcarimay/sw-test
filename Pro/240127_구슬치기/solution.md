@@ -118,12 +118,12 @@ void frontGo(set<Pos>& s, int opt) {
 		}
 		else if(opt == LD) {
 			if (range(ldRange[r + c], it->r, it->c)) {
-				pq.push({ mid , diagonal_dist(mid, r, c) }); break;
+				pq.push({ mid , diagonal_dist(mid, r, c) }); return;
 			}
 		}
 		else {
 			if (range(rdRange[MAXN + r - c], it->r, it->c)) {
-				pq.push({ mid , diagonal_dist(mid, r, c) }); break;
+				pq.push({ mid , diagonal_dist(mid, r, c) }); return;
 			}
 		}
 	}
@@ -135,17 +135,17 @@ void backGo(set<Pos>& s, int opt) {
 		int mid = holeMap[getHash(it->r, it->c)];
 		if (opt == NORMAL) {
 			if (!db[mid].closed) {
-				pq.push({ mid , normal_dist(mid, r, c) }); break;
+				pq.push({ mid , normal_dist(mid, r, c) }); return;
 			}
 		}
 		else if (opt == LD) {
 			if (!db[mid].closed && range(ldRange[r + c], it->r, it->c)) {
-				pq.push({ mid , diagonal_dist(mid, r, c) }); break;
+				pq.push({ mid , diagonal_dist(mid, r, c) }); return;
 			}
 		}
 		else {
 			if (!db[mid].closed && range(rdRange[MAXN + r - c], it->r, it->c)) {
-				pq.push({ mid , diagonal_dist(mid, r, c) }); break;
+				pq.push({ mid , diagonal_dist(mid, r, c) }); return;
 			}
 		}
 		if (it == --s.end()) break;
