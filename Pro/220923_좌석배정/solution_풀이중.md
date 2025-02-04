@@ -1,3 +1,4 @@
+```cpp
 #include <set>
 #include <queue>
 #include <unordered_map>
@@ -38,3 +39,4 @@ int selectSeat(int mSeatNum){
 
 	return 0;
 }
+```
