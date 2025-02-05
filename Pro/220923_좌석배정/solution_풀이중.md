@@ -88,6 +88,7 @@ int selectSeat(int mSeatNum){
 	if (ver[c].size()) dir(ver[c], mSeatNum), backGo(ver[c], NORMAL, mSeatNum, 2), frontGo(ver[c], NORMAL, mSeatNum, 6);
 	if (ld[r + c].size()) dir(ld[r + c], mSeatNum), backGo(ld[r + c], DIAGONAL, mSeatNum, 3), frontGo(ld[r + c], DIAGONAL, mSeatNum, 7);
 	if (rd[W * H + r - c].size()) dir(rd[W * H + r - c], mSeatNum), backGo(rd[W * H + r - c], DIAGONAL, mSeatNum, 1), frontGo(rd[W * H + r - c], DIAGONAL, mSeatNum, 5);
+	if (pq.empty()) return 0;
 	db[pq.top().id].booked = true;
 	return pq.top().id;
 }
