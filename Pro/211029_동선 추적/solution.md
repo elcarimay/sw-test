@@ -48,7 +48,7 @@ void removePlace(int pID) {
 
 void update(set<Data>& s, int uid, bool opt, int vi[]) {
 	if (s.size() == 1) return;
-	it = lower_bound(s.begin(), s.end(), Data{ pid });
+	it = s.lower_bound({ pid });
 	if (opt && it == s.begin()) return;
 	if (!opt && it == --s.end()) return;
 	while (true) {
