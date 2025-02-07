@@ -28,12 +28,6 @@ int getID(const char c[]) {
 
 struct Data1 {
 	int aid;
-	bool operator==(const Data1& r)const {
-		return aid == r.aid;
-	}
-	bool operator=(const Data1& r)const {
-		return aid == r.aid;
-	}
 	bool operator<(const Data1& r)const {
 		if (db[aid].avg != db[r.aid].avg) return db[aid].avg > db[r.aid].avg;
 		bool flag;
@@ -60,7 +54,7 @@ set<Data2>::iterator nit[10003];
 
 void init(int N, const char mApp[][MAXL]) {
 	aCnt = 0, aMap.clear(), score.clear(), number.clear();
-	for (int i = 0; i < 10000; i++)	db[i] = {}, state[i] = false, eval[i].clear();
+	for (int i = 0; i < 10000; i++)	db[i] = {}, state[i] = true, eval[i].clear();
 	for (int i = 0; i < N; i++) {
 		int aid = getID(mApp[i]);
 		strcpy(db[aid].c, mApp[i]);
@@ -77,6 +71,7 @@ void addRating(int mUser, const char mApp[MAXL], int mScore) {
 	if (eval[mUser].count(aid)) {
 		db[aid].sum -= eval[mUser][aid], db[aid].cnt--;
 		if (db[aid].cnt) db[aid].avg = db[aid].sum * 10 / db[aid].cnt;
+		else db[aid].avg = 0;
 	}
 	db[aid].sum += mScore, db[aid].cnt++;
 	if (db[aid].cnt) db[aid].avg = db[aid].sum * 10 / db[aid].cnt;
@@ -91,20 +86,22 @@ void deleteRating(int mUser, const char mApp[MAXL]) {
 	number.erase({ aid });
 	db[aid].sum -= eval[mUser][aid], db[aid].cnt--;
 	if (db[aid].cnt) db[aid].avg = db[aid].sum * 10 / db[aid].cnt;
+	else db[aid].avg = 0;
 	sit[aid] = score.insert({ aid }).first;
 	nit[aid] = number.insert({ aid }).first;
 	eval[mUser].erase(aid);
 }
 
 void banUser(int mUser) {
-	if (state[mUser]) return;
-	state[mUser] = true;
+	if (!state[mUser]) return;
+	state[mUser] = false;
 	for (auto d : eval[mUser]) {
 		int aid = d.first;
 		score.erase({ aid });
 		number.erase({ aid });
 		db[aid].sum -= d.second, db[aid].cnt--;
 		if (db[aid].cnt) db[aid].avg = db[aid].sum * 10 / db[aid].cnt;
+		else db[aid].avg = 0;
 		sit[aid] = score.insert({ aid }).first;
 		nit[aid] = number.insert({ aid }).first;
 	}
