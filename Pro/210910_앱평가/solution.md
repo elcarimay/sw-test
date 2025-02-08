@@ -1,5 +1,5 @@
 ```cpp
-#if 1 // 풀이중
+#if 1
 #define _CRT_SECURE_NO_WARNINGS
 #include <set>
 #include <unordered_map>
