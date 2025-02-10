@@ -1,4 +1,5 @@
 ```cpp
+#if 1
 #include <vector>
 #include <set>
 #include <queue>
@@ -25,13 +26,16 @@ set<Data> s;
 set<Data>::iterator it, fit, bit;
 struct Access {
 	int id, tick;
+	bool operator<(const Access& r)const {
+		return tick < r.tick;
+	}
 };
-queue<Access> que;
+set<Access> que;
+set<Access>::iterator qit[LM];
 int totalSize, tick;
 void init(int N) {
 	totalSize = tick = mCnt = 0, m.clear();
-	s.clear(), s.insert({ 0, N });
-	while (!que.empty()) que.pop();
+	s.clear(), s.insert({ 0, N }), que.clear();
 	for (int i = 0; i < LM; i++) db[i] = { -1,-1 };
 }
 
@@ -41,9 +45,10 @@ int access(int fileId, int fileSize) {
 	else id = m[fileId] = mCnt++;
 	if (db[id].tick != 0) {
 		db[id].tick = ++tick;
-		que.push({id, tick}); return db[id].sIdx;
+		que.erase(qit[id]), qit[id] = que.insert({ id, tick }).first;
+		return db[id].sIdx;
 	}
-	
+
 	it = s.begin();
 	while (it != s.end()) {
 		if (it->len >= fileSize) break;
@@ -52,10 +57,10 @@ int access(int fileId, int fileSize) {
 	if (it == s.end()) {
 		while (true) {
 			// 큐에서 하나빼서 공간확보
-			auto cur = que.front(); que.pop();
-			if (db[cur.id].tick != cur.tick) continue;
-			db[cur.id].tick = 0, totalSize -= db[cur.id].len;
-			sIdx = db[cur.id].sIdx, len = db[cur.id].len;
+			int cid = que.begin()->id, ctick = que.begin()->tick;
+			que.erase(que.begin());
+			db[cid].tick = 0, totalSize -= db[cid].len;
+			sIdx = db[cid].sIdx, len = db[cid].len;
 			it = s.insert({ sIdx, len }).first;
 			bool left = false, right = false; // 확보된 공간 좌우비교
 			if (it != --s.end()) {
@@ -68,22 +73,18 @@ int access(int fileId, int fileSize) {
 			}
 
 			if (left == true && right == false) { // 확보된 공간 좌우 연결
-				fit = --it;
-				it++;
-				sIdx = fit->sIdx, len = fit->len + db[cur.id].len;
+				fit = --it; it++;
+				sIdx = fit->sIdx, len = fit->len + db[cid].len;
 				s.erase(fit);
 			}
 			else if (left == false && right == true) {
-				bit = ++it;
-				it--;
-				sIdx = db[cur.id].sIdx, len = db[cur.id].len + (bit)->len;
+				bit = ++it; it--;
+				sIdx = db[cid].sIdx, len = db[cid].len + (bit)->len;
 				s.erase(bit);
 			}
 			else if (left == true && right == true) {
-				fit = --it;
-				bit = ++(++it);
-				it--;
-				sIdx = fit->sIdx, len = fit->len + db[cur.id].len + bit->len;
+				fit = --it;	bit = ++(++it); it--;
+				sIdx = fit->sIdx, len = fit->len + db[cid].len + bit->len;
 				s.erase(fit), s.erase(bit);
 			}
 			if (left == true || right == true)
@@ -92,7 +93,7 @@ int access(int fileId, int fileSize) {
 		}
 	}
 	db[id] = { it->sIdx, fileSize, ++tick }; // it->len >= fileSize
-	que.push({ id, tick }), totalSize += fileSize;
+	qit[id] = que.insert({ id, tick }).first, totalSize += fileSize;
 	if (it->len > fileSize) s.insert({ it->sIdx + fileSize, it->len - fileSize }); // it->len > fileSize
 	s.erase(it);
 	return db[id].sIdx;
@@ -101,4 +102,6 @@ int access(int fileId, int fileSize) {
 int usage() {
 	return totalSize;
 }
+#endif // 1
+
 ```
