@@ -20,11 +20,11 @@ struct SellDB{
 
 unordered_map<int, int> bidMap, sidMap, pidMap;
 int bidCnt, sidCnt, pidCnt;
-int quantity[MAXN];
-
+int stocks[MAXN];
+bool canceled[MAXN];
 void init() {
 	bidCnt = sidCnt = pidCnt = 0, bidMap.clear(), sidMap.clear(), pidMap.clear();
-	memset(quantity, 0, sizeof(quantity));
+	memset(stocks, 0, sizeof(stocks)), memset(canceled, 0, sizeof(canceled));
 }
 
 int getID(int flag, int c) {
@@ -36,23 +36,26 @@ int getID(int flag, int c) {
 int buy(int bId, int mProduct, int mPrice, int mQuantity) {
 	int bid = getID(BUY, bId), pid = getID(PRODUCT, mProduct);
 	buydb[bid] = { bId, mProduct, mPrice, mQuantity };
-	quantity[pid] = mQuantity;
-	return quantity[pid];
+	stocks[pid] = mQuantity;
+	return stocks[pid];
 }
 
 int cancel(int bId) {
 	if (!bidMap.count(bId)) return -1;
 	int id = getID(BUY, bId);
 	int pid = getID(BUY, buydb[id].product);
-	if (!quantity[pid]) return -1;
-	quantity[pid] -= buydb[id].quantity;
-	buydb[id].quantity = 0;
-	return quantity[pid];
+	if (!stocks[pid]) return -1;
+	stocks[pid] -= buydb[id].quantity;
+	buydb[id].quantity = 0; canceled[pid] = true;
+	return stocks[pid];
 }
 
 int sell(int sId, int mProduct, int mPrice, int mQuantity) {
-	int id = getID(SELL, sId), pid = getID(mProduct);
+	int sid = getID(SELL, sId), pid = getID(PRODUCT, mProduct);
+	selldb[sid] = { sId, mProduct, mPrice, mQuantity };
+	if (stocks[pid] < mQuantity) return -1;
 
+	stocks[pid] -= mQuantity;
 	return 0;
 }
 
