@@ -1,8 +1,12 @@
 ```cpp
+// 구매내역과 판매내역을 계속 기록하면서 환불까지 해야하므로 구조체와 벡터로 저장
+// // 총 제고를 따로 정수배열에 저장하고 개별 제고도 저장해야 하므로 상기 구조체에 따로 변수만들어서 저장
+// 이전 주문에 대한 id를 지우면 안되므로 취소와 환불에 대한 boolean변수를 만들어서 이용
+// 구매가격이 낮고 ID가 낮은거부터 판매해야 하므로 우큐를 사용
+// 구매내역을 환불할때 refundFlag로만 했는데 환불값이 0이 나오는 경우가 있어서 환불값이 0일때 -1 반환하게끔 했음
 #include <unordered_map>
 #include <vector>
 #include <queue>
-#include <set>
 using namespace std;
 
 #define BUY 1
@@ -11,7 +15,7 @@ using namespace std;
 #define MAXN 30003
 
 struct BuyDB {
-	int bid, product, price, quantity, stocks; // stocks 남은 재고
+	int product, price, quantity, stocks; // stocks 남은 재고
 	bool canceled;
 }buydb[MAXN];
 
@@ -49,7 +53,7 @@ void init() {
 
 int buy(int bId, int mProduct, int mPrice, int mQuantity) {
 	int bid = getID(BUY, bId), pid = getID(PRODUCT, mProduct);
-	buydb[bid] = { bId, mProduct, mPrice, mQuantity, mQuantity, false};
+	buydb[bid] = { mProduct, mPrice, mQuantity, mQuantity, false};
 	stocks[pid] += mQuantity;
 	pq[pid].push({bId, mPrice, mQuantity });
 	return stocks[pid];
@@ -77,17 +81,17 @@ int sell(int sId, int mProduct, int mPrice, int mQuantity) {
 			v[sid].push_back({ cur.id, cur.stocks });
 			stocks[pid] -= cur.stocks;
 			buydb[bid].stocks -= cur.stocks;
-			ret += abs(mPrice - buydb[bid].price) * cur.stocks;
+			ret += abs(mPrice - cur.price) * cur.stocks;
 			mQuantity -= cur.stocks;
 		}
 		else {
 			v[sid].push_back({ cur.id, mQuantity });
 			stocks[pid] -= mQuantity;
 			buydb[bid].stocks -= mQuantity;
-			ret += abs(mPrice - buydb[bid].price) * mQuantity;
+			ret += abs(mPrice - cur.price) * mQuantity;
 			cur.stocks -= mQuantity;
 			mQuantity = 0;
-			pq[pid].push({ cur.id, buydb[bid].price, cur.stocks });
+			pq[pid].push({ cur.id, cur.price, cur.stocks });
 		}
 	}
 	return ret;
