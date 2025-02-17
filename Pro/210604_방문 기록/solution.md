@@ -49,8 +49,7 @@ void visit(int mUser, int mPortal) {
 struct Newer {
     int id, tick;
     bool operator<(const Newer& r)const {
-        if (tick != r.tick) return tick > r.tick;
-        return id < r.id;
+        return tick > r.tick;
     }
 };
 set<Newer> newer;
@@ -65,22 +64,14 @@ int getNewestVisited(int mUser, int mList[]) {
     return count;
 }
 
-struct Older {
-    int id, tick;
-    bool operator<(const Older& r)const {
-        if(tick != r.tick) return tick < r.tick;
-        return id < r.id;
-    }
-};
-set<Older> oldest;
 int getOldestVisited(int mUser, int mList[]) {
     int id = idMap[mUser];
-    oldest.clear();
+    newer.clear();
     for (int i = 1; i <= M; i++) {
-        if(!user[id][i].empty()) oldest.insert({ i,user[id][i].front() });
+        if(!user[id][i].empty()) newer.insert({ i,user[id][i].front() });
     }
     int count = 0;
-    for (set<Older>::iterator it = oldest.begin(); it != oldest.end(); it++)
+    for (set<Newer>::reverse_iterator it = newer.rbegin(); it != newer.rend(); it++)
         mList[count++] = it->id;
     return count;
 }
@@ -110,5 +101,4 @@ void getMostVisitedAll(int mList[]) {
         mList[count++] = it->id;
 }
 #endif // 1
-
 ```
