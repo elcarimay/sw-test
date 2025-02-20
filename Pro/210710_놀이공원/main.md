@@ -74,7 +74,7 @@ static bool run() {
 int main() {
     clock_t start = clock();
     setbuf(stdout, NULL);
-    freopen("sample_input-copy.txt", "r", stdin);
+    freopen("sample_input.txt", "r", stdin);
 
     int T, MARK;
     scanf("%d %d", &T, &MARK);
