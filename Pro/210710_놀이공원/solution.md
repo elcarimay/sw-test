@@ -1,4 +1,5 @@
 ```cpp
+#if 1
 // 대기하는 순간에 기구가 동작하면 들어가야 하므로 대기하는 전순간까지 update하고 대기하는 순간에 update하는게 구현편함
 // 기구가 새로 작동되는 순간에 capacity를 따로 변수로 두고 채워질때까지 채우고 시간을 업데이트 하는 방식으로 구현했음
 // update함수 입력이 true면 특정 id만, false면 전체를 update하였음
@@ -8,6 +9,9 @@
 using namespace std;
 
 #define MAXN 103
+
+unordered_map<int, int> m;
+int mCnt;
 
 struct Info {
 	int startTime, endTime; // capacity는 탑승인원
@@ -21,8 +25,6 @@ struct DB {
 	}
 }db[MAXN];
 
-unordered_map<int, int> m;
-int mCnt;
 struct Data {
 	int waitNum, priority;
 	bool operator<(const Data& r)const {
@@ -30,7 +32,6 @@ struct Data {
 	}
 };
 priority_queue<Data> w[MAXN];
-
 int waitTotal[MAXN];
 
 int getID(int mid) {
@@ -47,28 +48,20 @@ void init(int N, int mId[], int mDuration[], int mCapacity[]) {
 }
 
 void update(int time, bool opt) { // 대기열 update opt:true면 특정 ID만, false면 전체
-	if (time == 28) {
-		time = time;
-	}
-	int sid, eid; // start id, end id
-	if (opt) sid = id, eid = id + 1;
+	int sid, eid; 
+	if (opt) sid = id, eid = id + 1; // start id, end id
 	else sid = 0, eid = N;
 	for (int i = sid; i < eid; i++) {
 		while (l[i].endTime <= time) { // 설비의 끝나는 시간이 현재시간보다 같거나 작을때만 작동
-			bool flag = true;
-			if (w[i].empty()) { // 대기가 없고 시간만 지나면 시작/끝 시간 0으로 초기화
-				db[i].init(i); break;
+			if (w[i].empty()) { 
+				db[i].init(i); break; // 대기가 없고 시간만 지나면 시작/끝 시간 0으로 초기화
 			}
 			Data tmp;
 			int capa = db[i].capacity;
-			while (true) { // 대기열이 있을때
-				Data cur = w[i].top(); w[i].pop();
-				waitTotal[i] -= cur.waitNum;
-				// 비워있는 자리를 채우는데 다 못채우면 채울때까지 넣음
-				if (capa <= cur.waitNum) // 빈자리가 대기인원보다 같거나 작을때
-					cur.waitNum -= capa, capa = 0;
-				else // capa > cur.waitNum
-					capa -= cur.waitNum, cur.waitNum = 0;
+			while (true) { // 대기열이 있을때 비워있는 자리를 채우는데 다 못채우면 채울때까지 넣음
+				Data cur = w[i].top(); w[i].pop(), waitTotal[i] -= cur.waitNum;
+				if (capa <= cur.waitNum) cur.waitNum -= capa, capa = 0;
+				else capa -= cur.waitNum, cur.waitNum = 0;
 				if (w[i].empty() || capa == 0) { // 채울 대기가 없고 빈자리가 없을때
 					tmp = cur; break;
 				}
@@ -106,4 +99,5 @@ void search(int tStamp, int mCount, int mId[], int mWait[]) {
 		mId[i] = db[id].mid, mWait[i] = waitTotal[id];
 	}
 }
+#endif // 1
 ```
