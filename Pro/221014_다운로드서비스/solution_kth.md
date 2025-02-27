@@ -15,7 +15,8 @@ int ct;
 struct Data {
 	int finish, id;
 	bool operator<(const Data& r)const {
-		return finish < r.finish;
+		if (finish != r.finish) return finish < r.finish;
+		return id < r.id;
 	}
 };
 set<Data> s;
@@ -59,9 +60,10 @@ void updateSpeed(int id, int speed) {
 		s.erase({ node[id].finish, id }); // 기존 정보 set에서 삭제
 		node[id].update(speed);
 		s.insert({ node[id].finish, id });
+		return;
 	}
-	node[id].speed = speed;
-	for (int cid : node[id].child)
+	node[id].speed = speed; // 2) hub인 경우
+	for (int cid : node[id].child) // 전송중인 자식노드들에 새로운 속도 적용
 		if (node[cid].dlCnt) updateSpeed(cid, speed / node[id].dlCnt);
 }
 
@@ -105,9 +107,8 @@ Result checkPC(int mTime, int mpcID) {
 	ct = mTime;
 	node[mpcID].update(node[mpcID].speed);
 	if (node[mpcID].size) res = { 0, node[mpcID].size };
-	else res = { 1, node[mpcID].size };
+	else res = { 1, node[mpcID].finish };
 	return res;
 }
 #endif // 1
-
 ```
