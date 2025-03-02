@@ -56,12 +56,17 @@ int newCivilization(int r, int c, int mID) { // 지도에는 mCnt를 입력, uno
 	return rm[map[r][c]];
 }
 
+void change(int id1, int id2, bool flag) {
+	for (list<DB>::iterator it = l[id2].begin(); it != l[id2].end(); it++)
+		map[it->r][it->c] = id1;
+	if(flag) l[id1].splice(l[id1].end(), l[id2]);
+}
+
 int removeCivilization(int mID) {
 	if (!m.count(mID)) return 0;
 	int id = getID(mID);
 	m.erase(mID);
-	for (list<DB>::iterator it = l[id].begin(); it != l[id].end(); it++)
-		map[it->r][it->c] = 0;
+	change(0, id, false);
 	return l[id].size();
 }
 
@@ -75,17 +80,9 @@ int getCivilizationArea(int mID) {
 
 int mergeCivilization(int mID1, int mID2) {
 	int id1 = getID(mID1), id2 = getID(mID2);
-	if (l[id1].size() < l[id2].size()) {
-		for (list<DB>::iterator it = l[id1].begin(); it != l[id1].end(); it++)
-			map[it->r][it->c] = id2;
-		l[id2].splice(l[id2].end(), l[id1]);
-		rm[m[mID1] = id2] = mID1;
-	}
-	else {
-		for (list<DB>::iterator it = l[id2].begin(); it != l[id2].end(); it++)
-			map[it->r][it->c] = id1;
-		l[id1].splice(l[id1].end(), l[id2]);
-	}
+	if (l[id1].size() < l[id2].size())
+		change(id2, id1, true), rm[m[mID1] = id2] = mID1;
+	else change(id1, id2, true);
 	m.erase(mID2);
 	return l[m[mID1]].size();
 }
