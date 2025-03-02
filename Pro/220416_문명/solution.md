@@ -2,7 +2,7 @@
 #if 1
 // 전체 map이 1000 x 1000 이므로 그대로 맵에 unordered_map에 의한 mCnt로 id를 입력
 // 주위4개에 대한 문명파악할때 unordered_map으로 입력후 우큐로 선택
-// 각 문명당 list로 입력하고 큰 문명에 작은 문명 list를 splice로 이어붙임
+// 각 문명당 list로 입력하고 mID2가 작을때는 관리하는 ID를 서로 바꾸고 큰 문명에 작은 문명 list를 splice로 이어붙임
 #include <vector>
 #include <list>
 #include <algorithm>
