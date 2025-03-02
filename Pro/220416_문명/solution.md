@@ -56,7 +56,7 @@ int newCivilization(int r, int c, int mID) { // 지도에는 mCnt를 입력, uno
 	return rm[map[r][c]];
 }
 
-void change(int id1, int id2, bool flag) {
+void change(int id1, int id2, bool flag) { // flag가 false면 map 0으로 초기화
 	for (list<DB>::iterator it = l[id2].begin(); it != l[id2].end(); it++)
 		map[it->r][it->c] = id1;
 	if(flag) l[id1].splice(l[id1].end(), l[id2]);
