@@ -67,7 +67,7 @@ int removeCivilization(int mID) {
 	int id = getID(mID);
 	m.erase(mID);
 	change(0, id, false);
-	return l[id].size();
+	return int(l[id].size());
 }
 
 int getCivilization(int r, int c) {
@@ -75,7 +75,7 @@ int getCivilization(int r, int c) {
 }
 
 int getCivilizationArea(int mID) {
-	return l[getID(mID)].size();
+	return int(l[getID(mID)].size());
 }
 
 int mergeCivilization(int mID1, int mID2) {
@@ -84,7 +84,7 @@ int mergeCivilization(int mID1, int mID2) {
 		change(id2, id1, true), rm[m[mID1] = id2] = mID1;
 	else change(id1, id2, true);
 	m.erase(mID2);
-	return l[m[mID1]].size();
+	return int(l[m[mID1]].size());
 }
 #endif // 1
 ```
