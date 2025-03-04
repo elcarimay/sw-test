@@ -2,6 +2,7 @@
 #include <vector>
 #include <queue>
 #include <string.h>
+#include <iostream>
 using namespace std;
 
 #define MAXN 503
@@ -20,9 +21,9 @@ void addRoad(int mRoadA, int mRoadB, int mLen) {
     adj[mRoadB].push_back({ mRoadA, mLen });
 }
 
-void init(int N, int K, int mRoadAs[], int mRoadBs[], int mLens[]){
+void init(int N, int K, int mRoadAs[], int mRoadBs[], int mLens[]) {
     ::N = N;
-    for (int i = 0; i < K; i++) 
+    for (int i = 0; i < K; i++)
         addRoad(mRoadAs[i], mRoadBs[i], mLens[i]);
 }
 
@@ -50,27 +51,33 @@ void dijkstra(int s) {
     }
 }
 
-int R[3], tail, sum, ret;
+int sum, ret, R[3], tail;
 bool visit[7];
-int dfs(int s, int level) {
+void dfs(int level) {
     if (level == M) {
-        for (int i = 0; i < M - 1; i++) sum += dist[R[i]][R[i + 1]];
-        if (dist[path[0]][R[0]] == INT_MAX || dist[path[1]][R[M - 1]] == INT_MAX)
-            return INT_MAX;
+        for (int i = 0; i < M - 1; i++) {
+            if (dist[R[i]][R[i + 1]] == INT_MAX) {
+                ret = INT_MAX; return;
+            }
+            sum += dist[R[i]][R[i + 1]];
+        }
+        if (dist[path[0]][R[0]] == INT_MAX || dist[path[1]][R[M - 1]] == INT_MAX) {
+            ret = INT_MAX; return;
+        }
         sum += dist[path[0]][R[0]] + dist[path[1]][R[M - 1]];
-        return ret = min(ret, sum);
+        ret = min(ret, sum); return;
     }
     for (int i = 2; i < 2 + M; i++) {
-        R[tail++] = path[s];
         if (visit[i]) continue;
+        R[tail++] = path[i];
         visit[i] = true;
-        dfs(i, ++level);
+        dfs(level + 1);
         visit[i] = false;
         tail--;
     }
 }
 
-int findPath(int mStart, int mEnd, int M, int mStops[]){
+int findPath(int mStart, int mEnd, int M, int mStops[]) {
     ::M = M, ret = INT_MAX;
     for (int i = 0; i < N; i++) {
         cost[i] = INT_MAX;
@@ -84,7 +91,7 @@ int findPath(int mStart, int mEnd, int M, int mStops[]){
     }
     sum = tail = 0;
     memset(visit, 0, sizeof(visit));
-    ret = dfs(2, 0);
+    dfs(0);
     return ret == INT_MAX ? -1 : ret;
 }
 ```
