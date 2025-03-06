@@ -29,6 +29,7 @@ void init(int N, int K, int mRoadAs[], int mRoadBs[], int mLens[]) {
 
 int path[7];
 void dijkstra(int s) {
+    for (int i = 1; i <= N; i++) cost[i] = INT_MAX;
     cost[s] = 0;
     priority_queue<Edge> pq;
     pq.push({ s,0 });
@@ -41,8 +42,10 @@ void dijkstra(int s) {
             if (cost[nx.to] > nextCost) pq.push({ nx.to, cost[nx.to] = nextCost });
         }
     }
-    for (int i = 1; i <= N; i++)
+    for (int i = 1; i <= N; i++) {
+        dist[s][i] = INT_MAX;
         if (i != path[0] || i != path[1]) dist[s][i] = cost[i];
+    }
 }
 
 int R[5], tail, sum, ret;
@@ -56,7 +59,6 @@ void dfs(int level) {
         if (dist[path[0]][R[0]] == INT_MAX || dist[path[1]][R[M - 1]] == INT_MAX)
             return;
         sum += dist[path[0]][R[0]] + dist[path[1]][R[M - 1]];
-        if (sum == 0) return;
         ret = min(ret, sum); sum = 0; return;
     }
     for (int i = 2; i < 2 + M; i++) {
@@ -70,18 +72,10 @@ void dfs(int level) {
 
 int findPath(int mStart, int mEnd, int M, int mStops[]) {
     ::M = M, ret = INT_MAX;
-    for (int i = 1; i <= N; i++) {
-        cost[i] = INT_MAX;
-        for (int j = 1; j <= N; j++) dist[i][j] = INT_MAX;
-    }
     path[0] = mStart, path[1] = mEnd;
     for (int i = 0; i < M; i++) path[i + 2] = mStops[i];
-    for (int i = 0; i < 2 + M; i++) {
-        for (int i = 1; i <= N; i++) cost[i] = INT_MAX;
-        dijkstra(path[i]);
-    }
-    sum = tail = 0;
-    memset(visit, 0, sizeof(visit));
+    for (int i = 0; i < 2 + M; i++) dijkstra(path[i]);
+    sum = tail = 0; memset(visit, 0, sizeof(visit));
     dfs(0);
     return ret == INT_MAX ? -1 : ret;
 }
