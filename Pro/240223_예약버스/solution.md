@@ -2,7 +2,6 @@
 #include <vector>
 #include <queue>
 #include <string.h>
-#include <iostream>
 using namespace std;
 
 #define MAXN 503
