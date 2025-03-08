@@ -19,10 +19,9 @@ using namespace std;
 struct DB {
 	int s, e, c;
 }db[MAX_ROAD];
-unordered_map<int, int> idMap;
-int idCnt;
+
 struct Edge {
-	int to, cost;
+	int to, cost, used_coupon;
 	bool operator<(const Edge& r)const {
 		return cost > r.cost;
 	}
@@ -30,8 +29,10 @@ struct Edge {
 		return to == r.to && cost == r.cost;
 	}
 };
+
 vector<Edge> adj[MAX_CITY];
-int N, M;
+unordered_map<int, int> idMap;
+int idCnt, N, M;
 
 int getID(int c) {
 	return idMap.count(c) ? idMap[c] : idMap[c] = idCnt++;
@@ -54,22 +55,15 @@ void remove(int mId) {
 	adj[s].erase(find(adj[s].begin(), adj[s].end(), Edge{ e, c }));
 }
 
-struct Data {
-	int to, cost, used_coupon;
-	bool operator<(const Data& r) const {
-		return cost > r.cost;
-	}
-};
-
 int costFinal[MAX_CITY][MAX_DISCOUNT_TICKET]; // 사용한 할인권 개수에 따른 최소 비용
 int dijkstra(int m, int s, int e) {
 	for (int i = 0; i < N; i++) for (int j = 0; j < MAX_DISCOUNT_TICKET; j++) costFinal[i][j] = INF;
 	costFinal[s][0] = 0;
-	priority_queue<Data> pq;
+	priority_queue<Edge> pq;
 	pq.push({ s, 0, 0 }); // to, cost, used_coupon
 
 	while (!pq.empty()) {
-		Data cur = pq.top(); pq.pop();
+		Edge cur = pq.top(); pq.pop();
 		if (cur.to == e && cur.used_coupon == m) {
 			int ret = INF;
 			for (int i = 1; i <= m; i++) ret = min(ret, costFinal[e][i]); // 할인권을 사용한다는 가정이 있음
@@ -100,7 +94,5 @@ int dijkstra(int m, int s, int e) {
 int cost(int M, int sCity, int eCity) {
 	return dijkstra(M, sCity, eCity);
 }
-
 #endif // 1
-
 ```
