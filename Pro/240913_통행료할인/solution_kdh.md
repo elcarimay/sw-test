@@ -57,8 +57,7 @@ void remove(int mId) {
 struct Data {
 	int to, cost, used_coupon;
 	bool operator<(const Data& r) const {
-		if (cost != r.cost) return cost > r.cost;
-		return used_coupon > r.used_coupon;
+		return cost > r.cost;
 	}
 };
 
