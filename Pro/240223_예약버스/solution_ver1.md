@@ -4,12 +4,15 @@
 // 경유지가 최대 5개인데 5!하면 120정도이지만 출발지와 도착지가 포함되면 안되므로 continue로 건너뛰므로 더 낮아짐
 // 전체탐색으로 다 구하는데 순열이 필요하므로 dfs사용
 // 경유할때 데 끝점은 역으로 구해서 계산함
+// kth: 연결이 되지 않는 경로를 먼저 저장해놓고 순열을 구하면서 계산
+// jjh: INF를 백만으로해서 계속 더해도 음수가 나오지 않도록 해놓고 순열을 구하면서 계산
 #include <vector>
 #include <queue>
 #include <string.h>
 using namespace std;
 
 #define MAXN 503
+#define INF 1'000'000 // 987654321로 바꾸면 음수가 나오기때문에 안됨
 
 struct Edge {
     int to, cost;
@@ -33,7 +36,7 @@ void init(int N, int K, int mRoadAs[], int mRoadBs[], int mLens[]) {
 
 int path[7];
 void dijkstra(int s) {
-    for (int i = 1; i <= N; i++) cost[i] = INT_MAX;
+    for (int i = 1; i <= N; i++) cost[i] = INF;
     cost[s] = 0;
     priority_queue<Edge> pq;
     pq.push({ s,0 });
@@ -47,7 +50,6 @@ void dijkstra(int s) {
         }
     }
     for (int i = 1; i <= N; i++) {
-        dist[s][i] = INT_MAX;
         if (i != path[0] || i != path[1]) dist[s][i] = cost[i];
     }
 }
@@ -56,15 +58,11 @@ int R[5], tail, sum, ret;
 bool visit[7];
 void dfs(int level) {
     if (level == M) {
-        for (int i = 0; i < M - 1; i++) {
-            if (dist[R[i]][R[i + 1]] == INT_MAX) return;
-            sum += dist[R[i]][R[i + 1]];
-        }
-        if (dist[path[0]][R[0]] == INT_MAX || dist[path[1]][R[M - 1]] == INT_MAX)
-            return;
+        for (int i = 0; i < M - 1; i++) sum += dist[R[i]][R[i + 1]];
         sum += dist[path[0]][R[0]] + dist[path[1]][R[M - 1]];
-        ret = min(ret, sum); sum = 0; return;
+        ret = min(ret, sum); return;
     }
+    sum = 0;
     for (int i = 2; i < 2 + M; i++) {
         if (visit[i]) continue; visit[i] = true;
         R[tail++] = path[i];
@@ -75,12 +73,12 @@ void dfs(int level) {
 }
 
 int findPath(int mStart, int mEnd, int M, int mStops[]) {
-    ::M = M, ret = INT_MAX;
+    ::M = M, ret = INF;
     path[0] = mStart, path[1] = mEnd;
     for (int i = 0; i < M; i++) path[i + 2] = mStops[i];
     for (int i = 0; i < 2 + M; i++) dijkstra(path[i]);
     sum = tail = 0; memset(visit, 0, sizeof(visit));
     dfs(0);
-    return ret == INT_MAX ? -1 : ret;
+    return ret >= INF ? -1 : ret;
 }
 ```
