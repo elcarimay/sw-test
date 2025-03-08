@@ -111,12 +111,12 @@ int pass[7][2];
 int M;
 int visit[5];
 
-int search(int n, int cur, int sum)
+int search(int n, int cur, int sum) // M부터 시작하는데 M에는 시작지점이 들어가 있음
 {
 	// 마지막 경유지까지 탐색했으면
 	// 최종 비용 = 현재까지의 비용 + 마지막 경유지로 이동하는 비용
 	if (n == M)
-		return sum + cost[M + 1][cur];
+		return sum + cost[M + 1][cur]; // M+1에는 마지막지점이 들어가 있음
 
 	int ret = INF;
 	for (int i = 0; i < M; i++)
