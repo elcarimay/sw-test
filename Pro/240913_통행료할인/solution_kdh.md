@@ -5,7 +5,6 @@
 // 다익스트라계산시 주어진 할인권개수까지 나오도록 종료조건 설정
 // cost함수에서 할인권을 사용했을때를 계산하므로 할인권 0인 경우는 포함하지 않고 계산
 // 할인권이 0인 경우를 포함하면 case 21에서 정답이 안나옴
-
 #include<vector>
 #include<unordered_map>
 #include<queue>
@@ -16,6 +15,7 @@ using namespace std;
 #define MAX_ROAD 3403
 #define MAX_DISCOUNT_TICKET 11
 #define INF 987654321
+
 struct DB {
 	int s, e, c;
 }db[MAX_ROAD];
