@@ -51,25 +51,31 @@ void dijkstra(int s) {
     }
 }
 
-int sum, ret;
+int R[5], tail, sum, ret;
 bool visit[7];
-int dfs(int level, int cur, int sum) {
-    if (level == M) return sum + dist[path[1]][cur];
-    int ret = INF;
+void dfs(int level) {
+    if (level == M) {
+        for (int i = 0; i < M - 1; i++) sum += dist[R[i]][R[i + 1]];
+        sum += dist[path[0]][R[0]] + dist[path[1]][R[M - 1]];
+        ret = min(ret, sum); return;
+    }
+    sum = 0;
     for (int i = 2; i < 2 + M; i++) {
         if (visit[i]) continue; visit[i] = true;
-        ret = min(ret, dfs(level + 1, path[i], sum + dist[cur][path[i]]));
+        R[tail++] = path[i];
+        dfs(level + 1);
         visit[i] = false;
+        tail--;
     }
-    return ret;
 }
 
 int findPath(int mStart, int mEnd, int M, int mStops[]) {
-    ::M = M, path[0] = mStart, path[1] = mEnd;
+    ::M = M, ret = INF;
+    path[0] = mStart, path[1] = mEnd;
     for (int i = 0; i < M; i++) path[i + 2] = mStops[i];
     for (int i = 0; i < 2 + M; i++) dijkstra(path[i]);
-    memset(visit, 0, sizeof(visit));
-    int ret = dfs(0, path[0], 0);
+    sum = tail = 0; memset(visit, 0, sizeof(visit));
+    dfs(0);
     return ret >= INF ? -1 : ret;
 }
 ```
