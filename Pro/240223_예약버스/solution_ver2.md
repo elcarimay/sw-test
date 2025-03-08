@@ -2,14 +2,14 @@
 // ver1: 순열을 구하면서 계산
 // kth: 연결이 되지 않는 경로를 먼저 저장해놓고 진행
 // jjh: INF를 백만으로해서 계속 더해도 음수가 나오지 않도록 해놓고 전체탐색
-#if 1
+// ysb: 순열을 모두 다 구해놓고 계산
 #include <vector>
 #include <queue>
 #include <string.h>
 using namespace std;
 
 #define MAXN 503
-#define INF 1'000'000
+#define INF 1'000'000 // 987654321로 바꾸면 음수가 나오기때문에 안됨
 
 struct Edge {
     int to, cost;
@@ -47,17 +47,14 @@ void dijkstra(int s) {
         }
     }
     for (int i = 1; i <= N; i++) {
-        //dist[s][i] = INF;
         if (i != path[0] || i != path[1]) dist[s][i] = cost[i];
     }
 }
 
-int R[5], tail, sum, ret;
+int sum, ret;
 bool visit[7];
-
 int dfs(int level, int cur, int sum) {
-    if (level == M)
-        return sum + dist[path[1]][cur];
+    if (level == M) return sum + dist[path[1]][cur];
     int ret = INF;
     for (int i = 2; i < 2 + M; i++) {
         if (visit[i]) continue; visit[i] = true;
@@ -68,14 +65,11 @@ int dfs(int level, int cur, int sum) {
 }
 
 int findPath(int mStart, int mEnd, int M, int mStops[]) {
-    ::M = M;
-    path[0] = mStart, path[1] = mEnd;
+    ::M = M, path[0] = mStart, path[1] = mEnd;
     for (int i = 0; i < M; i++) path[i + 2] = mStops[i];
     for (int i = 0; i < 2 + M; i++) dijkstra(path[i]);
-    sum = tail = 0; memset(visit, 0, sizeof(visit));
+    memset(visit, 0, sizeof(visit));
     int ret = dfs(0, path[0], 0);
     return ret >= INF ? -1 : ret;
 }
-#endif // 1
-
 ```
