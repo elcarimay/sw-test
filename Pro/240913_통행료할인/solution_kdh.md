@@ -56,7 +56,7 @@ void remove(int mId) {
 }
 
 int costFinal[MAX_CITY][MAX_DISCOUNT_TICKET]; // 사용한 할인권 개수에 따른 최소 비용
-int dijkstra(int m, int s, int e) {
+int cost(int m, int s, int e) {
 	for (int i = 0; i < N; i++) for (int j = 0; j < MAX_DISCOUNT_TICKET; j++) costFinal[i][j] = INF;
 	costFinal[s][0] = 0;
 	priority_queue<Edge> pq;
@@ -89,10 +89,6 @@ int dijkstra(int m, int s, int e) {
 		}
 	}
 	return -1; // 도착하지 못하는 경우
-}
-
-int cost(int M, int sCity, int eCity) {
-	return dijkstra(M, sCity, eCity);
 }
 #endif // 1
 ```
