@@ -1,5 +1,74 @@
 ```cpp
-#if 1
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+#include <stdio.h>
+extern void init(int N, int K, int mId[], int sCity[], int eCity[], int mCost[]);
+extern void add(int mId, int sCity, int eCity, int mCost);
+extern void remove(int mId);
+extern int cost(int sCity, int eCity);
+/////////////////////////////////////////////////////////////////////////
+#define MAX_K 1000
+#define CMD_INIT 100
+#define CMD_ADD 200
+#define CMD_REMOVE 300
+#define CMD_COST 400
+static bool run() {
+	int q;
+	scanf("%d", &q);
+	int n, k;
+	int mIdArr[MAX_K], sCityArr[MAX_K], eCityArr[MAX_K], mCostArr[MAX_K];
+	int mId, sCity, eCity, mCost;
+	int cmd, ans, ret = 0;
+	bool okay = false;
+	for (int i = 0; i < q; ++i) {
+		scanf("%d", &cmd);
+		switch (cmd) {
+		case CMD_INIT:
+			okay = true;
+			scanf("%d %d", &n, &k);
+			for (int j = 0; j < k; ++j) {
+				scanf("%d %d %d %d", &mIdArr[j], &sCityArr[j], &eCityArr[j], &mCostArr[j]);
+			}
+			init(n, k, mIdArr, sCityArr, eCityArr, mCostArr);
+			break;
+		case CMD_ADD:
+			scanf("%d %d %d %d", &mId, &sCity, &eCity, &mCost);
+			add(mId, sCity, eCity, mCost);
+			break;
+		case CMD_REMOVE:
+			scanf("%d", &mId);
+			remove(mId);
+			break;
+		case CMD_COST:
+			scanf("%d %d %d", &sCity, &eCity, &ans);
+			ret = cost(sCity, eCity);
+			if (ans != ret)
+				okay = false;
+			break;
+		default:
+			okay = false;
+			break;
+		}
+	}
+	return okay;
+}
+
+#include <time.h>
+
+int main() {
+	clock_t start = clock();
+	setbuf(stdout, NULL);
+	freopen("sample_input-copy.txt", "r", stdin);
+	int T, MARK;
+	scanf("%d %d", &T, &MARK);
+	for (int tc = 1; tc <= T; tc++) {
+		int score = run() ? MARK : 0;
+		printf("#%d %d\n", tc, score);
+	}
+	printf("Performance: %d ms\n", (clock() - start));
+	return 0;
+}
 #include <vector>
 #include <queue>
 #include <unordered_map>
@@ -37,9 +106,6 @@ void init(int N, int K, int mId[], int sCity[], int eCity[], int mCost[]) {
 }
 
 void remove(int mId) {
-    if (mId == 948385188) {
-        mId = mId;
-    }
     auto& a = road[mId];
     adj[a.start].erase(find(adj[a.start].begin(), adj[a.start].end(), Edge{ a.end, a.cost }));
     costs.erase(find(costs.begin(), costs.end(), Edge{ a.end, a.cost }));
@@ -98,5 +164,4 @@ int cost(int sCity, int eCity) {
     ret = minCostDifference(sCity, eCity);
     return ret == INF ? -1 : ret;
 }
-#endif // 1
 ```
