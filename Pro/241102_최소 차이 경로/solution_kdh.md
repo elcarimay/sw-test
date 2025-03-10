@@ -1,10 +1,13 @@
 ```cpp
+#if 1
+// cost를 정렬하여 two-pointer를 사용
+// cost 정렬시 중복되지 않아야 하며 지울때 중복된 노드도 있기때문에 노드를 같이 저장하면서 지워야 함
+// 투포인터로 범위를 증가시키면서 canReachWithRange함수로 도달할수 있는지 확인함
 #include <vector>
 #include <queue>
 #include <unordered_map>
 #include <string.h>
 #include <algorithm>
-#include <set>
 using namespace std;
 #define INF 987654321
 
@@ -36,27 +39,19 @@ void init(int N, int K, int mId[], int sCity[], int eCity[], int mCost[]) {
 }
 
 void remove(int mId) {
-    if (mId == 948385188) {
-        mId = mId;
-    }
     auto& a = road[mId];
     adj[a.start].erase(find(adj[a.start].begin(), adj[a.start].end(), Edge{ a.end, a.cost }));
     costs.erase(find(costs.begin(), costs.end(), Edge{ a.end, a.cost }));
 }
 
 bool visited[303];
-//vector<pair<int, int>> tmp;
 bool canReachWithRange(int start, int end, int minCost, int maxCost) {
-    //if (minCost == 48 || minCost == 110 || minCost == 133 || minCost == 254 || minCost == 302) tmp.push_back({ minCost, maxCost });
-    //printf("Checking range: %d ~ %d\n", minCost, maxCost);
-    //printf("Difference: %d\n", maxCost - minCost);
     queue<int> q;
     memset(visited, 0, sizeof(visited));
     q.push(start);
     visited[start] = true;
     while (!q.empty()) {
         int node = q.front(); q.pop();
-        //printf("Visiting: %d\n", node);
         if (node == end) return true;
         for (Edge edge : adj[node]) {
             if (!visited[edge.to] && minCost <= edge.cost && edge.cost <= maxCost) {
@@ -69,25 +64,26 @@ bool canReachWithRange(int start, int end, int minCost, int maxCost) {
 }
 
 vector<int> Cost;
-int minCostDifference(int start, int end) { // 최소 비용 차이를 찾는 이분 탐색 함수
+int minCostDifference(int start, int end) { 
     Cost.clear();
     for (Edge nx : costs) Cost.push_back(nx.cost);
     sort(Cost.begin(), Cost.end()); // 정렬
     Cost.erase(unique(Cost.begin(), Cost.end()), Cost.end()); // 중복제거
-    int left = 0, right = Cost.size() - 1, answer = INF;
-    for (int i = 0; i < Cost.size(); i++) for (int j = i; j < Cost.size(); j++) {
-        int minCost = Cost[i], maxCost = Cost[j];
+    int left = 0, right = 0, answer = INF; // 최소 비용 차이를 찾는 two-pointer
+    while (right < Cost.size()) {
+        int minCost = Cost[left], maxCost = Cost[right];
         if (canReachWithRange(start, end, minCost, maxCost)) {
             answer = min(answer, maxCost - minCost);
+            left++;
         }
+        else right++;
     }
     return answer;
 }
 
 int cost(int sCity, int eCity) {
-    //printf("\n\nsCity = %d, eCity = %d\n", sCity, eCity);
-    int ret;
-    ret = minCostDifference(sCity, eCity);
-    return (ret == INF || ret < 0) ? -1 : ret;
+    int ret = minCostDifference(sCity, eCity);
+    return ret == INF ? -1 : ret;
 }
+#endif // 1
 ```
