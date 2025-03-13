@@ -20,6 +20,22 @@ void perm(int m, int n) {
 	}
 }
 
+void dfs(int lev, int u, int cost){
+	if(lev == M){
+		if(tab[u][arr[M]])
+			ret = min(ret, cost + tab[u][arr[M]]);
+		return;
+	}
+	for(int i = 1;i < M;i++){
+		int v = arr[i];
+		if(!visited[i] && tab[u][v]){
+			visited[i] = 1;
+			dfs(lev + 1, v, cost + tab[u][v]);
+			visited = 0;
+		}
+	}
+}
+
 int main() {
 	perm(0, 0);
 	return 0;
