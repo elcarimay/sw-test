@@ -1,41 +1,43 @@
 ```cpp
 #include <iostream>
-#include <vector>
 using namespace std;
 
-void generateCombinations(const string& chars, int r, int index, string current) {
-    if (current.size() == r) {
-        cout << current << endl;
+void generateCombinations(const int nums[], int n, int r, int index, int current[], int depth) {
+    if (depth == r) { // If we have selected `r` elements
+        for (int i = 0; i < r; i++) cout << current[i] << " "; // Print the combination
+        cout << endl;
         return;
     }
 
-    for (int i = index; i < chars.size(); i++) {
-        generateCombinations(chars, r, i + 1, current + chars[i]);
+    for (int i = index; i < n; i++) {
+        current[depth] = nums[i]; // Store the selected number
+        generateCombinations(nums, n, r, i + 1, current, depth + 1);
     }
 }
 
-void generatePermutations(string& chars, int index) {
-    if (index == chars.size()) {
-        cout << chars << endl;
+void generatePermutations(int nums[], int n, int index) {
+    if (index == n) { // If a full permutation is formed
+        for (int i = 0; i < n; i++) cout << nums[i] << " ";
+        cout << endl;
         return;
     }
 
-    for (int i = index; i < chars.size(); i++) {
-        swap(chars[index], chars[i]);
-        generatePermutations(chars, index + 1);
-        swap(chars[index], chars[i]); // Backtrack by swapping back
+    for (int i = index; i < n; i++) {
+        swap(nums[index], nums[i]); // Swap to fix the current index
+        generatePermutations(nums, n, index + 1); // Recurse for the next index
+        swap(nums[index], nums[i]); // Backtrack (undo the swap)
     }
 }
 
 int main() {
-    string chars = "abcde";
-    int r = 3;
-
+    int nums[5] = { 1, 2, 3, 4, 5 }; // Example input array
+    int n = sizeof(nums) / sizeof(nums[0]); // Size of the array
+    int r = 3; // Length of each combination
+    int current[3]; // Array to store combinations
     cout << "Combinations of " << r << " elements:\n";
-    generateCombinations(chars, r, 0, "");
-
-    cout << "\nPermutions of " << r << " elements:\n";
-    generatePermutations(chars, 0);
+    generateCombinations(nums, n, r, 0, current, 0);
+    cout << "\nPermutions of " << 5 << " elements:\n";
+    generatePermutations(nums, n, 0);
     return 0;
 }
 ```
