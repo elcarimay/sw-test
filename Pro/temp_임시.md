@@ -1,64 +1,86 @@
 ```cpp
-#include <iostream>
-#include <unordered_map>
-using namespace std;
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
-const int MAX_TIME = 5001;
+const int MAX_TIME = 5000;
+const int BLOCK_SIZE = 71; // sqrt(5000)
 
 int musicDuration;
-int diff[MAX_TIME] = {0};  // Difference array
-int activeEmployees[MAX_TIME] = {0};  // Precomputed prefix sum
-unordered_map<int, pair<int, int>> employees;  // Stores employees' working times
+int timeCount[MAX_TIME + 2];
+int blockMin[BLOCK_SIZE];
 
 void init(int mTime) {
     musicDuration = mTime;
-    employees.clear();
-    fill(begin(diff), end(diff), 0);  // Reset difference array
-    fill(begin(activeEmployees), end(activeEmployees), 0);
+    std::fill(timeCount, timeCount + MAX_TIME + 2, 0);
+    std::fill(blockMin, blockMin + BLOCK_SIZE, 0);
 }
 
 void add(int mid, int mStart, int mEnd) {
-    employees[mid] = {mStart, mEnd};
-    diff[mStart]++;
-    diff[mEnd + 1]--;
-}
-
-void remove(int mid) {
-    if (employees.count(mid)) {
-        auto [mStart, mEnd] = employees[mid];
-        diff[mStart]--;
-        diff[mEnd + 1]++;
-        employees.erase(mid);
+    for (int i = mStart; i <= mEnd; ++i) {
+        timeCount[i]++;
+        blockMin[i / BLOCK_SIZE] = std::min(blockMin[i / BLOCK_SIZE], timeCount[i]);
     }
 }
 
-void preprocess() {
-    activeEmployees[0] = diff[0];
-    for (int i = 1; i < MAX_TIME; i++) {
-        activeEmployees[i] = activeEmployees[i - 1] + diff[i];
+void remove(int mid, int mStart, int mEnd) {
+    for (int i = mStart; i <= mEnd; ++i) {
+        timeCount[i]--;
+        blockMin[i / BLOCK_SIZE] = std::min(blockMin[i / BLOCK_SIZE], timeCount[i]);
     }
 }
 
 int getCount(int mStart) {
     int mEnd = mStart + musicDuration;
-    if (mEnd >= MAX_TIME) mEnd = MAX_TIME - 1;
-    return activeEmployees[mEnd] - activeEmployees[mStart - 1];
+    if (mEnd > MAX_TIME) return 0;
+
+    int minCount = INT_MAX;
+    int startBlock = mStart / BLOCK_SIZE;
+    int endBlock = mEnd / BLOCK_SIZE;
+
+    if (startBlock == endBlock) {
+        for (int i = mStart; i <= mEnd; ++i)
+            minCount = std::min(minCount, timeCount[i]);
+    }
+    else {
+        for (int i = mStart; i < (startBlock + 1) * BLOCK_SIZE; ++i)
+            minCount = std::min(minCount, timeCount[i]);
+
+        for (int b = startBlock + 1; b < endBlock; ++b)
+            minCount = std::min(minCount, blockMin[b]);
+
+        for (int i = endBlock * BLOCK_SIZE; i <= mEnd; ++i)
+            minCount = std::min(minCount, timeCount[i]);
+    }
+
+    return minCount;
 }
 
-// Sample Test
+#include <iostream>
+using namespace std;
 int main() {
-    init(200);  // Set music duration to 200
-    add(1, 100, 500);
-    add(2, 300, 700);
-    add(3, 600, 900);
-    preprocess();  // Compute prefix sums
+    init(230);
+    add(1, 100, 300);
+    add(2, 200, 400);
+    add(3, 150, 360);
+    add(4, 380, 450);
 
-    cout << getCount(200) << endl;  // Query active employees
-    remove(1);
-    preprocess();  // Recompute after removal
-    cout << getCount(200) << endl;  // Query again
+    cout << getCount(120) << endl;  // 최적화된 결과 출력: 0
 
-    return 0;
+    init(330);
+    add(1, 100, 300);
+    add(2, 200, 400);
+    add(3, 150, 360);
+    add(4, 380, 450);
+
+    cout << getCount(120) << endl;  // 최적화된 결과 출력: 0
+
+    init(50);
+    add(1, 100, 300);
+    add(2, 200, 400);
+    add(3, 150, 360);
+    add(4, 380, 450);
+
+    cout << getCount(200) << endl;  // 최적화된 결과 출력: 3
 }
-
 ```
