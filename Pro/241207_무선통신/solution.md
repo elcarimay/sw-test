@@ -1,9 +1,10 @@
 ```cpp
 #if 1
+// 231110_KNN 유사문제
+// 우큐로 풀면 시간늘어나서 partial_sort 적용하였음
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
-#include <queue>
 using namespace std;
 
 #define MAXN 10000
