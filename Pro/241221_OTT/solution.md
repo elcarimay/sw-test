@@ -1,6 +1,5 @@
 ```cpp
 #if 1
-#if 1
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
