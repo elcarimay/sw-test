@@ -76,8 +76,7 @@ int draw(int mID, int mRow, int mCol, int mHeight, int mWidth) {
 }
 
 int getRectCount(int mID) {
-    if (!idMap.count(mID)) return 0;
-    return (int)group[find(getID(mID))].size();
+    return idMap.count(mID)? (int)group[find(getID(mID))].size(): 0;
 }
 
 int countGroup() {
