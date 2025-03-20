@@ -2,21 +2,20 @@
 #include <vector>
 #include <algorithm>
 using namespace std;
-#define INF 987654321
-#define MAXN 500
 
-int maxA[MAXN], minA[MAXN], sumTree[MAXN];
-int N, sq;
+#define MAXN 500
+#define INF 987654321
+
 int* A;
-void build(int N, int mA[]) {
-	::N = N, A = mA;
-	for (sq = 1; sq * sq < N; sq++);
-	for (int i = 0; i < N; i++) {
+int N, sumA[MAXN], maxA[MAXN], minA[MAXN], sq;
+void build(int a[]) {
+	for (sq = 1;sq * sq < N;sq++);
+	for (int i = 0; i < N;i++) {
 		int bid = i / sq;
-		if (bid * sq == i) sumTree[bid] = 0, maxA[bid] = -INF, minA[bid] = INF;
+		if (i % sq == 0) sumA[bid] = 0, maxA[bid] = -INF, minA[bid] = INF;
 		maxA[bid] = max(maxA[bid], A[i]);
 		minA[bid] = min(minA[bid], A[i]);
-		sumTree[bid] += A[i];
+		sumA[bid] += A[i];
 	}
 }
 
@@ -26,7 +25,6 @@ void update(int x, int val) {
 	int bid = x / sq;
 	int l = bid * sq;
 	int r = min(l + sq, N);
-
 	if (val < 0) {
 		if (maxA[bid] == orgVal) maxA[bid] = *max_element(A + l, A + r);
 		minA[bid] = min(minA[bid], A[x]);
@@ -35,14 +33,14 @@ void update(int x, int val) {
 		maxA[bid] = max(maxA[bid], A[x]);
 		if (minA[bid] == orgVal) minA[bid] = *min_element(A + l, A + r);
 	}
-	sumTree[bid] += val;
+	sumA[bid] += val;
 }
 
 int sum_query(int l, int r) {
 	int sumv = 0;
 	while (l <= r && l % sq) sumv += A[l++];
 	while (l <= r && (r + 1) % sq) sumv += A[r--];
-	while (l <= r) sumv += sumTree[l / sq], l += sq;
+	while (l <= r) sumv += sumA[l / sq], l += sq;
 	return sumv;
 }
 
@@ -55,7 +53,8 @@ int maxmin_query(int l, int r) {
 }
 
 void init(int N, int mSubscriber[]) {
-	build(N, mSubscriber);
+	::N = N, A = mSubscriber;
+	build(A);
 }
 
 int subscribe(int mId, int mNum) {
