@@ -1,6 +1,5 @@
 ```cpp
 #if 1 // 398 ms
-#include <vector>
 #include <algorithm>
 using namespace std;
 #define INF 987654321
