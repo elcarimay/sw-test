@@ -1,69 +1,58 @@
 ```cpp
+#if 1 // sqrt ver. 575 ms
 #include <vector>
 using namespace std;
 
-#define MAX_ROADS 100001
-#define MAX_TYPES 1000
+#define MAXN 100003
+#define MAX_TYPES 1003
+#define MAXNN 320 // MAXN을 벗어나지 않는 최소 제곱근정도로 설정하면 됨
 
-inline int ceil(int a, int b) { return (a + b - 1) / b; }
-
-int roads[MAX_ROADS];
-vector<int> roadList[MAX_TYPES];
-
-struct Partition
-{
-	int n, bSize, bCnt, arr[MAX_ROADS], blocks[MAX_ROADS];
-	void init(int num_roads) {
-		n = num_roads; bSize = sqrt(n); bCnt = ceil(n, bSize);
-		for (int i = 0; i < n; i++) arr[i] = 0;
-		for (int i = 0; i < bCnt; i++) blocks[i] = 0;
-	}
-	void update(int idx, int value) {
-		int bIdx = idx / bSize;
-		blocks[bIdx] -= arr[idx];
-		arr[idx] = value;
-		blocks[bIdx] += arr[idx];
-	}
-	int queryRange(int left, int right) {
-		int ret = 0;
-		int s = left / bSize, e = right / bSize;
-		if (s == e) {
-			for (int i = left; i <= right; i++) ret += arr[i];
-			return ret;
-		}
-		for (int i = left; i <= (s + 1) * bSize - 1; i++) ret += arr[i];
-		for (int i = s + 1; i <= e - 1; i++) ret += blocks[i];
-		for (int i = e*bSize; i <= right; i++) ret += arr[i];
-		return ret;
-	}
-}P;
-
-void init(int N, int M, int mType[], int mTime[]) {
-	for (int i = 0; i < M; i++) roadList[i].clear();
-	P.init(N - 1);
+int* A;
+int N, sq, sumA[MAXNN];
+void build() {
+	for (sq = 1; sq * sq < N - 1; sq++);
 	for (int i = 0; i < N - 1; i++) {
-		roadList[mType[i]].push_back(i);
-		P.update(i, roads[i] = mTime[i]);
+		if (i % sq == 0) sumA[i / sq] = 0;
+		sumA[i / sq] += A[i];
 	}
+}
+
+int sum_query(int l, int r) {
+	int sumv = 0;
+	while (l <= r && l % sq) sumv += A[l++];
+	while (l <= r && (r + 1) % sq) sumv += A[r--];
+	while (l <= r) sumv += sumA[l / sq], l += sq;
+	return sumv;
+}
+
+vector<int> roadType[MAX_TYPES];
+void init(int N, int M, int mType[], int mTime[]) {
+	::N = N, A = mTime;
+	for (int i = 0; i < M; i++) roadType[i].clear();
+	for (int i = 0; i < N - 1; i++)	roadType[mType[i]].push_back(i);
+	build();
 }
 
 void destroy() {}
 
 void update(int mID, int mNewTime) {
-	P.update(mID, roads[mID] = mNewTime);
+	sumA[mID / sq] -= A[mID];
+	A[mID] = mNewTime;
+	sumA[mID / sq] += mNewTime;
 }
 
 int updateByType(int mTypeID, int mRatio256) {
 	int ret = 0;
-	for (int rIdx : roadList[mTypeID]) {
-		P.update(rIdx, roads[rIdx] = roads[rIdx] * mRatio256 / 256);
-		ret += roads[rIdx];
+	for (auto nx : roadType[mTypeID]) {
+		update(nx, (int)(A[nx] * mRatio256 / 256));
+		ret += A[nx];
 	}
 	return ret;
 }
 
 int calculate(int mA, int mB) {
 	if (mA > mB) swap(mA, mB);
-	return P.queryRange(mA, mB - 1);
+	return sum_query(mA, mB - 1);
 }
+#endif // 0
 ```
