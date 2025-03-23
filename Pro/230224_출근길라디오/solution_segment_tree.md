@@ -1,79 +1,76 @@
 ```cpp
-#if 1
-#include <cstdio>
+#if 1 // segmentTree ver. 489 ms
 #include <vector>
-#include <algorithm>
 using namespace std;
 
-#define MAX_ROADS 100005
-#define MAX_TYPES 1005
-
-int time[MAX_ROADS];
-vector<int> type[MAX_TYPES];
-int tree[4 * MAX_ROADS];
-
-struct SegmentTree
-{
-	void init(int s, int e, int n) {
-		if (s == e) {
-			tree[n] = time[s]; return;
-		}
-		int m = (s + e) / 2;
-		init(s, m, 2 * n);
-		init(m + 1, e, 2 * n + 1);
-		tree[n] = tree[2 * n] + tree[2 * n + 1];
-		return;
-	}
-	void update(int s, int e, int n, int idx, int diff) {
-		if (idx < s || e < idx) return;
-		if (s == e) {
-			tree[n] = diff; return;
-		}
-		int m = (s + e) / 2;
-		update(s, m, 2 * n, idx, diff);
-		update(m + 1, e, 2 * n + 1, idx, diff);
-		tree[n] = tree[2 * n] + tree[2 * n + 1];
-		return;
-	}
-	int sum_query(int s, int e, int n, int l, int r) {
-		if (r < s || e < l) return 0;
-		if (l <= s && e <= r) return tree[n];
-		int m = (s + e) / 2;
-		int sum_left = sum_query(s, m, 2 * n, l, r);
-		int sum_right = sum_query(m + 1, e, 2 * n + 1, l, r);
-		return sum_left + sum_right;
-	}
-}S;
+#define MAXN 100003
+#define MAX_TYPES 1003
 
 int N;
-void init(int N, int M, int mType[], int mTime[]) {
-	::N = N;
-	for (int i = 0; i < M; i++) type[i].clear();
-	for (int i = 0; i < N - 1; i++) {
-		type[mType[i]].push_back(i);
-		time[i] = mTime[i];
+int* A;
+int sumTree[4 * MAXN];
+void build(int node, int s, int e) {
+	if (s == e) {
+		sumTree[node] = A[s]; return;
 	}
-	S.init(0, N - 2, 1);
+	int mid = (s + e) / 2;
+	int lnode = node * 2;
+	int rnode = lnode + 1;
+	build(lnode, s, mid);
+	build(rnode, mid + 1, e);
+	sumTree[node] = sumTree[lnode] + sumTree[rnode];
+}
+
+void update(int node, int s, int e, int idx, int value) {
+	if (s == e) {
+		sumTree[node] = value; return;
+	}
+	int mid = (s + e) / 2;
+	int lnode = node * 2;
+	int rnode = lnode + 1;
+	if (idx <= mid) update(lnode, s, mid, idx, value);
+	else update(rnode, mid + 1, e, idx, value);
+	sumTree[node] = sumTree[lnode] + sumTree[rnode];
+}
+int qs, qe;
+int sum_query(int node, int s, int e) {
+	if (qe < s || e < qs) return 0;
+	if (qs <= s && e <= qe) return sumTree[node];
+	int mid = (s + e) / 2;
+	int lnode = node * 2;
+	int rnode = lnode + 1;
+	return sum_query(lnode, s, mid) + sum_query(rnode, mid + 1, e);
+}
+
+vector<int> roadType[MAX_TYPES];
+void init(int N, int M, int mType[], int mTime[]) {
+	::N = N, A = mTime;
+	for (int i = 0; i < M; i++) roadType[i].clear();
+	for (int i = 0; i < N - 1; i++)	roadType[mType[i]].push_back(i);
+	build(1, 0, N - 2);
 }
 
 void destroy() {}
 
 void update(int mID, int mNewTime) {
-	S.update(0, N - 2, 1, mID, time[mID] = mNewTime);
+	A[mID] = mNewTime;
+	update(1, 0, N - 2, mID, mNewTime);
 }
 
 int updateByType(int mTypeID, int mRatio256) {
 	int ret = 0;
-	for (auto t : type[mTypeID]) {
-		S.update(0, N - 2, 1, t, time[t] = time[t] * mRatio256 / 256);
-		ret += time[t];
+	for (auto nx : roadType[mTypeID]) {
+		A[nx] = (int)(A[nx] * mRatio256 / 256);
+		update(1, 0, N - 2, nx, A[nx]);
+		ret += A[nx];
 	}
 	return ret;
 }
 
 int calculate(int mA, int mB) {
 	if (mA > mB) swap(mA, mB);
-	return S.sum_query(0, N - 2, 1, mA, mB - 1);
+	qs = mA, qe = mB - 1;
+	return sum_query(1, 0, N - 2);
 }
-#endif // 1
+#endif
 ```
