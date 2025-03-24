@@ -77,6 +77,134 @@ int main(){
 	return 0;
 }
 
+solution.cpp
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <algorithm>
+#include <cstring>
+using namespace std;
+
+const int MAX_N = 1001;
+const int MAX_FILE = 501;
+const int MAX_LINK = 50001;
+const int MAX_DOWNLOAD_PATH = 5;
+const int DOWNLOAD_RATE = 9;
+int currentTime = 0;
+struct Link {
+    int id, comA, comB, distance, removeTime;
+};
+
+struct File {
+    int id, size, downloadedSize, downloadTime;
+};
+vector<Link> links;
+vector<int> linksByComputer[MAX_N];
+unordered_map<int, int> linkIdToIndex;
+unordered_map<int, File> computerFiles[MAX_N];
+unordered_map<int, vector<pair<int, int>>> fileLocations;
+int N;
+vector<vector<int>> findDownloadPaths(int fromCom, int targetCom) {
+    vector<vector<int>> paths;
+    queue<vector<int>> pathQueue;
+    vector<bool> visited(N + 1, false);
+    pathQueue.push({ fromCom });
+    visited[fromCom] = true;
+    while (!pathQueue.empty() && paths.size() < MAX_DOWNLOAD_PATH) {
+        auto currentPath = pathQueue.front(); pathQueue.pop();
+        int lastCom = currentPath.back();
+        if (lastCom == targetCom) {
+            int totalDistance = 0;
+            bool validPath = true;
+            for (size_t i = 0; i + 1 < currentPath.size(); ++i) {
+                bool foundLink = false;
+                for (int linkId : linksByComputer[currentPath[i]]) {
+                    Link& link = links[linkIdToIndex[linkId]];
+                    if ((link.comA == currentPath[i] && link.comB == currentPath[i + 1]) ||
+                        (link.comB == currentPath[i] && link.comA == currentPath[i + 1])) {
+                        if (link.removeTime > 0 && link.removeTime <= currentTime) {
+                            validPath = false; break;
+                        }
+                        totalDistance += link.distance;
+                        foundLink = true;
+                        break;
+                    }
+                }
+                if (!foundLink || !validPath) {
+                    validPath = false; break;
+                }
+            }
+            if (validPath && totalDistance <= 5) paths.push_back(currentPath);
+            continue;
+        }
+        if (currentPath.size() > 6) continue;
+        for (int linkId : linksByComputer[lastCom]) {
+            Link& link = links[linkIdToIndex[linkId]];
+            if (link.removeTime > 0 && link.removeTime <= currentTime) continue;
+            int nextCom = (link.comA == lastCom) ? link.comB : link.comA;
+            if (!visited[nextCom]) {
+                auto newPath = currentPath;
+                newPath.push_back(nextCom);
+                pathQueue.push(newPath);
+                visited[nextCom] = true;
+            }
+        }
+    }
+    return paths;
+}
+
+void init(int N, int mFileCnt[], int mFileID[][50], int mFileSize[][50]) {
+    ::N = N; currentTime = 0;
+    links.clear(); linkIdToIndex.clear(); fileLocations.clear();
+    for (int i = 0; i < MAX_N; ++i) {
+        computerFiles[i].clear(); linksByComputer[i].clear();
+    }
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < mFileCnt[i]; ++j) {
+            File file = { mFileID[i][j], mFileSize[i][j], 0, 0 };
+            computerFiles[i + 1][mFileID[i][j]] = file;
+            fileLocations[mFileID[i][j]].push_back({ i + 1, mFileSize[i][j] });
+        }
+    }
+}
+void makeNet(int K, int mID[], int mComA[], int mComB[], int mDis[]) {
+    for (int i = 0; i < K; ++i) {
+        Link link = { mID[i], mComA[i], mComB[i], mDis[i], 0 };
+        links.push_back(link);
+        linkIdToIndex[mID[i]] = links.size() - 1;
+        linksByComputer[mComA[i]].push_back(mID[i]);
+        linksByComputer[mComB[i]].push_back(mID[i]);
+    }
+}
+
+void removeLink(int mTime, int mID) {
+    currentTime = mTime;
+    if (linkIdToIndex.count(mID)) links[linkIdToIndex[mID]].removeTime = mTime;
+}
+
+int downloadFile(int mTime, int mComA, int mFileID) {
+    currentTime = mTime;
+    if (fileLocations.find(mFileID) == fileLocations.end()) return 0;
+    vector<vector<int>> downloadPaths;
+    for (const auto& location : fileLocations[mFileID]) {
+        int fileCom = location.first;
+        auto paths = findDownloadPaths(mComA, fileCom);
+        downloadPaths.insert(downloadPaths.end(), paths.begin(), paths.end());
+    }
+    if (downloadPaths.empty()) return 0;
+    int fileSize = computerFiles[fileLocations[mFileID][0].first][mFileID].size;
+    int requiredTime = (fileSize + DOWNLOAD_RATE * MAX_DOWNLOAD_PATH - 1) / (DOWNLOAD_RATE * MAX_DOWNLOAD_PATH);
+    computerFiles[mComA][mFileID] = { mFileID, fileSize, fileSize, mTime + requiredTime};
+    return min((int)downloadPaths.size(), MAX_DOWNLOAD_PATH);
+}
+
+int getFileSize(int mTime, int mComA, int mFileID) {
+    currentTime = mTime;
+    if (computerFiles[mComA].count(mFileID)) return computerFiles[mComA][mFileID].size;
+    return 0;
+}
+
 sample_input.txt
 1 100
 20
