@@ -1,227 +1,89 @@
 ```cpp
-#include <vector>
-#include <algorithm>
-#include <cmath>
+N 개의 컴퓨터들과 서로 파일을 주고 받을 수 있도록 연결해 주는 N - 1 개의 링크로 구성된 네트워크가 있다.
+링크는 서로 다른 두 개의 컴퓨터를 직접 연결하며 ID와 길이는 있으나 방향성이 없다.
+방향성이 없기 때문에 양방향으로 데이터를 주고 받을 수 있다.
+컴퓨터를 정점으로 링크를 간선으로 생각했을 때, 네트워크는 연결된 단일 트리를 이룬다.
+컴퓨터에서 다른 컴퓨터에 있는 파일을 다운로드하기 위해, 먼저 다운로드 경로를 만들어 그 컴퓨터에 연결을 해야 한다.
+다운로드 경로는 여러 개의 링크들로 구성된다. 만들어진 다운로드 경로의 길이는 구성된 링크들의 길이 합이다.
+단, 데이터 전송의 안정성을 위해 다운로드 경로의 길이는 최대 5 이다.
+다운로드 경로의 길이가 5 를 초과하게 되면 다운로드 경로를 만드는데 실패한다.
+만들어진 다운로드 경로를 통해 파일을 다운로드 한다.
+동일한 파일이 여러 컴퓨터에 있을 수 있기 때문에, 더 빠르게 파일을 다운로드 하기 위해 여러 컴퓨터에서 파일을 동시에 다운로드할 수 있다.
+이를 위해 다운로드 경로를 여러 개 만들고, 만들어진 여러 개의 다운로드 경로들을 통해 동시에 파일을 다운로드 할 수 있다.
+(여러 개의 다운로드 경로를 통해 하나의 파일을 다운로드 하기 위해서는 파일을 나눠서 다운로드하고, 이 조각들을 합치는 복잡한 과정이 필요하다.
+하지만, 여기에서는 파일 크기만큼만 다운로드하면 다운로드 완료된것으로 가정한다. )
+다운로드 경로를 통해 파일을 다운로드 시작하면 다운로드 경로 1개당 1 초에 9 크기만큼 다운로드 한다.
+네트워크 내에 크기가 1000인 A 파일이 컴퓨터 1, 2, 4, 5, 7 에 각각 있다고 가정해보자.
+컴퓨터6 이 A 파일을 빠르게 다운로드하기 위해, 아래와 같은 5 개의 다운로드 경로를 만들어 다운로드하면 파일을 빠르게 다운로드 할 수 있다.
+ - 44, 22, 11 링크로 다운로드 경로를 만들고 컴퓨터1 에 연결
+ - 44, 22 링크로 다운로드 경로를 만들고 컴퓨터2에 연결
+ - 44 링크로 다운로드 경로를 만들고 컴퓨터4 에 연결
+ - 55 링크로 다운로드 경로를 만들고 컴퓨터5 에 연결
+ - 66 링크로 다운로드 경로를 만들고 컴퓨터7 에 연결
+컴퓨터6 이 A 파일을 위의 5 개 다운로드 경로를 통해 다운로드 시작하면 23초(1000 / 45(9*5) = 22.xxx) 후에 다운로드 완료 할 수 있다.
+(파일 사이즈만큼 다운로드하면 파일 다운로드가 완료된다.)
+각 링크의 대역폭은 커서, 여러 개의 파일을 동시에 다운로드하는데 문제가 없다.
+네트워크 정보와 컴퓨터의 파일 정보가 주어질 때, 파일 다운로드 하는 프로그램을 작성하라.
+아래는 User Code 부분에 작성해야 하는 API 의 설명이다.
 
-const int MAX_TIME = 5000;
-const int BLOCK_SIZE = 71; // sqrt(5000)
+void init(int N, int mFileCnt[], int mFileID[][], int mFileSize[][])
+각 테스트 케이스의 처음에 호출된다. 1 부터 N 까지 N 개의 컴퓨터가 있다.
+컴퓨터 i 에는 mFileCnt[i - 1] 개의 파일이 있고, 각 파일의 ID 는 mFileID[i - 1][k], 크기는 mFileSize[i - 1][k] 이다.
+( 1 ≤ i ≤ N, 0 ≤ k < mFileCnt[i - 1] )
+초기에 컴퓨터들을 연결하는 링크는 없다. 현재 시각은 0 이다.
+파일의 ID 가 같을 경우, 파일 크기도 같다. 하나의 컴퓨터에 있는 파일의 ID 는 모두 서로 다르다.
+N 개의 컴퓨터에 있는 모든 파일의 종류의 개수는 최대 500 이다.
+Parameters
+  N             : 컴퓨터의 수 ( 5 ≤ N ≤ 1,000 )
+  mFileCnt[]   : 컴퓨터에 있는 파일 개수 ( 0 ≤ mFileCnt[] ≤ 50 )
+  mFileID[][]  : 각 파일의 ID ( 1,000 ≤ mFileID[][] ≤ 1,000,000 )
+  mFileSize[][] : 각 파일의 크기 ( 1,000 ≤ mFileSize[][] ≤ 10,000,000 )
 
-int musicDuration;
-int timeCount[MAX_TIME + 2];
-int blockMin[BLOCK_SIZE];
+void makeNet(int K, int mID[], int mComA[], int mComB[], int mDis[])
+네트워크에 K 개의 링크가 추가된다.
+mID[i] 링크는 컴퓨터 mComA[i]와 컴퓨터 mComB[i]를 연결하며 길이는 mDis[i] 이다. ( 0 ≤ i ≤ K - 1 )
+네트워크에 추가된 링크의 ID 는 모두 다르다.
+컴퓨터를 정점으로 링크를 간선으로 생각했을 때, 네트워크는 연결된 단일 트리를 이룬다.
+하나의 컴퓨터에 연결되는 링크의 개수는 최대 3 이다. init() 함수 호출후 곧바로 1번만 호출된다.
+현재 시각은 0 이다.
+Parameters
+  K        : 추가되는 링크의 수 ( K = N - 1 )
+  mID[]    : 추가되는 링크의 ID ( 1 ≤ mID[]≤ 50,000 )
+  mComA[] : 추가되는 링크에 연결되는 한 쪽의 컴퓨터 ( 1 ≤ mComA[] ≤ N )
+  mComB[] : 추가되는 링크에 연결되는 다른 쪽의 컴퓨터 ( 1 ≤ mComB[] ≤ N )
+  mDis[]    : 추가되는 링크의 길이 ( 1 ≤ mDis[] ≤ 3 )
 
-void init(int mTime) {
-    musicDuration = mTime;
-    std::fill(timeCount, timeCount + MAX_TIME + 2, 0);
-    std::fill(blockMin, blockMin + BLOCK_SIZE, 0);
-}
+void removeLink(int mTime, int mID)
+mTime 에 mID 링크가 삭제된다. mTime 까지 네트워크의 다운로드가 진행된 후, mID 링크가 삭제된다.
+mID 링크가 네트워크에 있음이 보장된다. mID 링크의 삭제로 인해 mID 링크가 포함된 다운로드 경로는 삭제된다.
+이로 인해, 삭제된 다운로드 경로를 이용해서 더 이상 파일 다운로드를 할 수 없다.
+Parameters
+  mTime   : 링크가 삭제되는 시각 ( 1 ≤ mTime ≤ 1,000,000 )
+  mID     : 삭제되는 링크의 ID ( 1 ≤ mID ≤ 50,000 )
 
-void add(int mid, int mStart, int mEnd) {
-    for (int i = mStart; i <= mEnd; ++i) {
-        timeCount[i]++;
-        blockMin[i / BLOCK_SIZE] = std::min(blockMin[i / BLOCK_SIZE], timeCount[i]);
-    }
-}
+int downloadFile(int mTime, int mComA, int mFileID)
+mTime 에 mComA 컴퓨터에서 mFileID 파일을 다운로드 시작하고, 다운로드 하기 위해 생성하는 다운로드 경로의 개수를 반환한다.
+mTime 까지 네트워크의 다운로드가 진행된 후, mFileID 파일 다운로드를 시작한다.
+mComA 컴퓨터에 mFileID 파일이 없고, 다운로드 요청된적이 없음이 보장된다.
+mFileID 파일을 다운로드 하기 위한 다운로드 경로의 개수는 최대 5개임이 보장된다.
+다운로드 경로 생성시 처음부터 mFileID 파일이 있는 컴퓨터와 mTime 까지 mFileID 파일을 다운로드 완료한 컴퓨터는 모두 다운로드 경로를 생성한다.
+하지만, mTime 까지 mFileID 파일이 다운로드 완료되지 않은 컴퓨터는 다운로드 경로를 만들 수 없다.
+네트워크에 mFileID 파일이 없거나 다운로드 경로가 생성이 안될 경우 0을 반환한다.
+Parameters
+  mTime   : 다운로드 하는 시각 ( 1 ≤ mTime ≤ 1,000,000 )
+  mComA  : 다운로드 하려는 컴퓨터 ( 1 ≤ mComA ≤ N )
+  mFileID  : 다운로드 하는 파일의 ID ( 1,000 ≤ mFileID ≤ 1,000,000 )
+Returns
+  mFileID 파일의 다운로드를 위해 생성되는 다운로드 경로의 개수.
+  파일이 없거나 다운로드 경로가 생성 안될 경우 0
 
-void remove(int mid, int mStart, int mEnd) {
-    for (int i = mStart; i <= mEnd; ++i) {
-        timeCount[i]--;
-        blockMin[i / BLOCK_SIZE] = std::min(blockMin[i / BLOCK_SIZE], timeCount[i]);
-    }
-}
-
-int getCount(int mStart) {
-    int mEnd = mStart + musicDuration;
-    if (mEnd > MAX_TIME) return 0;
-
-    int minCount = INT_MAX;
-    int startBlock = mStart / BLOCK_SIZE;
-    int endBlock = mEnd / BLOCK_SIZE;
-
-    if (startBlock == endBlock) {
-        for (int i = mStart; i <= mEnd; ++i)
-            minCount = std::min(minCount, timeCount[i]);
-    }
-    else {
-        for (int i = mStart; i < (startBlock + 1) * BLOCK_SIZE; ++i)
-            minCount = std::min(minCount, timeCount[i]);
-
-        for (int b = startBlock + 1; b < endBlock; ++b)
-            minCount = std::min(minCount, blockMin[b]);
-
-        for (int i = endBlock * BLOCK_SIZE; i <= mEnd; ++i)
-            minCount = std::min(minCount, timeCount[i]);
-    }
-
-    return minCount;
-}
-
-#include <iostream>
-using namespace std;
-int main() {
-    init(230);
-    add(1, 100, 300);
-    add(2, 200, 400);
-    add(3, 150, 360);
-    add(4, 380, 450);
-
-    cout << getCount(120) << endl;  // 최적화된 결과 출력: 0
-
-    init(330);
-    add(1, 100, 300);
-    add(2, 200, 400);
-    add(3, 150, 360);
-    add(4, 380, 450);
-
-    cout << getCount(120) << endl;  // 최적화된 결과 출력: 0
-
-    init(50);
-    add(1, 100, 300);
-    add(2, 200, 400);
-    add(3, 150, 360);
-    add(4, 380, 450);
-
-    cout << getCount(200) << endl;  // 최적화된 결과 출력: 3
-}
-// Claude 3.7
-#include <iostream>
-#include <unordered_map>
-#include <vector>
-#include <algorithm>
-
-using namespace std;
-
-// 전역 변수 선언
-int broadcastDuration;
-unordered_map<int, pair<int, int>> employees; // {사원ID, {출근시간, 퇴근시간}}
-
-// 구간 인덱싱을 위한 자료구조
-vector<pair<int, pair<int, int>>> startTimeSorted; // {출근시간, {퇴근시간, 사원ID}}
-vector<pair<int, int>> endTimesForStartTime[5001]; // 각 출근시간별 퇴근시간 목록
-
-// 빠른 조회를 위한 캐시
-int cachedCounts[5001]; // 각 시작시간별 캐시된 결과
-bool cacheValid[5001];  // 캐시 유효성 플래그
-
-void init(int mTime) {
-    broadcastDuration = mTime;
-    employees.clear();
-    startTimeSorted.clear();
-
-    // 출근시간별 퇴근시간 배열 초기화
-    for (int i = 0; i <= 5000; i++) {
-        endTimesForStartTime[i].clear();
-        cachedCounts[i] = 0;
-        cacheValid[i] = false;
-    }
-}
-
-void add(int mid, int mStart, int mEnd) {
-    // 기존 캐시 무효화
-    for (int i = 0; i <= 5000; i++) {
-        cacheValid[i] = false;
-    }
-
-    // 기존에 사원이 있었다면 제거
-    auto it = employees.find(mid);
-    if (it != employees.end()) {
-        int oldStart = it->second.first;
-        int oldEnd = it->second.second;
-
-        // 해당 출근시간에서 퇴근시간 제거
-        auto& endTimes = endTimesForStartTime[oldStart];
-        for (size_t i = 0; i < endTimes.size(); ++i) {
-            if (endTimes[i].first == oldEnd && endTimes[i].second == mid) {
-                endTimes[i] = endTimes.back();
-                endTimes.pop_back();
-                break;
-            }
-        }
-    }
-
-    // 새 정보 추가
-    employees[mid] = { mStart, mEnd };
-    endTimesForStartTime[mStart].push_back({ mEnd, mid });
-}
-
-void remove(int mid) {
-    // 기존 캐시 무효화
-    for (int i = 0; i <= 5000; i++) {
-        cacheValid[i] = false;
-    }
-
-    auto it = employees.find(mid);
-    if (it != employees.end()) {
-        int oldStart = it->second.first;
-        int oldEnd = it->second.second;
-
-        // 해당 출근시간에서 퇴근시간 제거
-        auto& endTimes = endTimesForStartTime[oldStart];
-        for (size_t i = 0; i < endTimes.size(); ++i) {
-            if (endTimes[i].first == oldEnd && endTimes[i].second == mid) {
-                endTimes[i] = endTimes.back();
-                endTimes.pop_back();
-                break;
-            }
-        }
-
-        employees.erase(mid);
-    }
-}
-
-int getCount(int mStart) {
-    // 캐시가 유효하면 바로 반환
-    if (cacheValid[mStart]) {
-        return cachedCounts[mStart];
-    }
-
-    int mEnd = mStart + broadcastDuration;
-    int count = 0;
-
-    // 모든 출근시간에 대해 검사 (mStart 이하인 출근시간만)
-    for (int start = 0; start <= mStart; start++) {
-        const auto& endTimes = endTimesForStartTime[start];
-        for (const auto& endData : endTimes) {
-            int end = endData.first;
-            // 퇴근시간이 mEnd 이상인 경우만 카운트
-            if (end >= mEnd) {
-                count++;
-            }
-        }
-    }
-
-    // 결과 캐싱
-    cachedCounts[mStart] = count;
-    cacheValid[mStart] = true;
-
-    return count;
-}
-
-#include <iostream>
-using namespace std;
-int main() {
-    init(230);
-    add(1, 100, 300);
-    add(2, 200, 400);
-    add(3, 150, 360);
-    add(4, 380, 450);
-
-    cout << getCount(120) << endl;  // 최적화된 결과 출력: 0
-
-    init(330);
-    add(1, 100, 300);
-    add(2, 200, 400);
-    add(3, 150, 360);
-    add(4, 380, 450);
-
-    cout << getCount(120) << endl;  // 최적화된 결과 출력: 0
-
-    init(50);
-    add(1, 100, 300);
-    add(2, 200, 400);
-    add(3, 150, 360);
-    add(4, 380, 450);
-
-    cout << getCount(200) << endl;  // 최적화된 결과 출력: 3
-}
+int getFileSize(int mTime, int mComA, int mFileID)
+mTime 에 mComA 컴퓨터에 있는 mFileID 파일의 크기를 반환한다. mTime 까지 네트워크의 다운로드가 진행된 후, mFileID 파일의 크기를 반환한다.
+mComA 컴퓨터에 mFileID 파일이 없을 경우 0 을 반환한다.
+Parameters
+  mTime   : 파일의 크기를 확인하는 시각 ( 1 ≤ mTime ≤ 1,000,000 )
+  mComA  : 파일이 있는 컴퓨터 ( 1 ≤ mComA ≤ N )
+  mFileID   : 크기를 확인하는 파일의 ID ( 1,000 ≤ mFileID ≤ 1,000,000 )
+Returns
+  mComA 컴퓨터에 있는 mFileID 파일의 크기. 파일이 없을 경우 0
 ```
