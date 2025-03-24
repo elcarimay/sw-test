@@ -2,6 +2,7 @@
 /*
 * parametric search 시, 배열에 loaction 저장 후 배열로 처리
 */
+// map지울때 it = loc.erase(it)를 사용
 #include<unordered_map>
 #include<map>
 using namespace std;
