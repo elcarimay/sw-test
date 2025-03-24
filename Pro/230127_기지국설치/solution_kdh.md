@@ -1,3 +1,4 @@
+```cpp
 #if 1
 // Parametric Search
 // 기지국 간격에 따른 기지국 갯수가 주어진 M값을 만족하는지를 조건함수로 만듬
@@ -102,3 +103,4 @@ int install(int M) {
 //	return e;
 //}
 #endif // 1 //170 ms
+```
