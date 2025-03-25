@@ -105,6 +105,38 @@ unordered_map<int, int> linkIdToIndex;
 unordered_map<int, File> computerFiles[MAX_N];
 unordered_map<int, vector<pair<int, int>>> fileLocations;
 int N;
+
+void updateTime(int mTime) {
+    if (mTime < currentTime) return;
+    currentTime = mTime;
+    for (int com = 1; com <= N; ++com) {
+        for (auto it = computerFiles[com].begin(); it != computerFiles[com].end();) {
+            File& file = it->second;
+            if (file.downloadTime > 0 && file.downloadTime < currentTime) {
+                if (file.downloadedSize < file.size) {
+                    it = computerFiles[com].erase(it);
+                    continue;
+                }
+            }
+            ++it;
+        }
+    }
+    for (auto& link : links) {
+        if (link.removeTime > 0 && link.removeTime <= currentTime) {
+            auto& computerLinks1 = linksByComputer[link.comA];
+            computerLinks1.erase(
+                remove(computerLinks1.begin(), computerLinks1.end(), link.id),
+                computerLinks1.end()
+            );
+            auto& computerLinks2 = linksByComputer[link.comB];
+            computerLinks2.erase(
+                remove(computerLinks2.begin(), computerLinks2.end(), link.id),
+                computerLinks2.end()
+            );
+        }
+    }
+}
+
 vector<vector<int>> findDownloadPaths(int fromCom, int targetCom) {
     vector<vector<int>> paths;
     queue<vector<int>> pathQueue;
@@ -179,7 +211,7 @@ void makeNet(int K, int mID[], int mComA[], int mComB[], int mDis[]) {
 }
 
 void removeLink(int mTime, int mID) {
-    currentTime = mTime;
+    updateTime(mTime);
     if (linkIdToIndex.count(mID)) links[linkIdToIndex[mID]].removeTime = mTime;
 }
 
@@ -200,7 +232,7 @@ int downloadFile(int mTime, int mComA, int mFileID) {
 }
 
 int getFileSize(int mTime, int mComA, int mFileID) {
-    currentTime = mTime;
+    updateTime(mTime);
     if (computerFiles[mComA].count(mFileID)) return computerFiles[mComA][mFileID].size;
     return 0;
 }
