@@ -13,7 +13,7 @@ using namespace std;
 #define INF 1e6
 
 struct Down {
-	int currentTime, endTime;
+	int currentTime;
 	unordered_map<int, vector<int>> path;
 };
 
