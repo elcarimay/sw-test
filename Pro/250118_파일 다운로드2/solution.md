@@ -11,7 +11,7 @@
 using namespace std;
 
 #define MAXN 1003
-#define MAX_ONEFILE		50
+#define MAX_ONEFILE 50
 #define INF 5000
 
 struct Down {
