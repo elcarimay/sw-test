@@ -135,7 +135,7 @@ int downloadFile(int mTime, int mComA, int mFileID) {
 		}
 	}
 	if (!downList[mComA].count(mFileID)) return 0;
-	downList[mComA][mFileID].currentTime = mTime; // 다운받기 시작했기때문에 현재시간 입력
+	downList[mComA][mFileID].currentTime = mTime; // 다운받기 시작했기 때문에 현재시간 입력
 	return downList[mComA][mFileID].path.size();
 }
 
