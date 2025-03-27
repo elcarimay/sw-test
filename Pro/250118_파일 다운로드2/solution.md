@@ -1,11 +1,11 @@
 ```cpp
 #if 1
-// 다운로드를 완료하지 못함의 뜻이 다운받는중이 아니라 정해진 파일 양을 최대한 다운받지 않았다는 뜻임
+// 다운로드를 완료하지 못함의 뜻이 다운받는중과 정해진 파일 양을 최대한 다운받지 않았다는 것을 모두 포함함
 // 파일당 사이즈를 fileSize에 저장하고 개별컴퓨터마다 getList, donwList를 만들어서 관리하였음
-// N이 최대 1000개이나 전체 순회를 해도 속도가 느리지 않음
 // 다익스트라시 route에 경로를 저장해두고 상기 downList에 path를 저장하여 removeLink할때 확인하여 지움
 #include <vector>
 #include <unordered_map>
+#include <set>
 #include <algorithm>
 #include <queue>
 using namespace std;
@@ -20,6 +20,7 @@ struct Down {
 };
 
 unordered_map<int, int> getList[MAXN], fileCapa; // getList -> [com] fid, size, fileCapa-> [fil] size
+set<int> downComs;
 unordered_map<int, Down> downList[MAXN]; // [com] fid, struct Down
 unordered_map<int, pair<int, int>> link;
 
@@ -33,7 +34,7 @@ vector<Edge> adj[MAXN];
 
 int N;
 void init(int N, int mFileCnt[], int mFileID[][MAX_ONEFILE], int mFileSize[][MAX_ONEFILE]) {
-	::N = N, fileCapa.clear(), link.clear();
+	::N = N, fileCapa.clear(), link.clear(), downComs.clear();
 	for (int i = 1; i <= N; i++) {
 		getList[i].clear(), downList[i].clear(), adj[i].clear();
 		for (int j = 0; j < mFileCnt[i - 1]; j++) {
@@ -52,17 +53,18 @@ void makeNet(int K, int mID[], int mComA[], int mComB[], int mDis[]) {
 }
 
 void update(int time) {
-	for (int i = 1; i <= N; i++) {
-		if (downList[i].empty()) continue;
-		for (auto it = downList[i].begin(); it != downList[i].end();) {
+	for (auto i = downComs.begin(); i != downComs.end();) {
+		for (auto it = downList[*i].begin(); it != downList[*i].end();) {
 			int fid = it->first;
-			getList[i][fid] += it->second.path.size() * 9 * (time - it->second.currentTime);
-			if (getList[i][fid] >= fileCapa[fid]) {
-				getList[i][fid] = min(getList[i][fid], fileCapa[fid]);
-				it = downList[i].erase(it);
+			getList[*i][fid] += it->second.path.size() * 9 * (time - it->second.currentTime);
+			if (getList[*i][fid] >= fileCapa[fid]) {
+				getList[*i][fid] = min(getList[*i][fid], fileCapa[fid]);
+				it = downList[*i].erase(it);
 			}
 			else it++->second.currentTime = time;
 		}
+		if (downList[*i].empty()) i = downComs.erase(i);
+		else i++;
 	}
 }
 
@@ -71,13 +73,16 @@ struct Route {
 }route[MAXN];
 
 int cost[MAXN];
+set<int> fileComs;
 void dijkstra(int s) {
+	fileComs.clear();
 	fill(cost + 1, cost + N + 1, INF);
 	priority_queue<Edge> pq;
 	pq.push({ s, cost[s] = 0 });
 	while (!pq.empty()) {
 		Edge cur = pq.top(); pq.pop();
 		if (cur.cost > cost[cur.to]) continue;
+		if (cost[cur.to] <= 5) fileComs.insert(cur.to);
 		for (Edge nx : adj[cur.to]) {
 			int nextCost = cost[cur.to] + nx.cost;
 			if (cost[nx.to] > nextCost) {
@@ -102,9 +107,8 @@ void linkErase(int mID) {
 
 void removeLink(int mTime, int mID) {
 	update(mTime);
-	for (int i = 1; i <= N; i++) {
-		if (downList[i].empty()) continue;
-		for (auto it = downList[i].begin(); it != downList[i].end();) {
+	for (auto i = downComs.begin(); i != downComs.end();) {
+		for (auto it = downList[*i].begin(); it != downList[*i].end();) {
 			for (auto nx = it->second.path.begin(); nx != it->second.path.end();) {
 				bool removed = false;
 				for (auto it2 = nx->second.begin(); it2 != nx->second.end(); it2++) {
@@ -114,9 +118,11 @@ void removeLink(int mTime, int mID) {
 				}
 				if (!removed) nx++;
 			}
-			if (it->second.path.empty()) it = downList[i].erase(it);
+			if (it->second.path.empty()) it = downList[*i].erase(it);
 			else it++;
 		}
+		if (downList[*i].empty()) i = downComs.erase(i);
+		else i++;
 	}
 	linkErase(mID);
 }
@@ -124,7 +130,8 @@ void removeLink(int mTime, int mID) {
 int downloadFile(int mTime, int mComA, int mFileID) {
 	update(mTime);
 	dijkstra(mComA);
-	for (int i = 1; i <= N; i++) if (getList[i].count(mFileID)) {
+	downComs.insert(mComA);
+	for (int i : fileComs) if (getList[i].count(mFileID)) {
 		if (downList[i].count(mFileID) || getList[i][mFileID] != fileCapa[mFileID]) continue;
 		if (cost[i] <= 5) {
 			int node = i; // 목적지부터 시작
@@ -141,7 +148,7 @@ int downloadFile(int mTime, int mComA, int mFileID) {
 
 int getFileSize(int mTime, int mComA, int mFileID) {
 	update(mTime);
-	return getList[mComA].count(mFileID) ? getList[mComA][mFileID]: 0;
+	return getList[mComA].count(mFileID) ? getList[mComA][mFileID] : 0;
 }
-#endif // 1
+#endif // 1  
 ```
