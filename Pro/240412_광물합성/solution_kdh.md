@@ -11,23 +11,23 @@ struct Result {
 }res;
 
 vector<Result> v[2][3];
-int shipFee, type[2][3];
+int shipFee;
 void init(int mShipFee) {
     shipFee = mShipFee;
     for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++)
-        v[i][j].clear(), type[i][j] = 0;
+        v[i][j].clear();
 }
 
 int gather(int mMineId, int mType, int mCost, int mContent) {
     v[mMineId][mType].push_back({ mCost, mContent });
-    return ++type[mMineId][mType];
+    return (int)v[mMineId][mType].size();
 }
 
+int minPrice[2][3];
 int condition(int mid) {
-    int minPrice[2][3];
-    for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++) minPrice[i][j] = INF;
-    for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++)
-        for (Result nx : v[i][j]) if (nx.mContent >= mid) minPrice[i][j] = min(minPrice[i][j], nx.mCost);
+    fill(&minPrice[0][0], &minPrice[0][0], INF);
+    for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++) for (Result nx : v[i][j])
+        if (nx.mContent >= mid) minPrice[i][j] = min(minPrice[i][j], nx.mCost);
     int res = INF;
     for (int i = 0; i < 2; i++) for (int j = 0; j < 2; j++) for (int k = 0; k < 2; k++) {
         int p1 = minPrice[i][0], p2 = minPrice[j][1], p3 = minPrice[k][2];
@@ -46,26 +46,21 @@ Result mix(int mBudget) {
     int s = 0, e = INF, bestmid;
     while (s <= e) {
         int mid = (s + e) / 2;
-        int ret = condition(mid);
-        if (ret <= mBudget) s = mid + 1, res = {ret, bestmid = mid };
+        int cost = condition(mid);
+        if (cost <= mBudget) s = mid + 1, res = { cost, bestmid = mid };
         else e = mid - 1;
     }
-    int minPrice[2][3];
-    for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++) minPrice[i][j] = INF;
+    fill(&minPrice[0][0], &minPrice[0][0], INF);
+    for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++) for (Result nx : v[i][j])
+        if (nx.mContent >= bestmid) minPrice[i][j] = min(minPrice[i][j], nx.mCost);
     for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++)
-        for (Result nx : v[i][j]) if (nx.mContent >= bestmid) minPrice[i][j] = min(minPrice[i][j], nx.mCost);
-    int p1, p2, p3;
-    for (int i = 0; i < 2; i++) for (int j = 0; j < 2; j++) for (int k = 0; k < 2; k++)
-        p1 = minPrice[i][0], p2 = minPrice[j][1], p3 = minPrice[k][2];
-    for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++) {
-        for (int k = 0; k < v[i][j].size();k++) {
-            if ((v[i][j][k].mContent >= bestmid) && ((j == 0 && p1 == v[i][j][k].mCost) ||
-                (j == 1 && p2 == v[i][j][k].mCost) || (j == 2 && p3 == v[i][j][k].mCost)))
-                v[i][j].erase(v[i][j].begin() + k);
+        for (vector<Result>::iterator it = v[i][j].begin(); it != v[i][j].end();) {
+            if ((it->mContent >= bestmid) && (j == 0 && it->mCost == minPrice[i][j]) &&
+                (j == 0 && it->mCost == minPrice[i][j]) && (j == 0 && it->mCost == minPrice[i][j]))
+                it = v[i][j].erase(it);
+            else it++;
         }
-    }  
     return res;
 }
 #endif // 1
-
 ```
