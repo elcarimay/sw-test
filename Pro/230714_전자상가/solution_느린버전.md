@@ -1,3 +1,4 @@
+```cpp
 #if 1
 // O(N^3) 아주 느린 버전 → 전체 탐색(Brute Force)
 #include <vector>
@@ -55,3 +56,4 @@ Result order(int mBudget) {
 	return res;
 }
 #endif // 1
+```
