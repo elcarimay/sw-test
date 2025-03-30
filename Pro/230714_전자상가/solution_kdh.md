@@ -9,10 +9,9 @@ using namespace std;
 #define INF 1000003
 
 struct Part {
-	int pos, price, performance;
+	int price, performance;
 };
-vector<Part> part[3]; // [mPosition] : price, performane
-int parts[3][2];
+vector<Part> part[2][3]; // [Position][type] : price, performane
 
 struct Result {
 	int mPrice, mPerformance;
@@ -21,37 +20,34 @@ struct Result {
 int charge;
 void init(int mCharge) {
 	charge = mCharge;
-	for (int i = 0; i < 3; i++) {
-		part[i].clear();
-		for (int j = 0; j < 2; j++) parts[i][j] = 0;
-	}
+	for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++) part[i][j].clear();
 }
 
 int stock(int mType, int mPrice, int mPerformance, int mPosition) {
-	part[mType].push_back({ mPosition, mPrice, mPerformance });
-	parts[mType][mPosition]++;
-	return parts[mType][mPosition];
+	part[mPosition][mType].push_back({mPrice, mPerformance});
+	return (int)part[mPosition][mType].size();
 }
 
 int condition(int mid) {
-    int minPrice[3][2];
-    for (int i = 0; i < 3; i++) for (int j = 0; j < 2; j++) minPrice[i][j] = INF;
-    for (int i = 0; i < 3; i++) for (auto& p : part[i]) 
-        if (p.performance >= mid) minPrice[i][p.pos] = min(minPrice[i][p.pos], p.price);
-    int res = INF;
-    for (int i = 0; i < 2; i++) for (int j = 0; j < 2; j++) for (int k = 0; k < 2; k++) {
-        int p1 = minPrice[0][i], p2 = minPrice[1][j], p3 = minPrice[2][k];
-        if (p1 == INF || p2 == INF || p3 == INF) continue;
-        int price = p1 + p2 + p3;
-        int pos = i + j + k;
-        if (pos != 0 && pos != 3) price += charge;
-        res = min(res, price);
-    }
-    return res;
+	int minPrice[2][3];
+	fill(&minPrice[0][0], &minPrice[0][0] + 2 * 3, INF);
+	for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++)
+		for (auto& p : part[i][j])
+			if (p.performance >= mid) minPrice[i][j] = min(minPrice[i][j], p.price);
+	int res = INF;
+	for (int i = 0; i < 2; i++) for (int j = 0; j < 2; j++) for (int k = 0; k < 2; k++) {
+		int p1 = minPrice[i][0], p2 = minPrice[j][1], p3 = minPrice[k][2];
+		if (p1 == INF || p2 == INF || p3 == INF) continue;
+		int price = p1 + p2 + p3;
+		int pos = i + j + k;
+		if (pos != 0 && pos != 3) price += charge;
+		res = min(res, price);
+	}
+	return res;
 }
 
 Result order(int mBudget) {
-	Result res = { 0, 0 };
+	Result res = {};
 	int s = 1, e = INF;
 	while (s <= e) {
 		int mid = (s + e) / 2;
