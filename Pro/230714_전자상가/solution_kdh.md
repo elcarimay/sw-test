@@ -8,14 +8,11 @@
 using namespace std;
 #define INF 1000003
 
-struct Part {
-	int price, performance;
-};
-vector<Part> part[2][3]; // [Position][type] : price, performane
-
 struct Result {
 	int mPrice, mPerformance;
 };
+
+vector<Result> part[2][3]; // [Position][type] : price, performane
 
 int charge;
 void init(int mCharge) {
@@ -31,14 +28,11 @@ int stock(int mType, int mPrice, int mPerformance, int mPosition) {
 int condition(int mid) {
 	int minPrice[2][3];
 	fill(&minPrice[0][0], &minPrice[0][0] + 2 * 3, INF);
-	for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++)
-		for (auto& p : part[i][j])
-			if (p.performance >= mid) minPrice[i][j] = min(minPrice[i][j], p.price);
+	for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++)	for (auto& p : part[i][j])
+			if (p.mPerformance >= mid) minPrice[i][j] = min(minPrice[i][j], p.mPrice);
 	int res = INF;
 	for (int i = 0; i < 2; i++) for (int j = 0; j < 2; j++) for (int k = 0; k < 2; k++) {
-		int p1 = minPrice[i][0], p2 = minPrice[j][1], p3 = minPrice[k][2];
-		if (p1 == INF || p2 == INF || p3 == INF) continue;
-		int price = p1 + p2 + p3;
+		int price = minPrice[i][0] + minPrice[j][1] + minPrice[k][2];
 		int pos = i + j + k;
 		if (pos != 0 && pos != 3) price += charge;
 		res = min(res, price);
