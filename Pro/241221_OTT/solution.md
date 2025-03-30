@@ -4,7 +4,6 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
-#include <unordered_set>
 #include <queue>
 using namespace std;
 
@@ -37,7 +36,7 @@ int N, time;
 void init(int N) {
     ::N = N, time = 0, gMap.clear();
     for (int i = 0; i < 6; i++) genre[i] = {};
-    for (int i = 0; i < N; i++) user[i] = {};
+    for (int i = 0; i <= N; i++) user[i] = {};
 }
 
 int add(int mID, int mGenre, int mTotal) { // 10,000
@@ -52,7 +51,7 @@ int erase(int mID) { // 1,000
     if (!gMap.count(mID)) return 0;
     gMap.erase(mID);
     for (int i = 0; i < 6; i++) genre[i].erase(mID);
-    for (int i = 0; i < N; i++) user[i].erase(mID);
+    for (int i = 0; i <= N; i++) user[i].erase(mID);
     return 1;
 }
 
