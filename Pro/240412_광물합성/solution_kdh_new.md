@@ -30,10 +30,8 @@ int condition(int mid) {
         if (nx.mContent >= mid) minPrice[i][j] = min(minPrice[i][j], nx.mCost);
     int ret = INF;
     for (int i = 0; i < 2; i++) for (int j = 0; j < 2; j++) for (int k = 0; k < 2; k++) {
-        int p1 = minPrice[i][0], p2 = minPrice[j][1], p3 = minPrice[k][2];
-        if (p1 == INF || p2 == INF || p3 == INF) continue;
+        int cost = minPrice[i][0] + minPrice[j][1] + minPrice[k][2];
         int mine = i + j + k;
-        int cost = p1 + p2 + p3;
         if (mine != 0 && mine != 3) cost += shipFee * 2;
         else cost += shipFee;
         ret = min(ret, cost);
@@ -64,9 +62,7 @@ Result mix(int mBudget) {
     for (int i = 0; i < 2; i++) for (int j = 0; j < 3; j++) for (Result nx : v[i][j])
         if (nx.mContent >= Content) minPrice[i][j] = min(minPrice[i][j], nx.mCost);
     for (int i = 0; i < 2; i++) for (int j = 0; j < 2; j++) for (int k = 0; k < 2; k++) {
-        int p1 = minPrice[i][0], p2 = minPrice[j][1], p3 = minPrice[k][2];
-        if (p1 == INF || p2 == INF || p3 == INF) continue;
-        int cost = p1 + p2 + p3;
+        int cost = minPrice[i][0] + minPrice[j][1] + minPrice[k][2];
         int mine = i + j + k;
         if (mine != 0 && mine != 3) cost += (shipFee * 2);
         else cost += shipFee;
