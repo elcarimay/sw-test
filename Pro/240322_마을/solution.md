@@ -1,92 +1,97 @@
 ```cpp
+#if 1 // 113 ms
+// Union-find ver.
+// 초기에 부모를 자기자신으로 하고 rank는 0으로 입력
+// idmap에서의 id를 초기 group id로 입력
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <list>
 using namespace std;
 
-int L, R, GN;
-
-vector<int> G[105][105]; // g[x][y] = {hid} 그룹을 100*100으로 나누고 그룹당 hid등록
-unordered_map<int, int> idmap; // key: mid, value: hid
-int idcnt;
-
-vector<int> village[25005]; // village[vid] = {hid}
-int vcnt;
-int minmid[25005]; // minHid[vid] = vid 마을의 mid 최소값
+#define MAXN 25003
+#define INF 1000000001
 
 struct House {
-	int x, y, vid, mid;
-}house[25005];
+	int mid, x, y;
+}house[MAXN];
 
-void init(int L, int R) {
-	::L = L, ::R = R, GN = R / L;
-	vcnt = idcnt = 0;
-	for (auto& v : village) v.clear();
-	for (int i = 0; i <= GN; i++) {
-		for (int j = 0; j <= GN; j++)
-			G[i][j].clear();
-	}
+int p[MAXN], r[MAXN], minHouse[MAXN];
+vector<int> group[MAXN];
+int find(int x) {
+	if (p[x] != x) p[x] = find(p[x]);
+	return p[x];
 }
 
-void unionVillage(int a, int b) {
-	if (a == b) return;
-	if (village[a].size() > village[b].size()) swap(a, b);
-	vcnt--;
-	minmid[b] = min(minmid[b], minmid[a]);
-	for (int hid : village[a]) {
-		village[b].push_back(hid);
-		house[hid].vid = b;
+int totalCnt;
+void unionSet(int a, int b) {
+	int rootX = find(a), rootY = find(b);
+	if (rootX == rootY) {
+		minHouse[rootX] = min(minHouse[rootX], minHouse[rootY]);
+		return;
 	}
+	if (r[rootX] < r[rootY]) swap(rootX, rootY);
+	p[rootY] = rootX;
+	if (r[rootX] == r[rootY]) r[rootX]++;
+	group[rootX].insert(group[rootX].end(), group[rootY].begin(), group[rootY].end());
+	minHouse[rootX] = min(minHouse[rootX], minHouse[rootY]);
+	totalCnt--;
+}
+
+unordered_map<int, int> idMap;
+int idCnt;
+vector<int> map[103][103];
+
+int L, R;
+void init(int L, int R) {
+	::L = L, ::R = R, idCnt = totalCnt = 0, idMap.clear();
+	for (int i = 0; i < MAXN; i++) group[i].clear(), minHouse[i] = INF;
+	for (int i = 0; i < 103; i++) for (int j = 0; j < 103; j++)
+		map[i][j].clear();
+}
+
+bool near(int aid, int bid) {
+	int dist = abs(house[aid].x - house[bid].x) + abs(house[aid].y - house[bid].y);
+	return (dist <= L) ? true : false;
 }
 
 int add(int mId, int mX, int mY) {
-	int hid = idmap[mId] = idcnt++;
-	auto&h = house[hid] = { mX, mY, hid, mId };
-	vcnt++;
-	village[hid].push_back(hid);
-	minmid[hid] = mId;
-
-	int sX = max(0, mX / L - 1), sY = max(0, mY / L - 1);
-	int eX = min(GN, mX / L + 1), eY = min(GN, mY / L + 1);
-	
-	for (int i = sX; i <= eX; i++)
-		for (int j = sY; j <= eY; j++) {
-			for (int hid2 : G[i][j]) {
-				auto& h2 = house[hid2];
-				if (abs(h.x - h2.x) + abs(h.y - h2.y) <= L)
-					unionVillage(h.vid, h2.vid);
-			}
-		}
-	G[mX / L][mY / L].push_back(hid);
-	return village[h.vid].size();
+	int id = idMap[mId] = idCnt++;
+	house[id] = { mId, mX, mY };
+	p[id] = id, r[id] = 0, totalCnt++;
+	group[id].push_back(id);
+	minHouse[id] = mId;
+	int gx = mX / L, gy = mY / L;
+	int sX = max(0, gx - 1), eX = min(R / L, gx + 1);
+	int sY = max(0, gy - 1), eY = min(R / L, gy + 1);
+	for (int i = sX; i <= eX; i++) for (int j = sY; j <= eY; j++)
+		for (int nid : map[i][j]) if (near(nid, id)) unionSet(nid, id);
+	map[gx][gy].push_back(id);
+	return (int)group[find(id)].size();
 }
 
-int remove(int mId) {
-	if (idmap.count(mId) == 0) return -1;
-	int hid = idmap[mId];
-	auto& h = house[hid];
-	int vid = h.vid;
-	auto& v = village[vid];
-	auto& g = G[h.x / L][h.y / L];
-
-	idmap.erase(mId);
-	g.erase(find(g.begin(), g.end(), hid));
-	v.erase(find(v.begin(), v.end(), hid));
-	if (minmid[vid] == mId) {
-		minmid[vid] = 1e9;
-		for (int hid : v) minmid[vid] = min(minmid[vid], house[hid].mid);
+int remove(int mId) { // mId 집이 삭제되더라도, mId 집의 위치에 상관없이 마을을 분할하지 않는다.
+	if (!idMap.count(mId)) return -1;
+	int id = idMap[mId];
+	idMap.erase(mId);
+	auto& m = map[house[id].x / L][house[id].y / L];
+	int root = find(id);
+	group[root].erase(find(group[root].begin(), group[root].end(), id));
+	if (minHouse[root] == mId) {
+		minHouse[root] = INF;
+		for (auto nx : group[root]) minHouse[root] = min(minHouse[root], house[nx].mid);
 	}
-	if (v.empty()) vcnt--;
-	return v.size();
+	m.erase(find(m.begin(), m.end(), id));
+	if (group[root].empty()) totalCnt--;
+	return (int)group[root].size();
 }
 
 int check(int mId) {
-	if (idmap.count(mId) == 0) return -1;
-	int hid = idmap[mId];
-	return minmid[house[hid].vid];
+	return idMap.count(mId) ? minHouse[find(idMap[mId])] : -1;
 }
 
 int count() {
-	return vcnt;
+	return totalCnt;
 }
+#endif // 1
 ```
