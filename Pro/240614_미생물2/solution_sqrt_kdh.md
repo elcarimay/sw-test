@@ -1,6 +1,6 @@
 ```cpp
 #if 1
-// sqrt ver.
+// sqrt ver. 132 ms
 // 각 수명 index에 미생물 하나를 더하고 미생물이 추가되는 시점과 반감기를 더해서 시간에 따른 이벤트를 우큐로 처리
 #include <vector>
 #include <queue>
@@ -85,9 +85,7 @@ int getMinLifeSpan(int tStamp) { // 1,000
 
 int getCount(int tStamp, int mMinSpan, int mMaxSpan) { // 15,000
 	update(tStamp);
-	int ret = sum_query(mMinSpan, mMaxSpan);
-	return ret;
+	return sum_query(mMinSpan, mMaxSpan);
 }
 #endif // 1
-
 ```
