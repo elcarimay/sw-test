@@ -1,5 +1,5 @@
 ```cpp
-int sum_query(int l, int r) {
+int sum_query1(int l, int r) {
 	int sumv = 0;
 	while (l <= r && l % sq) sumv += A[l++];
 	while (l <= r && (r + 1) % sq) sumv += A[r--];
@@ -7,7 +7,7 @@ int sum_query(int l, int r) {
 	return sumv;
 }
 
-int sum_query(int l, int r) {
+int sum_query2(int l, int r) {
 	int sumv = 0;
 	int sbid = l / sq, ebid = r / sq;
 	if (sbid == ebid){
