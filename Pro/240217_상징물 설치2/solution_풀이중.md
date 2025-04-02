@@ -1,105 +1,144 @@
 ```cpp
-#if 1
-#include <iostream>
 #include <vector>
-#include <set>
-#include <unordered_map>
-#include <unordered_set>
 #include <algorithm>
-
-#define INF 987654321
+#include <unordered_map>
 using namespace std;
 
-vector<int> sticks;
+// Store all available beams
+vector<int> beams;
 
-struct Data2 {
-    int a, b;
+// For each height, store all combinations of beams that can make it
+struct Combination {
+    vector<int> beamIndices;  // Indices of beams used
+    int maxBeamLength;        // Length of the longest beam
 };
-struct Data3 {
-    int a, b, c;
-};
-unordered_map<int, vector<int>> possibleHeights1; // 가능한 기둥 높이 저장
-unordered_map<int, vector<Data2>> possibleHeights2; // 가능한 기둥 높이 저장
-unordered_map<int, vector<Data3>> possibleHeights3; // 가능한 기둥 높이 저장
-int N, H, ret;
+unordered_map<int, vector<Combination>> heightToCombinations;
 
-// 가능한 모든 기둥 높이 저장 (최적화된 방식)
-void generateCombinations() {
-    possibleHeights1.clear(), possibleHeights2.clear(), possibleHeights3.clear();
-    sort(sticks.begin(), sticks.end()); // 정렬 (O(N log N))
-    for (int i = 0; i < N; i++) possibleHeights1[sticks[i]].push_back(sticks[i]);
-    for (int i = 0; i < N; i++) for (int j = i + 1; j < N; j++) 
-        possibleHeights2[sticks[i] + sticks[j]].push_back({ sticks[i], sticks[j] });
-    for (int i = 0; i < N; i++) for (int j = i + 1; j < N; j++) for (int k = j + 1; k < N; k++)
-        possibleHeights3[sticks[i] + sticks[j] + sticks[k]].push_back({ sticks[i], sticks[j], sticks[k] });
+// For efficient lookup in requireTwin
+unordered_map<int, int> heightToSingleResult;
+
+void init() {
+    beams.clear();
+    heightToCombinations.clear();
+    heightToSingleResult.clear();
 }
 
-// 기둥 2개 만들 수 있는지 확인 (최적화)
-bool canMakeTwoPillars() {
-    vector<Data3> validCombinations; // 1개 또는 2개의 막대로 만들 수 있는 기둥을 저장
-    for (int i = 0; i < N; i++) // 1개 조합
-        if (sticks[i] == H) validCombinations.push_back({ sticks[i], -1, -1 });
-    for (int i = 0; i < N; i++) { // 2개 조합 (투 포인터 활용)
-        for (int j = i + 1; j < N; j++) {
-            if (sticks[i] + sticks[j] == H) {
-                validCombinations.push_back({ sticks[i], sticks[j], -1 });
-            }
+void addBeam(int mLength) {
+    int newBeamIdx = beams.size();
+    beams.push_back(mLength);
+
+    // Clear the cache for requireSingle since new combinations might change results
+    heightToSingleResult.clear();
+
+    // Case 1: Use just this beam
+    Combination single;
+    single.beamIndices = { newBeamIdx };
+    single.maxBeamLength = mLength;
+    heightToCombinations[mLength].push_back(single);
+
+    // Case 2: Use this beam + one existing beam
+    for (int i = 0; i < newBeamIdx; i++) {
+        int height = mLength + beams[i];
+        Combination pair;
+        pair.beamIndices = { i, newBeamIdx };
+        pair.maxBeamLength = max(mLength, beams[i]);
+        heightToCombinations[height].push_back(pair);
+    }
+
+    // Case 3: Use this beam + two existing beams
+    for (int i = 0; i < newBeamIdx; i++) {
+        for (int j = i + 1; j < newBeamIdx; j++) {
+            int height = mLength + beams[i] + beams[j];
+            Combination triple;
+            triple.beamIndices = { i, j, newBeamIdx };
+            triple.maxBeamLength = max({ mLength, beams[i], beams[j] });
+            heightToCombinations[height].push_back(triple);
         }
     }
-    for (int i = 0; i < N; i++) { // 3개 조합
-        for (int j = i + 1; j < N; j++) {
-            for (int k = j + 1; k < N; k++) {
-                if (sticks[i] + sticks[j] + sticks[k] == H) {
-                    validCombinations.push_back({ sticks[i], sticks[j], sticks[k]});
-                }
-            }
-        }
+}
+
+int requireSingle(int mHeight) {
+    // Check if result is cached
+    auto cacheIt = heightToSingleResult.find(mHeight);
+    if (cacheIt != heightToSingleResult.end()) {
+        return cacheIt->second;
     }
-    // 두 개의 다른 조합이 있는지 확인 (O(N² log N))
-    int size = validCombinations.size();
-    for (int i = 0; i < size; i++) {
-        for (int j = i + 1; j < size; j++) {
-            unordered_set<int> used;
-            used.insert(validCombinations[i].a);
-            if (validCombinations[i].b != -1 && used.count(validCombinations[j].first)) used.insert(validCombinations[i].second);
-            bool valid = true;
-            if (used.count(validCombinations[j].first) || (validCombinations[j].second != -1 && used.count(validCombinations[j].second))) {
-                valid = false;
-            }
-            if (valid) return true;
+
+    auto it = heightToCombinations.find(mHeight);
+    if (it == heightToCombinations.end()) {
+        heightToSingleResult[mHeight] = -1;
+        return -1;  // Cannot create the column
+    }
+
+    // Find the minimum longest beam
+    int minLongestBeam = 1e9;
+    for (const auto& combo : it->second) {
+        minLongestBeam = min(minLongestBeam, combo.maxBeamLength);
+    }
+
+    // Cache and return result
+    heightToSingleResult[mHeight] = minLongestBeam;
+    return minLongestBeam;
+}
+
+bool hasOverlap(const vector<int>& indices1, const vector<int>& indices2) {
+    // Fast overlap check for small vectors
+    for (int idx1 : indices1) {
+        for (int idx2 : indices2) {
+            if (idx1 == idx2) return true;
         }
     }
     return false;
 }
 
-void init() {
-    N = 0;
-    sticks.clear();
-}
-
-void addBeam(int mLength) {
-    N++;
-    sticks.push_back(mLength);
-    generateCombinations();
-}
-
-int requireSingle(int mHeight) {
-    H = mHeight, ret = INT_MAX;
-    for (int nx : possibleHeights1[H]) ret = min(ret, nx);
-    for (Data2 nx : possibleHeights2[H])
-        if (nx.a > nx.b) ret = min(ret, nx.a);
-        else ret = min(ret, nx.b);
-    for (Data3 nx : possibleHeights3[H]) {
-        int tmp = nx.a; tmp = max(tmp, nx.b); tmp = max(tmp, nx.c);
-        ret = min(ret, tmp);
-    }
-    return ret == INT_MAX ? -1 : ret;
-}
-
 int requireTwin(int mHeight) {
-    H = mHeight, ret = INT_MAX;
-    bool twoPillar = canMakeTwoPillars();
-    return twoPillar == true ? ret : -1;
+    auto it = heightToCombinations.find(mHeight);
+    if (it == heightToCombinations.end()) {
+        return -1;  // Cannot create the column
+    }
+
+    const auto& combinations = it->second;
+    int n = combinations.size();
+
+    if (n < 2) return -1;  // Need at least 2 combinations
+
+    int minMaxBeamLength = 1e9;
+    bool canCreate = false;
+
+    // Pre-sort combinations by maxBeamLength to enable early breaks
+    vector<const Combination*> sortedCombos;
+    for (const auto& combo : combinations) {
+        sortedCombos.push_back(&combo);
+    }
+    sort(sortedCombos.begin(), sortedCombos.end(),
+        [](const Combination* a, const Combination* b) {
+            return a->maxBeamLength < b->maxBeamLength;
+        });
+
+    // Try all pairs of combinations
+    for (int i = 0; i < n; i++) {
+        const auto& combo1 = *sortedCombos[i];
+
+        // If this combo's max beam is already ≥ our best result, we can break early
+        if (combo1.maxBeamLength >= minMaxBeamLength && canCreate) break;
+
+        for (int j = i + 1; j < n; j++) {
+            const auto& combo2 = *sortedCombos[j];
+
+            // Maximum possible beam length for this pair
+            int maxBeam = max(combo1.maxBeamLength, combo2.maxBeamLength);
+
+            // If this pair can't improve our best result, skip it
+            if (maxBeam >= minMaxBeamLength && canCreate) continue;
+
+            // Check if the two combinations don't overlap
+            if (!hasOverlap(combo1.beamIndices, combo2.beamIndices)) {
+                canCreate = true;
+                minMaxBeamLength = maxBeam;
+            }
+        }
+    }
+
+    return canCreate ? minMaxBeamLength : -1;
 }
-#endif // 0
 ```
