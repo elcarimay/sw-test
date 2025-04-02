@@ -21,4 +21,9 @@ int sum_query2(int l, int r) {
 	for (int i = sbid + 1; i <= ebid - 1; i++) sumv += sumA[i];
 	return sumv;
 }
+
+// sum_query2가 더 빠른 이유  
+// 분기 수가 적고 단순 루프 구조 -> CPU 예측 + 캐시 활용 좋음
+// 메모리 접근이 순차적
+// 컴파일러 최적화에 유리함
 ```
