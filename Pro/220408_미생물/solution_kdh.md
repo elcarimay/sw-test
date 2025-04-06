@@ -9,27 +9,31 @@ using namespace std;
 #define MAXM 20003
 
 struct Microbe {
-	int life, halfTime, cnt;
-}microbe[MAXM];
+	int halfTime, cnt;
+}m[MAX_BCNT];
+
+struct Info {
+	int life, cnt, currentTime;
+	bool removed;
+}info[MAXM];
 
 struct Time {
-	int order, id, time;
+	int order, id, life, cnt, time; // 반감기가 포함된 시간
 	bool operator<(const Time& r)const {
 		return time > r.time;
 	}
 };
 priority_queue<Time> timeQ;
 struct Life {
-	int order, id, currentTime;
+	int order, id, life, cnt, currentTime;
 	bool operator<(const Life& r)const {
-		if (microbe[id] != r.life) return life > r.life;
+		if (life != r.life) return life > r.life;
 		return currentTime > r.currentTime;
 	}
 };
 priority_queue<Life> lifeQ;
 unordered_map<string, int> idMap; // [bName] : int
-int idCnt, order, Cnt[MAXM];
-bool removed[MAXM];
+int idCnt, order;
 
 int getID(char c[]) {
 	return idMap.count(c) ? idMap[c] : idMap[c] = idCnt++;
@@ -37,57 +41,77 @@ int getID(char c[]) {
 
 void init(int N, char bNameList[MAX_BCNT][MAX_NAME], int mHalfTime[MAX_BCNT]) {
 	order = idCnt = 0, idMap.clear(), timeQ = {}, lifeQ = {};
-	for (int i = 0; i < N; i++) {
-		int id = getID(bNameList[i]);
-		microbe[id] = {mHalfTime[i]};
-	}
-	memset(removed, 0, sizeof(removed));
+	for (int i = 0; i < N; i++) m[getID(bNameList[i])] = { mHalfTime[i] };
+	for (int i = 0; i < MAXM; i++) info[i] = {};
 }
 
-void update(int time) {
-	while (!timeQ.empty() && timeQ.top().time <= time) {
+void update(int currentTime) {
+	while(!timeQ.empty() && timeQ.top().time <= currentTime){
 		Time cur = timeQ.top(); timeQ.pop();
-		if (cur.time <= 9) {
-			microbe[cur.id].cnt -= cur.cnt;
-			removed[cur.order] = true;
-			continue;
+		if (info[cur.order].removed) continue;
+		if (info[cur.order].life != cur.life ||
+			info[cur.order].cnt != cur.cnt) continue;
+		int halfTime = m[cur.id].halfTime;
+		int num = (currentTime - cur.time) / halfTime;
+		for (int i = 0; i < num; i++) cur.life /= halfTime;
+		info[cur.order].life = cur.life;
+		if (cur.life <= 9) {
+			info[cur.order].removed = true;	continue;
 		}
-		cur.life /= 2;
-		timeQ.push({ cur.order, cur.id, time + microbe[cur.id].halfTime, cur.life });
+		cur.time = cur.time + halfTime * num;
+		timeQ.push(cur);
+		lifeQ.push({ cur.order, cur.id, cur.life, info[cur.order].currentTime });
 	}
 }
 
 void addBacteria(int tStamp, char bName[MAX_NAME], int mLife, int mCnt) { // 15,000
 	update(tStamp);
 	int id = getID(bName);
-	microbe[id].cnt += mCnt;
-	timeQ.push({ order, id, tStamp + microbe[id].halfTime, mLife }); // order, id, time, life, cnt;
-	lifeQ.push({ order++, id, tStamp, mLife });// order, id, currentTime, life, cnt;
+	m[id].cnt += mCnt;
+	info[order] = { mLife, mCnt };
+	// order, id, life, cnt, time; // 반감기가 포함된 시간
+	timeQ.push({ order, id, mLife, mCnt, tStamp + m[id].halfTime });
+	// order, id, life, cnt, currentTime;
+	lifeQ.push({ order++, id, mLife, mCnt, tStamp });
 }
 
 int takeOut(int tStamp, int mCnt) { // 15,000
+	int ret = 0;
 	update(tStamp);
-	while (!lifeQ.empty()) {
+	while (!lifeQ.empty() && mCnt > 0) {
 		Life cur = lifeQ.top(); lifeQ.pop();
-		if (removed[cur.order]) continue;
-		mCnt -= cur.cnt;
-		if (mCnt >= 0) {
+		if (info[cur.order].removed) continue;
+		if (info[cur.order].life != cur.life ||
+			info[cur.order].cnt != cur.cnt) continue;
+		if (mCnt > cur.cnt) {
+			mCnt -= cur.cnt; // 10 5, 5 5, 5 10
 			m[cur.id].cnt -= cur.cnt;
-			continue;
+			ret += cur.life * cur.cnt;
+			info[order].cnt -= cur.cnt; // 10 5, 5 5, 5 10
 		}
-		m[cur.id].cnt -= (cur.cnt - mCnt);
-		cur.cnt = -mCnt; // mCnt < 0
-		timeQ.push({ cur.order, cur.id, cur.time, cur.life, -mCnt });
-		break;
+		else if (mCnt == cur.cnt) {
+			mCnt -= cur.cnt; // 10 5, 5 5, 5 10
+			m[cur.id].cnt -= cur.cnt;
+			ret += cur.life * cur.cnt;
+			info[order].cnt -= cur.cnt; // 10 5, 5 5, 5 10
+		}
+		else{ // mCnt < cur.cnt
+			mCnt -= cur.cnt; // 10 5, 5 5, 5 10
+			m[cur.id].cnt -= mCnt;
+			ret += mCnt * cur.cnt;
+			info[order].cnt -= mCnt; // 10 5, 5 5, 5 10
+		}
+		//timeQ.push({ order, id, mLife, mCnt, tStamp + m[id].halfTime });
+		timeQ.push({cur.order, cur.id, cur.cnt - mCnt, }); // order, id, time;
+		lifeQ.push({ cur.order, cur.id, cur.cnt - mCnt, tStamp});// order, id, currentTime;
+		return ret;
 	}
-	return -1;
 }
 
 int checkBacteria(int tStamp, char bName[MAX_NAME]) { // 50,000 - 15,000 - 15,000 - 1
 	update(tStamp);
-
-	return -1;
+	int ret = microbe[getID(bName)].cnt;
+	return ret;
 }
 #endif // 1
-
 ```
