@@ -79,10 +79,9 @@ int takeOut(int tStamp, int mCnt) { // 15,000
 		m[cur.id].cnt -= minv;
 		ret += cur.life * minv;
 		info[cur.infoId].cnt -= minv;
-		if (mCnt) continue;
-		lifeQ.push({ cur.infoId, cur.id, cur.life, info[cur.infoId].cnt }); //infoId, id, life, cnt;
-		return ret;
+		if (mCnt <= 0) lifeQ.push({ cur.infoId, cur.id, cur.life, info[cur.infoId].cnt }); //infoId, id, life, cnt;
 	}
+	return ret;
 }
 
 int checkBacteria(int tStamp, char bName[MAX_NAME]) { // 50,000 - 15,000 - 15,000 - 1
