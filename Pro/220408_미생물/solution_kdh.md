@@ -69,25 +69,18 @@ void addBacteria(int tStamp, char bName[MAX_NAME], int mLife, int mCnt) { // 15,
 }
 
 int takeOut(int tStamp, int mCnt) { // 15,000
-	int ret = 0;
+	int ret = 0, minv;
 	update(tStamp);
 	while (!lifeQ.empty() && mCnt > 0) {
 		Life cur = lifeQ.top(); lifeQ.pop();
 		if (info[cur.infoId].life != cur.life || info[cur.infoId].cnt != cur.cnt) continue;
-		if (mCnt >= cur.cnt) {
-			mCnt -= cur.cnt;
-			m[cur.id].cnt -= cur.cnt;
-			ret += cur.life * cur.cnt;
-			info[cur.infoId].cnt -= cur.cnt;
-			if(mCnt) continue;
-		}
-		else { // mCnt < cur.cnt
-			cur.cnt -= mCnt;
-			m[cur.id].cnt -= mCnt;
-			ret += cur.life * mCnt;
-			info[cur.infoId].cnt -= mCnt;
-			lifeQ.push({ cur.infoId, cur.id, cur.life, info[cur.infoId].cnt }); //infoId, id, life, cnt;
-		}
+		if (mCnt >= cur.cnt) mCnt -= cur.cnt, minv = cur.cnt;
+		else cur.cnt -= mCnt, minv = mCnt, mCnt = 0;
+		m[cur.id].cnt -= minv;
+		ret += cur.life * minv;
+		info[cur.infoId].cnt -= minv;
+		if (mCnt) continue;
+		lifeQ.push({ cur.infoId, cur.id, cur.life, info[cur.infoId].cnt }); //infoId, id, life, cnt;
 		return ret;
 	}
 }
