@@ -1,5 +1,5 @@
 ```cpp
-// ver2: 순열을 구하놓고 계산
+// ver2: 순열을 구해놓고 계산
 // ysb: 순열을 모두 다 구해놓고 계산
 #include <vector>
 #include <queue>
