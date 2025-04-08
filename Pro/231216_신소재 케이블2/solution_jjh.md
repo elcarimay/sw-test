@@ -1,4 +1,5 @@
 ```cpp
+#if 1
 #include <vector>
 #include <unordered_map>
 using namespace std;
@@ -13,13 +14,13 @@ unordered_map<int, int> idMap;
 int p[MAXN], depth[MAXN], cost[MAXN];
 
 
-void init(int mDevice){
+void init(int mDevice) {
 	idMap.clear(), idMap[mDevice] = idMap.size();
 	for (int i = 0; i < MAXN; i++) adj[i].clear();
 	depth[0] = 0;
 }
 
-void connect(int mOldDevice, int mNewDevice, int mLatency){
+void connect(int mOldDevice, int mNewDevice, int mLatency) {
 	int oldid = idMap[mOldDevice], newid = idMap[mNewDevice] = idMap.size();
 	adj[oldid].push_back({ newid, mLatency });
 	adj[newid].push_back({ oldid, mLatency });
@@ -28,7 +29,7 @@ void connect(int mOldDevice, int mNewDevice, int mLatency){
 	return;
 }
 
-int measure(int mDevice1, int mDevice2){ // LCA 이용
+int measure(int mDevice1, int mDevice2) { // LCA 이용
 	int ret = 0;
 	int id1 = idMap[mDevice1], id2 = idMap[mDevice2];
 	if (depth[id1] < depth[id2]) swap(id1, id2);
@@ -53,19 +54,16 @@ int dfs(int cur, int p) {
 }
 
 // 자식이 한개인 경우는 본인이 맨끝이 되고, 아닌 경우는 가장 깊이가 큰 2개를 선택한다.
-int test(int mDevice){
+int test(int mDevice) {
 	int id = idMap[mDevice];
-	if (adj[id].size() == 1)
-		return dfs(id, -1);
-	int maxVal[2] = { 0,0 };
+	if (adj[id].size() == 1) return dfs(id, -1);
+	int v1 = 0, v2 = 0;
 	for (auto& nx : adj[id]) {
 		int r = dfs(nx.to, id) + nx.cost;
-		if (maxVal[0] < r) {
-			maxVal[1] = maxVal[0];
-			maxVal[0] = r;
-		}
-		else if (maxVal[1] < r) maxVal[1] = r;
+		if (v1 < r) v2 = v1, v1 = r;
+		else if (v2 < r) v2 = r;
 	}
-	return maxVal[0] + maxVal[1];
+	return v1 + v2;
 }
+#endif // 0
 ```
