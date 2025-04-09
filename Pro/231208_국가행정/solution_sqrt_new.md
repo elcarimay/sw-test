@@ -51,7 +51,6 @@ int sum_query(int l, int r) {
 
 void init(int N, int mPopulation[]) {
 	::N = N, pq = {};
-	memset(population, 0, sizeof(population));
 	for (int i = 0; i < N; i++) population[i] = mPopulation[i];
 	for (int i = 0; i < N - 1; i++) {
 		roads[i].num = 1;
