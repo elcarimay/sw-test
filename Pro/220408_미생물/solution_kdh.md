@@ -79,7 +79,7 @@ int takeOut(int tStamp, int mCnt) { // 15,000
 		m[cur.id].cnt -= minv;
 		ret += cur.life * minv;
 		info[cur.infoId].cnt -= minv;
-		if (mCnt <= 0) lifeQ.push({ cur.infoId, cur.id, cur.life, info[cur.infoId].cnt }); //infoId, id, life, cnt;
+		if (mCnt <= 0) cur.cnt = info[cur.infoId].cnt, lifeQ.push(cur);
 	}
 	return ret;
 }
