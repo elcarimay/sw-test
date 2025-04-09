@@ -1,4 +1,5 @@
 ```cpp
+#if 1 // 155 ms
 #include <string.h>
 #include <algorithm>
 #include <queue>
@@ -32,8 +33,8 @@ void build(int node, int s, int e) {
 }
 
 void update(int node, int s, int e, int idx, int value) {
-	if (s == idx && e == idx) {
-		sumTree[node] += value; return;
+	if (s == e) {
+		sumTree[node] = value; return;
 	}
 	int mid = (s + e) / 2;
 	int lnode = node * 2;
@@ -68,7 +69,6 @@ int expand(int M) {
 		Data cur = pq.top(); pq.pop();
 		int roadId = cur.roadId;
 		roads[roadId].num += 1;
-		update(1, 0, N - 1, roadId, -roads[roadId].time);
 		roads[roadId].time = (population[roadId] + population[roadId + 1]) / roads[roadId].num;
 		update(1, 0, N - 1, roadId, roads[roadId].time);
 		pq.push({ roads[roadId].time, roadId });
@@ -107,4 +107,5 @@ int divide(int mFrom, int mTo, int K) {
 	}
 	return ret;
 }
+#endif // 1
 ```
