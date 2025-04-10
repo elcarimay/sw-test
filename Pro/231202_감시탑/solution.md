@@ -77,7 +77,7 @@ int getClosest(int mRow, int mCol, int mColor) {
 		Pos cur = que[head++];
 		partitionDist = distMap[cur.r][cur.c];
 		getMinDist(mRow, mCol, cur.r, cur.c, mColor);
-		if (minDist != INT_MAX && partitionDist - minpartitionDist > 2) break;
+		if (minDist != INT_MAX && partitionDist - minpartitionDist > 2) break; // 현재 위치의 그룹거리가 최소로 찾은 그룹거리의 2보다 크면 종료
 		for (int i = 0; i < 4; i++) {
 			int nr = cur.r + dr[i], nc = cur.c + dc[i];
 			if (nr < 0 || nr > M || nc < 0 || nc > M) continue;
