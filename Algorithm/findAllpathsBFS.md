@@ -10,7 +10,7 @@ void findAllPathsBFS(const vector<vector<int>>& graph, int start, int end) {
     q.push({ start });
     while (!q.empty()) {
         vector<int> path = q.front(); q.pop();
-		int current = path.back();
+	int current = path.back();
         if (current == end) {
             allPaths.push_back(path); continue;
         }
