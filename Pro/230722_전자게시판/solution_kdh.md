@@ -1,13 +1,14 @@
 ```cpp
 #if 1
 // erase에서 댓글 삭제시 가장 최상위 글에 대한 포인트를 반환
+// best Message나 best User를 할때 단순히 5개만 뽑으면 안되고 첫번째가 같더라도 두번째가 다른게 있기 때문에 set으로 구현시 실시간 update가 필요함
+// 동일한 mid로 다른 글이 쓰여질수 있기 때문에 getID함수를 만들때 주의해야 함
 #define _CRT_SECURE_NO_WARNINGS
 #include <vector>
 #include <unordered_map>
 #include <string>
 #include <set>
 using namespace std;
-using pii = pair<int, int>;
 
 #define MAXL 10
 struct User {
@@ -23,106 +24,104 @@ unordered_map<string, int> uMap;
 unordered_map<int, int> mMap;
 
 int getUID(char c[]) {
-	return uMap.count(c) ? uMap[c] : uMap[c] = uMap.size();
+	if (uMap.count(c)) return uMap[c];
+	else {
+		int size = uMap.size() + 1;
+		user[size].point = 0;
+		return uMap[c] = size;
+	}
 }
 int getMID(int c) {
-	return mMap.count(c) ? mMap[c] : mMap[c] = mMap.size();
+	return mMap.count(c) ? mMap[c] : mMap[c] = mMap.size() + 1;
 }
+struct BestMessage {
+	int mid;
+	bool operator<(const BestMessage& r)const {
+		if (msg[mid].totPoint != msg[r.mid].totPoint) return msg[mid].totPoint > msg[r.mid].totPoint;
+		return msg[mid].mid < msg[r.mid].mid;
+	}
+};
+set<BestMessage> m;
+struct BestUser {
+	int uid;
+	bool operator<(const BestUser& r)const {
+		if (user[uid].point != user[r.uid].point) return user[uid].point > user[r.uid].point;
+		return strcmp(user[uid].name, user[r.uid].name) < 0;
+	}
+};
+set<BestUser> u;
 void init() {
-	uMap.clear(), mMap.clear();
-	for (int i = 0; i < 10000; i++) user[i] = {};
-	for (int i = 0; i < 50000; i++) msg[i] = {};
+	uMap.clear(), mMap.clear(), m.clear(), u.clear();
+}
+
+void updateUser(int uid, int p) {
+	u.erase({ uid });
+	user[uid].point += p;
+	u.insert({ uid });
 }
 
 int writeMessage(char mUser[], int mID, int mPoint) {
-	int uid = getUID(mUser), mid = getMID(mID);
+	int uid = getUID(mUser), mid = mMap[mID] = mMap.size() + 1;
 	strcpy(user[uid].name, mUser);
-	user[uid].point += mPoint;
+	updateUser(uid, mPoint);
 	msg[mid] = { 0, mID, uid, mPoint, mPoint, -1 };
+	m.insert({ mid });
 	return user[uid].point;
 }
 
 int update_parent(int id, int point) {
-	while (msg[id].pid != -1) {
+	if(msg[id].type) {
 		msg[id].totPoint += point;
-		user[msg[id].uid].point += point;
 		id = msg[id].pid;
 	}
+	m.erase({ id });
 	msg[id].totPoint += point;
-	user[msg[id].uid].point += point;
+	m.insert({ id });
 	return id;
 }
 
 int commentTo(char mUser[], int mID, int mTargetID, int mPoint) {
-	int uid = getUID(mUser), mid = getMID(mID);
+	int uid = getUID(mUser), mid = mMap[mID] = mMap.size() + 1;
 	int tid = getMID(mTargetID);
 	strcpy(user[uid].name, mUser);
+	updateUser(uid, mPoint);
 	msg[mid] = { 1, mID, uid, mPoint, mPoint, tid };
 	msg[tid].child.push_back(mid);
 	int root = update_parent(tid, mPoint);
 	return msg[root].totPoint;
 }
 
-void update_child(int mid) {
-	for (int nx : msg[mid].child) {
-		auto& m = msg[nx];
-		user[m.uid].point -= m.point;
-		m.point = 0;
-	}
+void updateUserAll(int mid) {
+	updateUser(msg[mid].uid, -msg[mid].point);
+	for (int cid : msg[mid].child) updateUserAll(cid);
 }
 
 int erase(int mID) {
-	int mid = getMID(mID), ret, root;
-	ret = msg[mid].totPoint;
-	if (msg[mid].type) update_child(mid);
-	root = update_parent(mid, -ret);
+	int mid = mMap[mID], root;
+	updateUserAll(mid);
+	if (!msg[mid].type) {
+		m.erase({ mid });
+		return user[msg[mid].uid].point;
+	}
+	msg[msg[mid].pid].child.erase(find(msg[msg[mid].pid].child.begin(), msg[msg[mid].pid].child.end(), mid));
+	root = update_parent(msg[mid].pid, -msg[mid].totPoint);
 	return msg[root].totPoint;
 }
 
-struct BestMessage {
-	int point, mid;
-	bool operator<(const BestMessage& r)const {
-		if (point != r.point) return point > r.point;
-		return mid < r.mid;
-	}
-};
-set<BestMessage> m;
-struct BestUser {
-	int point;
-	char name[13];
-	bool operator<(const BestUser& r)const {
-		if (point != r.point) return point > r.point;
-		return strcmp(name, r.name) < 0;
-	}
-};
-set<BestUser> u;
 void getBestMessages(int mBestMessageList[]) {
-	m.clear();
 	int cnt = 0;
-	for (auto nx : mMap) {
-		int mid = nx.second;
-		if (msg[mid].type || !msg[mid].totPoint) continue;
-		m.insert({ msg[mid].totPoint, msg[mid].mid });
-		if (++cnt == 5) break;
+	for (auto nx : m) {
+		mBestMessageList[cnt++] = msg[nx.mid].mid;
+		if (cnt == 5) break;
 	}
-	set<BestMessage>::iterator it = m.begin();
-	for (int i = 0; i < 5;i++) mBestMessageList[i] = it++ ->mid;
 }
 
 void getBestUsers(char mBestUserList[][MAXL + 1]) {
-	u.clear();
-	int cnt = 0; BestUser tmp;
-	for (auto nx : uMap) {
-		int uid = nx.second;
-		if (!user[uid].point) continue;
-		tmp.point = user[uid].point;
-		strcpy(tmp.name, user[uid].name);
-		u.insert(tmp);
-		if (++cnt == 5) break;
+	int cnt = 0;
+	for (auto nx : u) {
+		strcpy(mBestUserList[cnt++], user[nx.uid].name);
+		if (cnt == 5) break;
 	}
-	set<BestUser>::iterator it = u.begin();
-	for (int i = 0; i < 5; i++) strcpy(mBestUserList[i], it++->name);
 }
 #endif // 1
-
 ```
