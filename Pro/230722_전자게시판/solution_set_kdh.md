@@ -58,7 +58,6 @@ void updateUser(int uid, int point) {
 
 int writeMessage(char mUser[], int mID, int mPoint){
 	int uid = getUID(mUser), mid = mMap[mID] = mMap.size() + 1;
-	strcpy(user[uid].name, mUser);
 	updateUser(uid, mPoint);
 	msg[mid] = { 0, mID, uid, mPoint, mPoint};
 	m.insert({ mid });
@@ -79,7 +78,6 @@ int update_parent(int pid, int point) {
 int commentTo(char mUser[], int mID, int mTargetID, int mPoint){
 	int uid = getUID(mUser), mid = mMap[mID] = mMap.size() + 1;
 	int tid = mMap[mTargetID];
-	strcpy(user[uid].name, mUser);
 	updateUser(uid, mPoint);
 	msg[mid] = { 1, mID, uid, mPoint, mPoint, tid };
 	msg[tid].child.push_back(mid);
