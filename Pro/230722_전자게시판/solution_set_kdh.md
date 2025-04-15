@@ -9,20 +9,19 @@
 #include <string>
 #include <set>
 using namespace std;
-
 #define MAXL 10
+
 struct User {
 	char name[13];
 	int point;
 }user[10003];
 
 struct Message {
-	int type, mid, uid, point, totPoint, pid; // type: 0 작성글, 1 댓글,답글
+	int type, mid, uid, point, totPoint, pid; // type: 0 작성글, 1 댓글, 답글
 	vector<int> child;
 }msg[50003];
 unordered_map<string, int> uMap;
 unordered_map<int, int> mMap;
-
 int getUID(char c[]) {
 	if (uMap.count(c)) return uMap[c];
 	int size = uMap.size() + 1;
@@ -32,6 +31,7 @@ int getUID(char c[]) {
 int getMID(int c) {
 	return mMap.count(c) ? mMap[c] : mMap[c] = mMap.size() + 1;
 }
+
 struct BestMessage {
 	int mid;
 	bool operator<(const BestMessage& r)const {
@@ -48,39 +48,39 @@ struct BestUser {
 	}
 };
 set<BestUser> u;
-void init() {
+void init(){
 	uMap.clear(), mMap.clear(), m.clear(), u.clear();
 }
 
-void updateUser(int uid, int p) {
+void updateUser(int uid, int point) {
 	u.erase({ uid });
-	user[uid].point += p;
+	user[uid].point += point;
 	u.insert({ uid });
 }
 
-int writeMessage(char mUser[], int mID, int mPoint) {
+int writeMessage(char mUser[], int mID, int mPoint){
 	int uid = getUID(mUser), mid = mMap[mID] = mMap.size() + 1;
 	strcpy(user[uid].name, mUser);
 	updateUser(uid, mPoint);
-	msg[mid] = { 0, mID, uid, mPoint, mPoint, -1 };
+	msg[mid] = { 0, mID, uid, mPoint, mPoint};
 	m.insert({ mid });
 	return user[uid].point;
 }
 
-int update_parent(int id, int point) {
-	if(msg[id].type) {
-		msg[id].totPoint += point;
-		id = msg[id].pid;
+int update_parent(int pid, int point) {
+	if (msg[pid].type) {
+		msg[pid].totPoint += point;
+		pid = msg[pid].pid;
 	}
-	m.erase({ id });
-	msg[id].totPoint += point;
-	m.insert({ id });
-	return id;
+	m.erase({ pid });
+	msg[pid].totPoint += point;
+	m.insert({ pid });
+	return pid;
 }
 
-int commentTo(char mUser[], int mID, int mTargetID, int mPoint) {
+int commentTo(char mUser[], int mID, int mTargetID, int mPoint){
 	int uid = getUID(mUser), mid = mMap[mID] = mMap.size() + 1;
-	int tid = getMID(mTargetID);
+	int tid = mMap[mTargetID];
 	strcpy(user[uid].name, mUser);
 	updateUser(uid, mPoint);
 	msg[mid] = { 1, mID, uid, mPoint, mPoint, tid };
@@ -94,19 +94,20 @@ void updateUserAll(int mid) {
 	for (int cid : msg[mid].child) updateUserAll(cid);
 }
 
-int erase(int mID) {
+int erase(int mID){
 	int mid = mMap[mID], root;
-	updateUserAll(mid);
+	updateUserAll(mid); // 자식노드는 user point를 update
 	if (!msg[mid].type) {
 		m.erase({ mid });
 		return user[msg[mid].uid].point;
 	}
-	msg[msg[mid].pid].child.erase(find(msg[msg[mid].pid].child.begin(), msg[msg[mid].pid].child.end(), mid));
-	root = update_parent(msg[mid].pid, -msg[mid].totPoint);
+	auto& mp = msg[mid].pid;
+	msg[mp].child.erase(find(msg[mp].child.begin(), msg[mp].child.end(), mid));
+	root = update_parent(mp, -msg[mid].totPoint); // 부모노드는 totPoint를  update
 	return msg[root].totPoint;
 }
 
-void getBestMessages(int mBestMessageList[]) {
+void getBestMessages(int mBestMessageList[]){
 	int cnt = 0;
 	for (auto nx : m) {
 		mBestMessageList[cnt++] = msg[nx.mid].mid;
@@ -114,12 +115,12 @@ void getBestMessages(int mBestMessageList[]) {
 	}
 }
 
-void getBestUsers(char mBestUserList[][MAXL + 1]) {
+void getBestUsers(char mBestUserList[][MAXL + 1]){
 	int cnt = 0;
 	for (auto nx : u) {
 		strcpy(mBestUserList[cnt++], user[nx.uid].name);
 		if (cnt == 5) break;
 	}
 }
-#endif // 1
+#endif // 0
 ```
