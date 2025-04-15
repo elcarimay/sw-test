@@ -24,12 +24,10 @@ unordered_map<string, int> uMap;
 unordered_map<int, int> mMap;
 int getUID(char c[]) {
 	if (uMap.count(c)) return uMap[c];
-	int size = uMap.size() + 1;
-	user[size].point = 0;
-	return uMap[c] = size;
-}
-int getMID(int c) {
-	return mMap.count(c) ? mMap[c] : mMap[c] = mMap.size() + 1;
+	int uid = uMap.size() + 1;
+	strcpy(user[uid].name, c);
+	user[uid].point = 0;
+	return uMap[c] = uid;
 }
 
 struct BestMessage {
