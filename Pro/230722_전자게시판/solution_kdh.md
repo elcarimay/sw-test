@@ -25,11 +25,9 @@ unordered_map<int, int> mMap;
 
 int getUID(char c[]) {
 	if (uMap.count(c)) return uMap[c];
-	else {
-		int size = uMap.size() + 1;
-		user[size].point = 0;
-		return uMap[c] = size;
-	}
+	int size = uMap.size() + 1;
+	user[size].point = 0;
+	return uMap[c] = size;
 }
 int getMID(int c) {
 	return mMap.count(c) ? mMap[c] : mMap[c] = mMap.size() + 1;
