@@ -98,11 +98,11 @@ int erase(int mID){
 	int mid = mMap[mID], root;
 	updateUserAll(mid); // 자식노드는 user point를 update
 	if (!msg[mid].type) {
-		m.erase({ mid });
+		m.erase({ mid }); // 메세지는 set에서 삭제
 		return user[msg[mid].uid].point;
 	}
 	auto& mp = msg[mid].pid;
-	msg[mp].child.erase(find(msg[mp].child.begin(), msg[mp].child.end(), mid));
+	msg[mp].child.erase(find(msg[mp].child.begin(), msg[mp].child.end(), mid)); // 댓글은 부모에서 자식을 삭제
 	root = update_parent(mp, -msg[mid].totPoint); // 부모노드는 totPoint를  update
 	return msg[root].totPoint;
 }
