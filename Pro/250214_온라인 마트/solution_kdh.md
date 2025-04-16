@@ -28,12 +28,9 @@ vector<int> v[6][6];
 int getID(int c) {
     return pMap.count(c) ? pMap[c] : pMap[c] = pMap.size() + 1;
 }
-struct Info {
-    int id, amount;
-};
-vector<Info> info;
+
 void init() {
-    pMap.clear(), info.clear();
+    pMap.clear();
     for (int i = 1; i <= 5; i++) for (int j = 1; j <= 5; j++)
         CatComp[i][j] = {}, v[i][j].clear();
 }
@@ -57,13 +54,6 @@ int closeSale(int mID) {
 }
 
 int discount(int mCategory, int mCompany, int mAmount) {
-    for (Info nx : info) nx.amount += mAmount;
-    info.push_back({ (int)pMap.size(), mAmount });
-
-
-
-
-
     auto& c_tmp = CatComp[mCategory][mCompany];
     auto& v_tmp = v[mCategory][mCompany];
     for (int i = 0; i < v_tmp.size(); i++) {
@@ -79,50 +69,30 @@ int discount(int mCategory, int mCompany, int mAmount) {
 }
 
 priority_queue<Data> pq, final;
+int cnt;
+void push_valid(int cat, int com) {
+    cnt = 0;
+    while (!CatComp[cat][com].empty()) {
+        auto cur = CatComp[cat][com].top(); CatComp[cat][com].pop();
+        if (product[cur.id].price <= 0) continue;
+        if (product[cur.id].removed) continue;
+        if (product[cur.id].price != cur.price) continue;
+        pq.push(cur), final.push(cur);
+        if (++cnt == 5) break;
+    }
+    while (!pq.empty()) CatComp[cat][com].push(pq.top()), pq.pop();
+}
 RESULT show(int mHow, int mCode) {
     RESULT result = { 0 }; pq = {}, final = {};
     int cnt;
-    if (!mHow) {
-        for (int i = 1; i <= 5; i++) for (int j = 1; j <= 5; j++) {
-            cnt = 0;
-            while (!CatComp[i][j].empty()) {
-                auto cur = CatComp[i][j].top(); CatComp[i][j].pop();
-                if (product[cur.id].price <= 0) continue;
-                if (product[cur.id].removed) continue;
-                if (product[cur.id].price != cur.price) continue;
-                pq.push(cur), final.push(cur);
-                if (++cnt == 5) break;
-            }
-            while (!pq.empty()) CatComp[i][j].push(pq.top()), pq.pop();
-        }
-    }
+    if (!mHow)
+        for (int i = 1; i <= 5; i++) for (int j = 1; j <= 5; j++)
+            push_valid(i, j);
     else if (mHow == 1) {
-        for (int j = 1; j <= 5; j++) {
-            cnt = 0;
-            while (!CatComp[mCode][j].empty()) {
-                auto cur = CatComp[mCode][j].top(); CatComp[mCode][j].pop();
-                if (product[cur.id].price <= 0) continue;
-                if (product[cur.id].removed) continue;
-                if (product[cur.id].price != cur.price) continue;
-                pq.push(cur), final.push(cur);
-                if (++cnt == 5) break;
-            }
-            while (!pq.empty()) CatComp[mCode][j].push(pq.top()), pq.pop();
-        }
+        for (int j = 1; j <= 5; j++) push_valid(mCode, j);
     }
-    else if (mHow == 2) {
-        for (int i = 1; i <= 5; i++) {
-            cnt = 0;
-            while (!CatComp[i][mCode].empty()) {
-                auto cur = CatComp[i][mCode].top(); CatComp[i][mCode].pop();
-                if (product[cur.id].price <= 0) continue;
-                if (product[cur.id].removed) continue;
-                if (product[cur.id].price != cur.price) continue;
-                pq.push(cur), final.push(cur);
-                if (++cnt == 5) break;
-            }
-            while (!pq.empty()) CatComp[i][mCode].push(pq.top()), pq.pop();
-        }
+    else { //  mHow == 2
+        for (int i = 1; i <= 5; i++) push_valid(i, mCode);
     }
     cnt = 0;
     while (!final.empty()) {
