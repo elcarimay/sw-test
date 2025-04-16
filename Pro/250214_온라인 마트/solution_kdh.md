@@ -1,140 +1,136 @@
 ```cpp
-#include <queue>
+#if 1
 #include <unordered_map>
-#include <unordered_set>
+#include <set>
 #include <vector>
+#include <queue>
 using namespace std;
 
 struct Product {
     int id, category, company, price;
-};
-
-struct HeapItem {
-    int price, id;
-    bool operator<(const HeapItem& rhs) const {
-        if (price != rhs.price) return price > rhs.price;  // 최소 힙
-        return id > rhs.id;
-    }
-};
+    bool removed;
+}product[50003];
 
 struct RESULT {
-    int cnt;
-    int IDs[5];
+    int cnt, IDs[5];
 };
 
-unordered_map<int, Product> productMap;
-unordered_map<int, bool> isActive;
-unordered_map<int, unordered_set<int>> byCategory;
-unordered_map<int, unordered_set<int>> byCompany;
-unordered_map<int, unordered_set<int>> byCatComp;
-int discountCache[6][6];
-
-priority_queue<HeapItem> pq;
-
-int catCompKey(int cat, int comp) {
-    return cat * 10 + comp;
-}
-
-int getRealPrice(const Product& p) {
-    return p.price - discountCache[p.category][p.company];
-}
-
-void init() {
-    productMap.clear();
-    isActive.clear();
-    pq = priority_queue<HeapItem>();
-    for (int i = 1; i <= 5; ++i) {
-        byCategory[i].clear();
-        byCompany[i].clear();
-        for (int j = 1; j <= 5; ++j) {
-            discountCache[i][j] = 0;
-            byCatComp[i * 10 + j].clear();
-        }
+struct Data {
+    int id, price;
+    bool operator<(const Data& r) const {
+        return price == r.price ? product[id].id > product[r.id].id : price > r.price;
     }
+};
+unordered_map<int, int> pMap;
+priority_queue<Data> CatComp[6][6];
+vector<int> v[6][6];
+
+int getID(int c) {
+    return pMap.count(c) ? pMap[c] : pMap[c] = pMap.size() + 1;
+}
+struct Info {
+    int id, amount;
+};
+vector<Info> info;
+void init() {
+    pMap.clear(), info.clear();
+    for (int i = 1; i <= 5; i++) for (int j = 1; j <= 5; j++)
+        CatComp[i][j] = {}, v[i][j].clear();
 }
 
 int sell(int mID, int mCategory, int mCompany, int mPrice) {
-    Product p = { mID, mCategory, mCompany, mPrice };
-    productMap[mID] = p;
-    isActive[mID] = true;
-    int realPrice = getRealPrice(p);
-    pq.push({ realPrice, mID });
-
-    byCategory[mCategory].insert(mID);
-    byCompany[mCompany].insert(mID);
-    byCatComp[catCompKey(mCategory, mCompany)].insert(mID);
-
-    return byCatComp[catCompKey(mCategory, mCompany)].size();
+    int id = getID(mID);
+    product[id] = { mID, mCategory, mCompany, mPrice };
+    CatComp[mCategory][mCompany].push({ id, mPrice });
+    v[mCategory][mCompany].push_back(id);
+    return (int)v[mCategory][mCompany].size();
 }
 
 int closeSale(int mID) {
-    if (!isActive[mID]) return -1;
-    Product p = productMap[mID];
-    isActive[mID] = false;
-    byCategory[p.category].erase(mID);
-    byCompany[p.company].erase(mID);
-    byCatComp[catCompKey(p.category, p.company)].erase(mID);
-    return getRealPrice(p);
+    if (!pMap.count(mID)) return -1;
+    int id = getID(mID);
+    if (product[id].removed) return -1;
+    product[id].removed = true;
+    auto& tmp = v[product[id].category][product[id].company];
+    tmp.erase(find(tmp.begin(), tmp.end(), id));
+    return product[id].price;
 }
 
 int discount(int mCategory, int mCompany, int mAmount) {
-    int key = catCompKey(mCategory, mCompany);
-    discountCache[mCategory][mCompany] += mAmount;
+    for (Info nx : info) nx.amount += mAmount;
+    info.push_back({ (int)pMap.size(), mAmount });
 
-    vector<int> toRemove;
-    for (int id : byCatComp[key]) {
-        if (!isActive[id]) continue;
-        Product& p = productMap[id];
-        int newPrice = getRealPrice(p);
-        if (newPrice <= 0) {
-            isActive[id] = false;
-            toRemove.push_back(id);
+
+
+
+
+    auto& c_tmp = CatComp[mCategory][mCompany];
+    auto& v_tmp = v[mCategory][mCompany];
+    for (int i = 0; i < v_tmp.size(); i++) {
+        int id = v_tmp[i];
+        product[id].price -= mAmount;
+        if (product[id].price <= 0) {
+            product[id].removed = true;
+            v_tmp.erase(v_tmp.begin() + i--);
         }
-        else {
-            pq.push({ newPrice, id });
-        }
+        c_tmp.push({ id, product[id].price });
     }
-
-    for (int id : toRemove) {
-        Product& p = productMap[id];
-        byCategory[p.category].erase(id);
-        byCompany[p.company].erase(id);
-        byCatComp[key].erase(id);
-    }
-
-    return byCatComp[key].size();
+    return (int)v_tmp.size();
 }
 
+priority_queue<Data> pq, final;
 RESULT show(int mHow, int mCode) {
-    RESULT result = { 0 };
-    int count = 0;
-
-    unordered_set<int>* filter = nullptr;
-    if (mHow == 1) filter = &byCategory[mCode];
-    else if (mHow == 2) filter = &byCompany[mCode];
-
-    vector<HeapItem> temp;
-
-    while (!pq.empty() && count < 5) {
-        HeapItem item = pq.top(); pq.pop();
-        if (!isActive[item.id]) continue;
-
-        Product& p = productMap[item.id];
-        int realPrice = getRealPrice(p);
-
-        if (realPrice != item.price) {
-            pq.push({ realPrice, item.id });
-            continue;
+    RESULT result = { 0 }; pq = {}, final = {};
+    int cnt;
+    if (!mHow) {
+        for (int i = 1; i <= 5; i++) for (int j = 1; j <= 5; j++) {
+            cnt = 0;
+            while (!CatComp[i][j].empty()) {
+                auto cur = CatComp[i][j].top(); CatComp[i][j].pop();
+                if (product[cur.id].price <= 0) continue;
+                if (product[cur.id].removed) continue;
+                if (product[cur.id].price != cur.price) continue;
+                pq.push(cur), final.push(cur);
+                if (++cnt == 5) break;
+            }
+            while (!pq.empty()) CatComp[i][j].push(pq.top()), pq.pop();
         }
-
-        if (filter && !filter->count(item.id)) continue;
-
-        result.IDs[count++] = item.id;
-        temp.push_back(item);
     }
-
-    for (auto& item : temp) pq.push(item);
-    result.cnt = count;
+    else if (mHow == 1) {
+        for (int j = 1; j <= 5; j++) {
+            cnt = 0;
+            while (!CatComp[mCode][j].empty()) {
+                auto cur = CatComp[mCode][j].top(); CatComp[mCode][j].pop();
+                if (product[cur.id].price <= 0) continue;
+                if (product[cur.id].removed) continue;
+                if (product[cur.id].price != cur.price) continue;
+                pq.push(cur), final.push(cur);
+                if (++cnt == 5) break;
+            }
+            while (!pq.empty()) CatComp[mCode][j].push(pq.top()), pq.pop();
+        }
+    }
+    else if (mHow == 2) {
+        for (int i = 1; i <= 5; i++) {
+            cnt = 0;
+            while (!CatComp[i][mCode].empty()) {
+                auto cur = CatComp[i][mCode].top(); CatComp[i][mCode].pop();
+                if (product[cur.id].price <= 0) continue;
+                if (product[cur.id].removed) continue;
+                if (product[cur.id].price != cur.price) continue;
+                pq.push(cur), final.push(cur);
+                if (++cnt == 5) break;
+            }
+            while (!pq.empty()) CatComp[i][mCode].push(pq.top()), pq.pop();
+        }
+    }
+    cnt = 0;
+    while (!final.empty()) {
+        result.IDs[cnt] = product[final.top().id].id, final.pop();
+        if (++cnt == 5) break;
+    }
+    result.cnt = cnt;
     return result;
 }
+#endif // 0
 ```
