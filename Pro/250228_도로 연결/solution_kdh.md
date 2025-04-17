@@ -57,7 +57,7 @@ int build(int mDir, int mRow, int mCol, int mLength){
     if (!mDir && (mCol / L != (mCol + mLength) / L)) g[mRow / L][(mCol + mLength) / L].push_back(idCnt);
     else if ((mRow / L != (mRow + mLength) / L)) g[(mRow + mLength) / L][mCol / L].push_back(idCnt);
     g[mRow / L][mCol / L].push_back(idCnt++);
-	return totalCnt;
+    return totalCnt;
 }
 
 pib overlapFlag(int R, int C) {
