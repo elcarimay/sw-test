@@ -61,7 +61,6 @@ int build(int mDir, int mRow, int mCol, int mLength){
 }
 
 pib overlapFlag(int R, int C) {
-    bool flag = false;
     for (int id : g[R / L][C / L]) {
         auto& r = road[id];
         if (!r.dir && R == r.sr && r.sc <= C && C <= r.ec) return { find(id), true };
