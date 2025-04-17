@@ -64,11 +64,8 @@ pib overlapFlag(int R, int C) {
     bool flag = false;
     for (int id : g[R / L][C / L]) {
         auto& r = road[id];
-        if (!r.dir && R == r.sr && r.sc <= C && C <= r.ec) flag = true;
-        else if (C == r.sc && r.sr <= R && R <= r.er) flag = true;
-        if (flag) {
-            return { find(id), true };
-        }
+        if (!r.dir && R == r.sr && r.sc <= C && C <= r.ec) return { find(id), true };
+        if (C == r.sc && r.sr <= R && R <= r.er) return { find(id), true };
     }
     return { -1, false };
 }
@@ -81,5 +78,4 @@ int checkRoute(int mSRow, int mSCol, int mERow, int mECol){
     return start.first == end.first ? 1 : 0;
 }
 #endif // 0
-
 ```
