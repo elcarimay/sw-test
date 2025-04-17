@@ -19,7 +19,7 @@ int find(int x) {
     return p[x];
 }
 
-vector<int> g[503][503];
+vector<int> g[33][33];
 list<int> group[MAXN];
 int totalCnt; // total group count
 void unionSet(int x, int y) {
@@ -36,7 +36,7 @@ int L, N, GN, idCnt;
 void init(int L, int N){
     ::L = L, ::N = N, GN = N / L, idCnt = totalCnt = 0;
     for (auto& nx : group) nx.clear();
-    for (int i = 0; i < 503; i++) for (int j = 0; j < 503; j++) g[i][j].clear();
+    for (int i = 0; i < 33; i++) for (int j = 0; j < 33; j++) g[i][j].clear();
 }
 
 bool overlap(int o, int n) {
