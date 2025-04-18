@@ -1,7 +1,7 @@
 ```cpp
 #if 1
 // 250124_사각형 그리기 유사문제
-// 차량 이동여부만 해결하면 되는데 출발/도착위치가 overlap되는지만 확인해주면 됨
+// 차량 이동여부만 해결하면 되는데 출발/도착위치의 group ID가 같은지만 확인해주면 됨
 #include <vector>
 #include <algorithm>
 #include <list>
