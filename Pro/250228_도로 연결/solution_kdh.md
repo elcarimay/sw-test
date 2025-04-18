@@ -70,7 +70,6 @@ pib overlapFlag(int R, int C) {
 }
 
 int checkRoute(int mSRow, int mSCol, int mERow, int mECol){
-    bool overlapFlag1 = false, overlapFlag2 = false;
     pib start = overlapFlag(mSRow, mSCol); // group id, overlap flag
     pib end = overlapFlag(mERow, mECol);
     if (start.second == false || end.second == false) return -1;
