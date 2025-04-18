@@ -27,8 +27,7 @@ int getID(unordered_map<int, int>& m, int c) {
 
 void init(int N, int K) {
 	::N = N, ::K = K, pq = {}, nMap.clear(), uMap.clear(), cMap.clear();
-	for (int i = 0; i < MAXN; i++) news[i] = {};
-	for (int i = 0; i < MAXU; i++) users[i] = {}, channels[i] = {};
+	for (int i = 0; i < MAXU; i++) users[i].clear(), channels[i].clear();
 }
 
 void update(int time) {
