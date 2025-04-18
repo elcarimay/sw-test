@@ -1,137 +1,88 @@
 ```cpp
 #if 1
 #include <vector>
-#include <unordered_map>
 #include <queue>
+#include <unordered_map>
 using namespace std;
 
-#define NUM_NEWS 30000
-#define NUM_USERS 500
-#define NUM_CHANNELS 500
-#define CANCELED 1
+#define MAXN 30000
+#define MAXU 500
+#define MAXC 500
 
 struct News {
-	int newsID, channelIdx, alarm_time, state;
-	bool operator<(const News& news)const {
-		return alarm_time > news.alarm_time;
+	int mNewsID, cid, alarm_time;
+	bool removed;
+	bool operator<(const News& r)const {
+		return alarm_time > r.alarm_time;
 	}
-};
+}news[MAXN];
+priority_queue<News> pq;
+vector<int> users[MAXU], channels[MAXC];
+unordered_map<int, int> nMap, uMap, cMap;
+int N, K;
 
-News news[NUM_NEWS];
-vector<int> users[NUM_USERS]; // newsList
-vector<int> channels[NUM_CHANNELS]; // userList
-
-unordered_map<int, int> newsMap, userMap, channelMap;
-int newsCnt, userCnt, channelCnt;
-
-struct NewsData
-{
-	int newsID, alarm_time;
-	bool operator<(const NewsData& newsData)const {
-		return (alarm_time < newsData.alarm_time) ||
-			(alarm_time == newsData.alarm_time && newsID < newsData.newsID);
-	}
-};
-
-priority_queue<News> newsPQ;
-
-int get_newsIndex(int mNewsID) {
-	int nIdx;
-	auto iter = newsMap.find(mNewsID);
-	if (iter == newsMap.end()) {
-		nIdx = newsCnt++;
-		newsMap[mNewsID] = nIdx;
-	}
-	else  nIdx = iter->second;
-	return nIdx;
-}
-
-int get_userIndex(int mUID) {
-	int uIdx;
-	auto iter = userMap.find(mUID);
-	if (iter == userMap.end()) {
-		uIdx = userCnt++;
-		userMap[mUID] = uIdx;
-	}
-	else  uIdx = iter->second;
-	return uIdx;
-}
-
-int get_channelIndx(int mchannelID) {
-	int cIdx;
-	auto iter = channelMap.find(mchannelID);
-	if (iter == channelMap.end()) {
-		cIdx = channelCnt++;
-		channelMap[mchannelID] = cIdx;
-	}
-	else cIdx = iter->second;
-	return cIdx;
+int getID(unordered_map<int, int>& m, int c) {
+	return m.count(c) ? m[c] : m[c] = m.size();
 }
 
 void init(int N, int K) {
-	newsMap.clear(); userMap.clear(); channelMap.clear();
-	newsCnt = userCnt = channelCnt = 0;
-	for (int i = 0; i < NUM_NEWS; i++) news[i] = {};
-	for (int i = 0; i < NUM_USERS; i++) users[i] = {};
-	for (int i = 0; i < NUM_CHANNELS; i++) channels[i] = {};
-	while (!newsPQ.empty()) newsPQ.pop();
+	::N = N, ::K = K, pq = {}, nMap.clear(), uMap.clear(), cMap.clear();
+	for (int i = 0; i < MAXN; i++) news[i] = {};
+	for (int i = 0; i < MAXU; i++) users[i] = {}, channels[i] = {};
 }
 
-void update_news(int mTime) {
-	auto& Q = newsPQ;
-	while (!Q.empty() && Q.top().alarm_time <= mTime) {
-		auto cur = Q.top(); Q.pop();
-		int nIdx = get_newsIndex(cur.newsID);
-		if (news[nIdx].alarm_time != cur.alarm_time) continue;
-		if (news[nIdx].state != CANCELED) {
-			int cIdx = news[nIdx].channelIdx;
-			for (auto uIdx : channels[cIdx])
-				users[uIdx].push_back(nIdx);
-		}
+void update(int time) {
+	while (!pq.empty() && pq.top().alarm_time <= time) {
+		auto cur = pq.top(); pq.pop();
+		int nid = getID(nMap, cur.mNewsID);
+		if (news[nid].alarm_time != cur.alarm_time) continue;
+		if (!news[nid].removed)
+			for (auto uid : channels[news[nid].cid]) users[uid].push_back(nid);
 	}
 }
 
 void registerUser(int mTime, int mUID, int mNum, int mChannelIDs[]) {
-	update_news(mTime);
-	int uIdx = get_userIndex(mUID);
-	for (int i = 0; i < mNum; i++) {
-		int cIdx = get_channelIndx(mChannelIDs[i]);
-		channels[cIdx].push_back(uIdx);
-	}
+	update(mTime);
+	int uid = getID(uMap, mUID);
+	for (int i = 0; i < mNum; i++)
+		channels[getID(cMap, mChannelIDs[i])].push_back(uid);
 }
 
 int offerNews(int mTime, int mNewsID, int mDelay, int mChannelID) {
-	update_news(mTime);
-	int nIdx = get_newsIndex(mNewsID);
-	int cIdx = get_channelIndx(mChannelID);
-
-	news[nIdx] = { mNewsID, cIdx, mTime + mDelay };
-	newsPQ.push(news[nIdx]);
-	return channels[cIdx].size();
+	update(mTime);
+	int nid = getID(nMap, mNewsID), cid = getID(cMap, mChannelID);
+	news[nid] = {mNewsID, cid, mTime + mDelay};
+	pq.push(news[nid]);
+	return (int)channels[cid].size();
 }
 
 void cancelNews(int mTime, int mNewsID) {
-	update_news(mTime);
-	int nIdx = get_newsIndex(mNewsID);
-	news[nIdx].state = CANCELED;
+	update(mTime);
+	int nid = getID(nMap, mNewsID);
+	news[nid].removed = true;
 }
 
+struct Data {
+	int mNewsID, alarm_time;
+	bool operator<(const Data& r)const {
+		return alarm_time == r.alarm_time ? mNewsID < r.mNewsID: alarm_time < r.alarm_time;
+	}
+};
+
 int checkUser(int mTime, int mUID, int mRetIDs[]) {
-	update_news(mTime);
-	int res = 0;
-	int uIdx = get_userIndex(mUID);
-	priority_queue<NewsData> Q;
-	for (int nIdx : users[uIdx])
-		if (news[nIdx].state != CANCELED)
-			Q.push({ news[nIdx].newsID, news[nIdx].alarm_time });
-	res = Q.size();
+	update(mTime);
+	int uid = getID(uMap, mUID), ret = 0;
+	priority_queue<Data> Q;
+	for (int nid : users[uid])
+		if (!news[nid].removed) Q.push({ news[nid].mNewsID, news[nid].alarm_time });
+	ret = Q.size();
 	int cnt = 0;
 	while (!Q.empty() && cnt < 3) {
-		auto cur = Q.top(); Q.pop();
-		mRetIDs[cnt++] = cur.newsID;
+		Data cur = Q.top(); Q.pop();
+		mRetIDs[cnt++] = cur.mNewsID;
 	}
-	users[uIdx].clear();
-	return res;
+	users[uid].clear();
+	return ret;
 }
-#endif
+#endif // 1
 ```
