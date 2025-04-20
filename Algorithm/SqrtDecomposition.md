@@ -1,4 +1,9 @@
 ```cpp
+#define MAXN 500
+#define INF 987654321
+int N, sq;
+int* A;
+int minA[MAXN], maxA[MAXN], sumA[MAXN];
 void build(int a[]) {
 	A = a;
 	for (sq = 1; sq * sq < N; sq++);
