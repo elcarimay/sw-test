@@ -57,8 +57,8 @@ int maxmin_query(int l, int r) {
 		return maxv - minv;
 	}
 	for (int i = l; i <= (sbid + 1) * sq - 1; i++) maxv = max(maxv, A[i]), minv = min(minv, A[i]);
-	for (int i = ebid * sq; i <= r; i++) maxv = max(maxv, A[i]), minv = min(minv, A[i]);
 	for (int i = sbid + 1; i <= ebid - 1; i++) maxv = max(maxv, maxA[i]), minv = min(minv, minA[i]);
+	for (int i = ebid * sq; i <= r; i++) maxv = max(maxv, A[i]), minv = min(minv, A[i]);
 	return maxv - minv;
 }
 
