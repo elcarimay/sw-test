@@ -57,7 +57,6 @@ int bfs(int s, int dist) {
 	int ret = 0;
 	while (!q.empty()) {
 		auto cur = q.front(); q.pop();
-		if (cur.d == dist) continue;
 		for (int nx : adj[cur.to]) {
 			if (nx == cur.prev) continue;
 			if (cur.d == dist - 1) {
