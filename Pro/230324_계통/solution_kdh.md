@@ -1,5 +1,6 @@
 ```cpp
 #if 1
+// bfs가 구현은 쉽지만 dfs가 더 빠름
 #include<string>
 #include <vector>
 #include <unordered_map>
