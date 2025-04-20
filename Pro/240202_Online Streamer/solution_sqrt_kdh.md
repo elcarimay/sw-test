@@ -1,67 +1,70 @@
 ```cpp
-#if 1 // 398 ms
+#if 1 // 430 ms
 #include <algorithm>
 using namespace std;
-#define INF 987654321
-#define MAXN 500
 
-int maxA[MAXN], minA[MAXN], sumA[MAXN];
+#define MAXN 500
+#define INF 987654321
 int N, sq;
 int* A;
-void build(int N, int mA[]) {
-	::N = N, A = mA;
+int minA[MAXN], maxA[MAXN], sumA[MAXN];
+void build(int a[]) {
+	A = a;
 	for (sq = 1; sq * sq < N; sq++);
 	for (int i = 0; i < N; i++) {
 		int bid = i / sq;
-		if (bid * sq == i) sumA[bid] = 0, maxA[bid] = -INF, minA[bid] = INF;
-		maxA[bid] = max(maxA[bid], A[i]);
-		minA[bid] = min(minA[bid], A[i]);
+		if (bid * sq == i) minA[bid] = INF, maxA[bid] = -INF, sumA[bid] = 0;
+		minA[bid] = min(minA[bid], A[i]), maxA[bid] = max(maxA[bid], A[i]);
 		sumA[bid] += A[i];
 	}
 }
 
-void update(int x, int val) {
-	int orgVal = A[x];
-	A[x] += val;
-	int bid = x / sq;
+void update(int idx, int value) {
+	int orgVal = A[idx];
+	A[idx] += value;
+	int bid = idx / sq;
 	int l = bid * sq;
 	int r = min(l + sq, N);
-
-	if (val < 0) {
+	if (value < 0) {
 		if (maxA[bid] == orgVal) maxA[bid] = *max_element(A + l, A + r);
-		minA[bid] = min(minA[bid], A[x]);
+		minA[bid] = min(minA[bid], A[idx]);
 	}
 	else {
-		maxA[bid] = max(maxA[bid], A[x]);
+		maxA[bid] = max(maxA[bid], A[idx]);
 		if (minA[bid] == orgVal) minA[bid] = *min_element(A + l, A + r);
 	}
-	sumA[bid] += val;
+	sumA[bid] += value;
 }
 
 int sum_query(int l, int r) {
 	int sumv = 0;
-	if (l / sq == r / sq) while (l <= r) sumv += A[l++];
-	else {
-		while (l <= r && l % sq) sumv += A[l++];
-		while (l <= r && (r + 1) % sq) sumv += A[r--];
-		while (l <= r) sumv += sumA[l / sq], l += sq;
+	int sbid = l / sq, ebid = r / sq;
+	if (sbid == ebid) {
+		for (int i = l; i <= r; i++) sumv += A[i];
+		return sumv;
 	}
+	for (int i = l; i <= (sbid + 1) * sq - 1; i++) sumv += A[i];
+	for (int i = sbid + 1; i <= ebid - 1; i++) sumv += sumA[i];
+	for (int i = ebid * sq; i <= r; i++) sumv += A[i];
 	return sumv;
 }
 
 int maxmin_query(int l, int r) {
 	int maxv = -INF, minv = INF;
-	if (l / sq == r / sq) while (l <= r) maxv = max(maxv, A[l]), minv = min(minv, A[l++]);
-	else {
-		while (l <= r && l % sq) maxv = max(maxv, A[l]), minv = min(minv, A[l++]);
-		while (l <= r && (r + 1) % sq) maxv = max(maxv, A[r]), minv = min(minv, A[r--]);
-		while (l <= r) maxv = max(maxv, maxA[l / sq]), minv = min(minv, minA[l / sq]), l += sq;
+	int sbid = l / sq, ebid = r / sq;
+	if (sbid == ebid) {
+		for (int i = l; i <= r; i++) maxv = max(maxv, A[i]), minv = min(minv, A[i]);
+		return maxv - minv;
 	}
+	for (int i = l; i <= (sbid + 1) * sq - 1; i++) maxv = max(maxv, A[i]), minv = min(minv, A[i]);
+	for (int i = ebid * sq; i <= r; i++) maxv = max(maxv, A[i]), minv = min(minv, A[i]);
+	for (int i = sbid + 1; i <= ebid - 1; i++) maxv = max(maxv, maxA[i]), minv = min(minv, minA[i]);
 	return maxv - minv;
 }
 
 void init(int N, int mSubscriber[]) {
-	build(N, mSubscriber);
+	::N = N, A = mSubscriber;
+	build(mSubscriber);
 }
 
 int subscribe(int mId, int mNum) {
@@ -81,5 +84,5 @@ int count(int sId, int eId) {
 int calculate(int sId, int eId) {
 	return maxmin_query(sId - 1, eId - 1);
 }
-#endif // 1
+#endif // 0
 ```
