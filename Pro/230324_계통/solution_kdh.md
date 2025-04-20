@@ -1,6 +1,7 @@
 ```cpp
 #if 1
-// bfs가 구현은 쉽지만 dfs가 더 빠름
+// 공통조상을 찾고 일정거리 노드갯수를 세면 됨.
+// bfs가 구현은 쉽지만 dfs가 더 빠름.
 #include<string>
 #include <vector>
 #include <unordered_map>
