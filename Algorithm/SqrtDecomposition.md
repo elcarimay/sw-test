@@ -1,82 +1,55 @@
 ```cpp
-void build (){
-	for (sq = 1; sq * sq < N; sq++); // sq = 블록크기 , sqrt N ) 올림한 값
-	fill(maxA, maxA + N / sq, INF); // N sq = 블록개수
-	for(int i = 0 ; i < N ; i++)
-		maxA[i / sq ] = max(maxA[i / sq ], A[i]);
-}
-
-void update(int x , int val ){
-	A[x] = val;
-	int idx = x / sq ; // idx 블록 번호
-	int l = idx * sq; // 블록의 범위 [l, r) : l<=i<r
-	int r = min(l + sq , N);
-	maxA[idx] = *max_element(A + l, A + r);
-}
-
-int query(int l , int r ) { // [l , r]
-	int maxv = 0;
-	/* 1) 왼쪽 자투리 */
-	while(l <= r && l % sq)
-		maxv = max(maxv, A[l++]);
-	/* 2) 오른쪽 자투리 */
-	while(l <= r &&(r + 1) % sq)
-		maxv = max(maxv, A[r--]);
-	/* 3) 모든 원소 포함되는 블록 */
-	while(l <= r ){
-		maxv = max(maxv, maxA[l / sq]);
-		l += sq;
-	}
-	return maxv;
-}
-
-== Sample Code ==
-int maxA[MAXN], minA[MAXN], sumTree[MAXN];
-int N, sq;
-int* A;
-void build(int N, int mA[]) {
-	::N = N, A = mA;
+void build(int a[]) {
+	A = a;
 	for (sq = 1; sq * sq < N; sq++);
 	for (int i = 0; i < N; i++) {
 		int bid = i / sq;
-		if (bid * sq == i) sumTree[bid] = 0, maxA[bid] = -INF, minA[bid] = INF;
-		maxA[bid] = max(maxA[bid], A[i]);
-		minA[bid] = min(minA[bid], A[i]);
-		sumTree[bid] += A[i];
+		if (bid * sq == i) minA[bid] = INF, maxA[bid] = -INF, sumA[bid] = 0;
+		minA[bid] = min(minA[bid], A[i]), maxA[bid] = max(maxA[bid], A[i]);
+		sumA[bid] += A[i];
 	}
 }
 
-void update(int x, int val) {
-	int orgVal = A[x];
-	A[x] += val;
-	int bid = x / sq;
+void update(int idx, int value) {
+	int orgVal = A[idx];
+	A[idx] += value;
+	int bid = idx / sq;
 	int l = bid * sq;
 	int r = min(l + sq, N);
-
-	if (val < 0) {
+	if (value < 0) {
 		if (maxA[bid] == orgVal) maxA[bid] = *max_element(A + l, A + r);
-		minA[bid] = min(minA[bid], A[x]);
+		minA[bid] = min(minA[bid], A[idx]);
 	}
 	else {
-		maxA[bid] = max(maxA[bid], A[x]);
+		maxA[bid] = max(maxA[bid], A[idx]);
 		if (minA[bid] == orgVal) minA[bid] = *min_element(A + l, A + r);
 	}
-	sumTree[bid] += val;
+	sumA[bid] += value;
 }
 
 int sum_query(int l, int r) {
 	int sumv = 0;
-	while (l <= r && l % sq) sumv += A[l++];
-	while (l <= r && (r + 1) % sq) sumv += A[r--];
-	while (l <= r) sumv += sumTree[l / sq], l += sq;
+	int sbid = l / sq, ebid = r / sq;
+	if (sbid == ebid) {
+		for (int i = l; i <= r; i++) sumv += A[i];
+		return sumv;
+	}
+	for (int i = l; i <= (sbid + 1) * sq - 1; i++) sumv += A[i];
+	for (int i = sbid + 1; i <= ebid - 1; i++) sumv += sumA[i];
+	for (int i = ebid * sq; i <= r; i++) sumv += A[i];
 	return sumv;
 }
 
 int maxmin_query(int l, int r) {
 	int maxv = -INF, minv = INF;
-	while (l <= r && l % sq) maxv = max(maxv, A[l]), minv = min(minv, A[l++]);
-	while (l <= r && (r + 1) % sq) maxv = max(maxv, A[r]), minv = min(minv, A[r--]);
-	while (l <= r) maxv = max(maxv, maxA[l / sq]), minv = min(minv, minA[l / sq]), l += sq;
+	int sbid = l / sq, ebid = r / sq;
+	if (sbid == ebid) {
+		for (int i = l; i <= r; i++) maxv = max(maxv, A[i]), minv = min(minv, A[i]);
+		return maxv - minv;
+	}
+	for (int i = l; i <= (sbid + 1) * sq - 1; i++) maxv = max(maxv, A[i]), minv = min(minv, A[i]);
+	for (int i = ebid * sq; i <= r; i++) maxv = max(maxv, A[i]), minv = min(minv, A[i]);
+	for (int i = sbid + 1; i <= ebid - 1; i++) maxv = max(maxv, maxA[i]), minv = min(minv, minA[i]);
 	return maxv - minv;
 }
 ```
