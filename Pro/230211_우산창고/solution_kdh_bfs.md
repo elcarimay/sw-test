@@ -100,4 +100,5 @@ int gather(int mID, int mQuantity) {
 int sum(int mID) { // 특정 노드에 포함된 모든 하위 노드들의 수량 합계를 반환.
 	return totalq[mID];
 }
+#endif
 ```
