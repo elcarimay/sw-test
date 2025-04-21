@@ -1,5 +1,8 @@
 ```cpp
+#if 1 // 92 ms
 // 미리 자식들의 모든 mQuantity를 totalq에 저장
+// carry는 depth 및 parent비교를 통해 lca를 구하여 비용계산
+// gather는 dfs로 부모 및 자식 노드들을 순회하면서 우큐에 노드번호 및 거리를 입력후 가까운 노드부터 계산
 #include <vector>
 #include <queue>
 #include <algorithm>
@@ -91,4 +94,5 @@ int sum(int mID) {
 	int ret = totalq[mID];
 	return ret;
 }
+#endif // 1
 ```
