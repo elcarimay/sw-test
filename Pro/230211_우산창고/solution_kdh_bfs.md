@@ -101,7 +101,6 @@ int gather(int mID, int mQuantity) {
 }
 
 int sum(int mID) {
-	int ret = totalq[mID];
-	return ret;
+	return totalq[mID];
 }
 ```
