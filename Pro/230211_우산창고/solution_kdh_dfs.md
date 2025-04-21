@@ -18,17 +18,19 @@ void updateTotal(int x, int quantity) {
 int N;
 void init(int N, int mParent[], int mDistance[], int mQuantity[]) {
 	::N = N, depth[0] = 0;
+	for (int i = 0; i < N; i++) child[i].clear();
 	for (int i = 0; i < N; i++) {
 		p[i] = mParent[i], q[i] = mQuantity[i], totalq[i] = 0;
+		updateTotal(i, mQuantity[i]);
 		if (i) {
 			depth[i] = depth[p[i]] + 1, child[p[i]].push_back(i);
 			adj[i][p[i]] = mDistance[i], adj[p[i]][i] = mDistance[i];
 		}
-		updateTotal(i, mQuantity[i]);
 	}
 }
 
 int carry(int mFrom, int mTo, int mQuantity) {
+	q[mFrom] -= mQuantity, q[mTo] += mQuantity;
 	int x = mFrom, y = mTo;
 	int dx = -mQuantity, dy = mQuantity;
 	if (depth[x] < depth[y]) swap(x, y), swap(dx, dy);
@@ -68,6 +70,7 @@ void dfs(int x, int dist) {
 
 int gather(int mID, int mQuantity) {
 	fill(visit, visit + N, 0);
+	pq = {};
 	dfs(mID, 0);
 	q[mID] += mQuantity;
 	updateTotal(mID, mQuantity);
@@ -85,6 +88,7 @@ int gather(int mID, int mQuantity) {
 }
 
 int sum(int mID) {
-	return totalq[mID];
+	int ret = totalq[mID];
+	return ret;
 }
 ```
