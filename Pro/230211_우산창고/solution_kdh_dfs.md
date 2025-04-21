@@ -8,13 +8,14 @@
 #include <queue>
 #include <algorithm>
 using namespace std;
+
 #define MAXN 10003
 
 int p[MAXN], q[MAXN], totalq[MAXN], depth[MAXN];
 vector<int> child[MAXN];
 int adj[MAXN][MAXN];
 void updateTotal(int x, int quantity) {
-	while (x != -1) {
+	while (x >= 0) {
 		totalq[x] += quantity;
 		x = p[x];
 	}
@@ -26,30 +27,26 @@ void init(int N, int mParent[], int mDistance[], int mQuantity[]) {
 	for (int i = 0; i < N; i++) {
 		p[i] = mParent[i], q[i] = mQuantity[i], totalq[i] = 0;
 		updateTotal(i, mQuantity[i]);
-		if (i) {
-			depth[i] = depth[p[i]] + 1;
-			child[p[i]].push_back(i), child[i].push_back(p[i]);
-			adj[i][p[i]] = mDistance[i], adj[p[i]][i] = mDistance[i];
-		}
+		if (i == 0) continue;
+		depth[i] = depth[p[i]] + 1;
+		child[p[i]].push_back(i), child[i].push_back(p[i]);
+		adj[i][p[i]] = mDistance[i], adj[p[i]][i] = mDistance[i];
 	}
 }
 
 int carry(int mFrom, int mTo, int mQuantity) {
 	q[mFrom] -= mQuantity, q[mTo] += mQuantity;
-	int x = mFrom, y = mTo;
+	int x = mFrom, y = mTo, ret = 0;
 	int dx = -mQuantity, dy = mQuantity;
 	if (depth[x] < depth[y]) swap(x, y), swap(dx, dy);
-	int ret = 0;
 	while (depth[x] != depth[y]) {
 		totalq[x] += dx;
 		ret += adj[x][p[x]];
 		x = p[x];
 	}
 	while (x != y) {
-		totalq[x] += dx;
-		totalq[y] += dy;
-		ret += adj[x][p[x]];
-		ret += adj[y][p[y]];
+		totalq[x] += dx, totalq[y] += dy;
+		ret += adj[x][p[x]], ret += adj[y][p[y]];
 		x = p[x], y = p[y];
 	}
 	return ret * mQuantity;
@@ -58,15 +55,14 @@ int carry(int mFrom, int mTo, int mQuantity) {
 struct Data {
 	int mid, dist;
 	bool operator<(const Data& r)const {
-		if (dist != r.dist) return dist > r.dist;
-		return mid > r.mid;
+		return dist == r.dist ? mid > r.mid:dist > r.dist;
 	}
 };
 priority_queue<Data> pq;
-
 bool visit[MAXN];
+
 void dfs(int x, int dist) {
-	if (x == -1 || visit[x] == true) return;
+	if (visit[x]) return;
 	pq.push({ x, dist });
 	visit[x] = true;
 	for (int cid : child[x]) dfs(cid, dist + adj[x][cid]);
@@ -84,9 +80,9 @@ int gather(int mID, int mQuantity) {
 		if (cur.mid == mID) continue;
 		int c = min(mQuantity, q[cur.mid]);
 		cost += c * cur.dist;
-		mQuantity -= c;
 		q[cur.mid] -= c;
 		updateTotal(cur.mid, -c);
+		mQuantity -= c;
 	}
 	return cost;
 }
