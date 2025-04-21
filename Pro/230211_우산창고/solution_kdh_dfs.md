@@ -3,6 +3,7 @@
 // 미리 자식들의 모든 mQuantity를 totalq에 저장
 // carry는 depth 및 parent비교를 통해 lca를 구하여 비용계산
 // gather는 dfs로 부모 및 자식 노드들을 순회하면서 우큐에 노드번호 및 거리를 입력후 가까운 노드부터 계산
+// 상기 bfs를 위하여 init함수에서 자식노드를 부모-자식뿐만 아니라 자식-부모관계도 입력함
 #include <vector>
 #include <queue>
 #include <algorithm>
