@@ -26,7 +26,8 @@ void init(int N, int mParent[], int mDistance[], int mQuantity[]) {
 		p[i] = mParent[i], q[i] = mQuantity[i], totalq[i] = 0;
 		updateTotal(i, mQuantity[i]);
 		if (i) {
-			depth[i] = depth[p[i]] + 1, child[p[i]].push_back(i);
+			depth[i] = depth[p[i]] + 1;
+			child[p[i]].push_back(i), child[i].push_back(p[i]);
 			adj[i][p[i]] = mDistance[i], adj[p[i]][i] = mDistance[i];
 		}
 	}
@@ -67,7 +68,6 @@ void dfs(int x, int dist) {
 	if (x == -1 || visit[x] == true) return;
 	pq.push({ x, dist });
 	visit[x] = true;
-	dfs(p[x], dist + adj[x][p[x]]);
 	for (int cid : child[x]) dfs(cid, dist + adj[x][cid]);
 }
 
