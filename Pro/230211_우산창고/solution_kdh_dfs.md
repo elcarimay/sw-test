@@ -1,92 +1,90 @@
 ```cpp
-// 미리 자식들의 모든 cnt를 totalCnt에 저장
-// 출발/도착지의 ID크기비교를 통하여 공통조상(LCA)까지 진행
-// dfs 및 bfs로 트리를 부모방향, 자식방향으로 탐색하면서 우큐에 저장
+// 미리 자식들의 모든 mQuantity를 totalq에 저장
 #include <vector>
 #include <queue>
 #include <algorithm>
 using namespace std;
+#define MAXN 10003
 
-#define LM 10003
-int N, P[LM], Dist[LM];
-vector<int> C[LM];
-int totCnt[LM], Cnt[LM];
-
-void updateTotal(int x, int c) {
-	while (x >= 0) {
-		totCnt[x] += c;
-		x = P[x];
+int p[MAXN], q[MAXN], totalq[MAXN], depth[MAXN];
+vector<int> child[MAXN];
+int adj[MAXN][MAXN];
+void updateTotal(int x, int quantity) {
+	while (x != -1) {
+		totalq[x] += quantity;
+		x = p[x];
 	}
 }
-
+int N;
 void init(int N, int mParent[], int mDistance[], int mQuantity[]) {
-	::N = N;
-	for (int i = 0; i < N; i++) C[i].clear();
+	::N = N, depth[0] = 0;
 	for (int i = 0; i < N; i++) {
-		if (i) C[mParent[i]].push_back(i);
-		P[i] = mParent[i], Cnt[i] = mQuantity[i], Dist[i] = mDistance[i];
-		totCnt[i] = 0;
-		updateTotal(i, Cnt[i]);
+		p[i] = mParent[i], q[i] = mQuantity[i], totalq[i] = 0;
+		if (i) {
+			depth[i] = depth[p[i]] + 1, child[p[i]].push_back(i);
+			adj[i][p[i]] = mDistance[i], adj[p[i]][i] = mDistance[i];
+		}
+		updateTotal(i, mQuantity[i]);
 	}
 }
 
 int carry(int mFrom, int mTo, int mQuantity) {
-	Cnt[mFrom] -= mQuantity, Cnt[mTo] += mQuantity;
-	int dist = 0;
-	while (mFrom != mTo) {
-		if (mFrom < mTo) {
-			totCnt[mTo] += mQuantity;
-			dist += Dist[mTo];
-			mTo = P[mTo];
-		}
-		else {
-			totCnt[mFrom] -= mQuantity;
-			dist += Dist[mFrom];
-			mFrom = P[mFrom];
-		}
+	int x = mFrom, y = mTo;
+	int dx = -mQuantity, dy = mQuantity;
+	if (depth[x] < depth[y]) swap(x, y), swap(dx, dy);
+	int ret = 0;
+	while (depth[x] != depth[y]) {
+		totalq[x] += dx;
+		ret += adj[x][p[x]];
+		x = p[x];
 	}
-	return dist * mQuantity;
+	while (x != y) {
+		totalq[x] += dx;
+		totalq[y] += dy;
+		ret += adj[x][p[x]];
+		ret += adj[y][p[y]];
+		x = p[x], y = p[y];
+	}
+	return ret * mQuantity;
 }
 
 struct Data {
-	int dist, node;
+	int mid, dist;
 	bool operator<(const Data& r)const {
 		if (dist != r.dist) return dist > r.dist;
-		return node > r.node;
+		return mid > r.mid;
 	}
 };
-
-int visited[LM], vcnt;
 priority_queue<Data> pq;
+
+bool visit[MAXN];
 void dfs(int x, int dist) {
-	if (x == -1 || visited[x] == vcnt) return;
-	pq.push({ dist, x });
-	visited[x] = vcnt;
-	dfs(P[x], dist + Dist[x]);
-	for (int cid : C[x]) dfs(cid, dist + Dist[cid]);
+	if (x == -1 || visit[x] == true) return;
+	pq.push({ x, dist });
+	visit[x] = true;
+	dfs(p[x], dist + adj[x][p[x]]);
+	for (int cid : child[x]) dfs(cid, dist + adj[x][cid]);
 }
 
 int gather(int mID, int mQuantity) {
-	vcnt++;
-	pq = {};
+	fill(visit, visit + N, 0);
 	dfs(mID, 0);
-	Cnt[mID] += mQuantity;
+	q[mID] += mQuantity;
 	updateTotal(mID, mQuantity);
 	int cost = 0;
-	while (mQuantity) {
-		int tID = pq.top().node, dist = pq.top().dist; pq.pop();
-		if (tID == mID) continue;
-		int c = min(mQuantity, Cnt[tID]);
-		cost += c * dist;
+	while (!pq.empty() && mQuantity) {
+		Data cur = pq.top(); pq.pop();
+		if (cur.mid == mID) continue;
+		int c = min(mQuantity, q[cur.mid]);
+		cost += c * cur.dist;
 		mQuantity -= c;
-		Cnt[tID] -= c;
-		updateTotal(tID, -c);
+		q[cur.mid] -= c;
+		updateTotal(cur.mid, -c);
 	}
 	return cost;
 }
 
 int sum(int mID) {
-	return totCnt[mID];
+	return totalq[mID];
 }
-
 ```
