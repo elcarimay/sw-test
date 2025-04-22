@@ -64,17 +64,17 @@ priority_queue<Data> pq, popped;
 bool visit[MAXN];
 
 void bfs(int x) {
-	pq.push({ x, 0 }), popped = {};
+	pq = {}, popped = {};
+	pq.push({ x, 0 });
 	while (!pq.empty()) {
 		Data cur = pq.top(); pq.pop();
-		visit[cur.mid] = true;
 		popped.push(cur);
-		for (int nx : child[cur.mid]) {
+		visit[cur.mid] = true;
+		for (int nx : adj[cur.mid]) {
 			if (visit[nx]) continue;
-			pq.push({ nx, cur.dist + adj[cur.mid][nx] });
+			pq.push({ nx, cur.dist + cost[cur.mid][nx] });
 		}
 	}
-	while (!popped.empty()) pq.push(popped.top()), popped.pop();
 }
 
 int gather(int mID, int mQuantity) {
@@ -85,8 +85,8 @@ int gather(int mID, int mQuantity) {
 	q[mID] += mQuantity;
 	updateTotal(mID, mQuantity);
 	int cost = 0;
-	while (!pq.empty() && mQuantity) {
-		Data cur = pq.top(); pq.pop();
+	while (!popped.empty() && mQuantity) {
+		Data cur = popped.top(); popped.pop();
 		if (cur.mid == mID) continue;
 		int c = min(mQuantity, q[cur.mid]);
 		cost += c * cur.dist;
