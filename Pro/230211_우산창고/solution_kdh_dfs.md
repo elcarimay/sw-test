@@ -21,7 +21,8 @@ void updateTotal(int x, int quantity) {
 	}
 }
 int N;
-void init(int N, int mParent[], int mDistance[], int mQuantity[]) {
+void init(int N, int mParent[], int mDistance[], int mQuantity[]) { // O(N^2)
+	// 트리 초기화 시 양방향 연결과 거리 정보를 저장하고, 각 노드에 대해 totalq값을 상향 누적.
 	::N = N, depth[0] = 0;
 	for (int i = 0; i < N; i++) child[i].clear();
 	for (int i = 0; i < N; i++) {
@@ -34,7 +35,8 @@ void init(int N, int mParent[], int mDistance[], int mQuantity[]) {
 	}
 }
 
-int carry(int mFrom, int mTo, int mQuantity) {
+int carry(int mFrom, int mTo, int mQuantity) { // O(N)
+	// 두 노드간 LCA를 찾아 수량 옮기고 그 비용(거리x수량)을 계산
 	q[mFrom] -= mQuantity, q[mTo] += mQuantity;
 	int x = mFrom, y = mTo, ret = 0;
 	int dx = -mQuantity, dy = mQuantity;
@@ -68,7 +70,8 @@ void dfs(int x, int dist) {
 	for (int cid : child[x]) dfs(cid, dist + adj[x][cid]);
 }
 
-int gather(int mID, int mQuantity) {
+int gather(int mID, int mQuantity) { // O(N log N)
+	// bfs 기반 우큐를 통해 가까운 노드들의 수량 합계를 반환.
 	fill(visit, visit + N, 0);
 	pq = {};
 	dfs(mID, 0);
@@ -87,7 +90,7 @@ int gather(int mID, int mQuantity) {
 	return cost;
 }
 
-int sum(int mID) {
+int sum(int mID) {  // 특정 노드에 포함된 모든 하위 노드들의 수량 합계를 반환. // O(1)
 	return totalq[mID];
 }
 #endif // 1
