@@ -1,3 +1,4 @@
+```cpp
 #if 1
 #include <list>
 #include <vector>
@@ -45,3 +46,4 @@ int getScore(int mID){
 	return ret;
 }
 #endif // 1
+```
