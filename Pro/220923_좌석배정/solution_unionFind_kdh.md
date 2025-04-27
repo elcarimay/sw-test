@@ -1,6 +1,11 @@
 ```cpp
 #if 1
-// row = (seatNum - 1) / W, col = (seatNum -1) % W
+// row = (seatNum - 1) / W, col = (seatNum - 1) % W
+// 방향별로 부모가 존재하며 각 부모별 그러니까 그룹별로 추천번호가 존재함
+// 그룹을 합칠 때 가장 오른쪽 번호가 그 다음 추천 번호가 됨
+// dr, dc벡터를 정할때 1~8번까지 방향을 고려해서 정해야 함
+// 1~4번(이때 d는 0~3) 방향까지는 그 다음 번호를 추천번호로 정해야 하기때문에 가장 높은 숫자로 선택해야 함
+// 그러나 5~8번까지는 그 이전 번호를 추천전호로 정해야 하기 때문에 가장 낮은 숫자로 선택해야 함
 #include <iostream>
 using namespace std;
 
@@ -52,7 +57,7 @@ void unionSeatAllDir(int mSeatNum) {
 	}
 }
 
-int selectSeat(int mSeatNum) {
+int selectSeat(int mSeatNum) { // 방향별로 부모가 존재함
 	int ans = 0, dist = 100000;
 	for (int d = 0; d < 8; d++) {
 		int p = find(d, mSeatNum);
