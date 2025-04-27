@@ -3,6 +3,7 @@
 // 그룹당 회사 숫자만 관리 → cnt[1003]
 // pcnt[gid1][gid2] = gid1그룹과 gid2그룹의 협업 중인 project 수
 // A 그룹은 numA까지, B 그룹은 numA + numB까지 관리
+// union할 때 그룹당 숫자를 더해줌
 #include<unordered_map>
 #include<unordered_set>
 #include<string>
