@@ -1,5 +1,7 @@
 ```cpp
 #if 1
+// unionfind problem ver.2
+// 그룹별 점수만 관리함
 #include <list>
 #include <vector>
 using namespace std;
