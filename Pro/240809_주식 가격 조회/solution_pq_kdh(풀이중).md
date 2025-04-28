@@ -1,36 +1,28 @@
 ```cpp
-#if 1 // 9300 ms
+#if 1 // 323 ms
 #define _CRT_SECURE_NO_WARNINGS
 #include <string>
-#include <vector>
 #include <queue>
 #include <unordered_map>
 #include <algorithm>
+#include <set>
 using namespace std;
 
 #define COMMON 0
 #define PREFERRED 1
 struct Info {
-	int bizCode, type;
-	bool removed;
+	int bizCode, type, price;
 };
 unordered_map<int, Info> idMap;
-struct MaxDB {
-	int stockCode, price;
-	bool operator<(const MaxDB& r)const {
+struct DB {
+	int price, stockCode;
+	bool operator<(const DB& r)const {
 		return price == r.price ? stockCode < r.stockCode : price < r.price;
 	}
 }; 
-struct MinDB {
-	int stockCode, price;
-	bool operator<(const MinDB& r)const {
-		return price == r.price ? stockCode > r.stockCode : price > r.price;
-	}
-};
-priority_queue<MaxDB> maxdb[4][2]; // bizCode, type
-priority_queue<MinDB> mindb[4][2], tmp, popped; // bizCode, type
+set<DB> db[4][2], tmp; // bizCode, type
 void init() {
-	for (int i = 1; i <= 3; i++) for (int j = 0; j < 2; j++) maxdb[i][j] = {}, mindb[i][j] = {};
+	for (int i = 1; i <= 3; i++) for (int j = 0; j < 2; j++) db[i][j].clear();
 	idMap.clear();
 }
 char delim[] = "[]={},;";
@@ -56,27 +48,16 @@ int add(char mStockInfo[]) {
 		}
 		p = strtok(nullptr, delim);
 	}
-	maxdb[bizCode][type].push({ stockCode, price }), mindb[bizCode][type].push({ stockCode, price });
-	idMap[stockCode] = { bizCode, type, false};
-	while (!maxdb[bizCode][type].empty()) {
-		auto cur = maxdb[bizCode][type].top(); maxdb[bizCode][type].pop();
-		if (idMap[cur.stockCode].removed) continue;
-		maxdb[bizCode][type].push(cur);
-		break;
-	}
-	return maxdb[bizCode][type].top().stockCode;
+	db[bizCode][type].insert({ price, stockCode});
+	idMap[stockCode] = { bizCode, type, price };
+	return db[bizCode][type].rbegin()->stockCode;
 }
 
 int remove(int mStockCode) {
-	idMap[mStockCode].removed = true;
-	int bizCode = idMap[mStockCode].bizCode, type = idMap[mStockCode].type;
-	while (!mindb[bizCode][type].empty()) {
-		auto cur = mindb[bizCode][type].top(); mindb[bizCode][type].pop();
-		if (idMap[cur.stockCode].removed) continue;
-		mindb[bizCode][type].push(cur);
-		break;
-	}
-	return mindb[bizCode][type].empty() ? -1 : mindb[bizCode][type].top().stockCode;
+	auto& i = idMap[mStockCode];
+	int bizCode = i.bizCode, type = i.type, price = i.price;
+	db[bizCode][type].erase({ price, mStockCode });
+	return db[bizCode][type].empty() ? -1 : db[bizCode][type].begin()->stockCode;
 }
 
 int search(char mCondition[]) {
@@ -105,23 +86,16 @@ int search(char mCondition[]) {
 			if(p) p = strtok(nullptr, delim);
 		}
 	}
-	tmp = {};
+	tmp.clear();
 	for (int nb : b) {
 		for (int nt : t) {
-			popped = {};
-			while (!mindb[nb][nt].empty()) {
-				auto cur = mindb[nb][nt].top(); mindb[nb][nt].pop();
-				if (idMap[cur.stockCode].removed) continue;
-				popped.push(cur);
-				if (cur.price >= price){
-					tmp.push(cur); break;
-				}
+			if (!db[nb][nt].empty()) {
+				auto it = db[nb][nt].lower_bound({ price });
+				if (it != db[nb][nt].end()) tmp.insert(*it);
 			}
-			while (!popped.empty()) mindb[nb][nt].push(popped.top()), popped.pop();
 		}
 	}
-	return tmp.empty() ? -1 : tmp.top().stockCode;
+	return tmp.empty() ? -1 : tmp.begin()->stockCode;
 }
 #endif // 1
-
 ```
