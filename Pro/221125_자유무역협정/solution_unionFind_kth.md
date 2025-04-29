@@ -1,4 +1,5 @@
 ```cpp
+#if 1 // 50 ms
 // union find version
 // 그룹당 회사 숫자만 관리 → cnt[1003]
 // pcnt[gid1][gid2] = gid1그룹과 gid2그룹의 협업 중인 project 수
@@ -59,4 +60,5 @@ int conflict(char mCompany1[MAXL], char mCompany2[MAXL]) {
 		if (pcnt[a][i] && pcnt[b][i]) ret += cnt[i];
 	return ret;
 }
+#endif
 ```
