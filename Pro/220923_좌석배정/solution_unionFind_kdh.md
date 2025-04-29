@@ -70,7 +70,7 @@ int selectSeat(int mSeatNum) { // 방향별로 부모가 존재함
 			ans = ca, dist = ndist;
 	}
 	if (ans == 0) return 0;
-	unionSeatAllDir(ans);
+	unionSeatAllDir(ans); // 선택된 자리를 모든 방향에 대해 그룹화 해줌
 	seat[ans] = mSeatNum;
 	return ans;
 }
