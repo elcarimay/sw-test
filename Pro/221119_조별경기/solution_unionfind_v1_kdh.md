@@ -12,7 +12,7 @@ int p[MAXN], r[MAXN], pScore[MAXN], gScore[MAXN];
 int find(int x) {
 	if (p[x] == x) return x;
 	int root = find(p[x]);
-	pScore[x] += pScore[p[x]];
+	pScore[x] += pScore[p[x]];  // 나중에 부모의 점수를 가지고 계산을 하기 때문
 	return p[x] = root;
 }
 
