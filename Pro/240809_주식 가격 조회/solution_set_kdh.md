@@ -1,5 +1,5 @@
 ```cpp
-#if 1 // 323 ms
+#if 1 // 177 ms
 #define _CRT_SECURE_NO_WARNINGS
 #include <string>
 #include <queue>
@@ -20,7 +20,7 @@ struct DB {
 		return price == r.price ? stockCode < r.stockCode : price < r.price;
 	}
 }; 
-set<DB> db[4][2], tmp; // bizCode, type
+set<DB> db[4][2]; // bizCode, type
 void init() {
 	for (int i = 1; i <= 3; i++) for (int j = 0; j < 2; j++) db[i][j].clear();
 	idMap.clear();
@@ -86,16 +86,19 @@ int search(char mCondition[]) {
 			if(p) p = strtok(nullptr, delim);
 		}
 	}
-	tmp.clear();
+	int rp = 300001, rs = -1; // price와 stockCode를 전부 비교해야 함
 	for (int nb : b) {
 		for (int nt : t) {
 			if (!db[nb][nt].empty()) {
 				auto it = db[nb][nt].lower_bound({ price });
-				if (it != db[nb][nt].end()) tmp.insert(*it);
+				if (it != db[nb][nt].end()) {
+					if (rp > it->price) rp = it->price, rs = it->stockCode;
+					else if(rp == it->price && rs > it->stockCode) rp = it->price, rs = it->stockCode;
+				}
 			}
 		}
 	}
-	return tmp.empty() ? -1 : tmp.begin()->stockCode;
+	return rs;
 }
 #endif // 1
 ```
