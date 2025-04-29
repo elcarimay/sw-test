@@ -1,5 +1,5 @@
 ```cpp
-#if 1 // 61 ms
+#if 1 // 50 ms
 // vector version
 // 개별로 group을 설정하고 그룹간 project는 따로 pcnt[a][b]로 관리함
 // 프로젝트를 하고 있는지 여부를 pcnt으로 알아보고 반환
