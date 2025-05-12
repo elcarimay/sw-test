@@ -1,3 +1,4 @@
+```cpp
 #if 1
 /* union find 코드 활용
 * (N/10)*(N/10) 크기 단위로 분류하여 총 10*10 개의 버킷에 딱지들을 등록한다.
@@ -83,3 +84,4 @@ int check(int mRow, int mCol)
     return 0;
 }
 #endif // 1
+```
