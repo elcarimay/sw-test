@@ -210,13 +210,85 @@ print('Accuracy:', accuracy)
 import tensorflow as tf
 import numpy as np
 
-char_arr = ['a', 'b', 'c', 'd', 'e', 'f', 'g',\
-			'h', 'i', 'j', 'k', 'l', 'm', 'n'\
-			'o', 'p', 'q', 'r', 's', 't', 'u'\
-			'v', 'w', 'x', 'y', 'z']
+# 문자와 숫자 매핑
+char_arr = list('abcdefghijklmnopqrstuvwxyz')
 num_dic = {n: i for i, n in enumerate(char_arr)}
 dic_len = len(num_dic)
 
-seq_data = ['word', 'wood', 'deep', 'dive', 'cold',\
-			'cool', 'load', 'love', 'kiss', 'kind']
+# 데이터셋
+seq_data = ['word', 'wood', 'deep', 'dive', 'cold',
+            'cool', 'load', 'love', 'kiss', 'kind']
+
+# 배치 생성 함수
+def make_batch(seq_data):
+    input_batch, target_batch = [], []
+    
+    for seq in seq_data:
+        input = [num_dic[n] for n in seq[:-1]]
+        target = num_dic[seq[-1]]
+        input_batch.append(tf.one_hot(input, dic_len))
+        target_batch.append(target)
+    
+    return np.array(input_batch), np.array(target_batch)
+
+# 하이퍼파라미터
+learning_rate = 0.01
+n_hidden = 128
+total_epoch = 50
+n_step = 3
+n_class = dic_len
+
+# 입력 데이터 생성
+input_batch, target_batch = make_batch(seq_data)
+
+# 모델 정의
+class CharLSTM(tf.keras.Model):
+    def __init__(self, n_hidden, n_class):
+        super(CharLSTM, self).__init__()
+        self.lstm1 = tf.keras.layers.LSTM(n_hidden, return_sequences=True, dropout=0.5)
+        self.lstm2 = tf.keras.layers.LSTM(n_hidden)
+        self.fc = tf.keras.layers.Dense(n_class)
+
+    def call(self, x, training=False):
+        x = self.lstm1(x, training=training)
+        x = self.lstm2(x, training=training)
+        return self.fc(x)
+
+model = CharLSTM(n_hidden, n_class)
+
+# 손실 함수와 최적화
+loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+optimizer = tf.keras.optimizers.Adam(learning_rate)
+
+# 정확도 측정 함수
+train_acc = tf.keras.metrics.SparseCategoricalAccuracy()
+
+# 학습 루프
+for epoch in range(total_epoch):
+    with tf.GradientTape() as tape:
+        logits = model(input_batch, training=True)
+        loss = loss_fn(target_batch, logits)
+    grads = tape.gradient(loss, model.trainable_variables)
+    optimizer.apply_gradients(zip(grads, model.trainable_variables))
+    
+    train_acc.update_state(target_batch, logits)
+    print(f'Epoch {epoch+1:04d}, Loss: {loss:.6f}, Accuracy: {train_acc.result().numpy():.4f}')
+    train_acc.reset_state()
+
+# 예측
+logits = model(input_batch, training=False)
+preds = tf.argmax(logits, axis=1).numpy()
+
+# 결과 출력
+predict_words = []
+for idx, val in enumerate(seq_data):
+    last_char = char_arr[preds[idx]]
+    predict_words.append(val[:3] + last_char)
+
+print('Inserted:', [w[:3] + ' ' for w in seq_data])
+print('Predicted:', predict_words)
+
+accuracy_val = np.mean(np.array(preds) == target_batch)
+print('Accuracy:', accuracy_val)
+
 ```
