@@ -36,7 +36,7 @@ y_pred = linear_model(x_train)
 curr_loss = loss(y_train, y_pred)
 print("W: %s b: %s loss: %s" % (W.numpy(), b.numpy(), curr_loss.numpy()))
 ```
-```
+```python
 import tensorflow as tf
 import numpy as np
 import random
@@ -85,7 +85,7 @@ print("Prediction: ", np.argmax(model.predict(x_test[r:r + 1]), axis=1))
 plt.imshow(x_test[r:r + 1].reshape(28, 28), cmap='Greys', interpolation='nearest')
 plt.show()
 ```
-```
+```python
 # 신규 2.0
 import numpy as np
 import tensorflow as tf
@@ -119,7 +119,7 @@ model.fit(x_train, y_train, epochs=15, batch_size=100, verbose=2) # 100개의 �
 loss, accuracy = model.evaluate(x_test, y_test)
 print('Accuracy:', accuracy) # true 1, false 0으로 하고 평균을 구함
 ```
-```
+```python
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
@@ -162,7 +162,7 @@ model.fit(x_train, y_train, epochs=10, batch_size=100, verbose=2)
 loss, accuracy = model.evaluate(x_test, y_test)
 print('Accuracy:', accuracy)
 ```
-```
+```python
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
