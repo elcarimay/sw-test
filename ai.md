@@ -292,3 +292,128 @@ accuracy_val = np.mean(np.array(preds) == target_batch)
 print('Accuracy:', accuracy_val)
 
 ```
+```python
+import tensorflow as tf
+import numpy as np
+
+# 문자 집합과 딕셔너리
+char_arr = [c for c in 'SEabcdefghijklmnopqrstuvwxyz단어나무놀이사과범컴퓨터']
+num_dic = {n: i for i, n in enumerate(char_arr)}
+dic_len = len(num_dic)
+
+seq_data = [['word', '단어'], ['wood', '나무'],
+            ['gate', '놀이'], ['apple', '사과'],
+            ['tiger', '범'], ['computer', '컴퓨터']]
+
+max_length = 10
+
+# 배치 생성 함수
+def make_batch(seq_data):
+    batch_e, batch_d, batch_y, len_y = [], [], [], []
+
+    for seq in seq_data:
+        # Encoder Input
+        input = np.zeros((max_length, dic_len))
+        for i, n in enumerate(seq[0]):
+            input[i, num_dic[n]] = 1
+
+        # Decoder Input ('S' + target)
+        output = np.zeros((max_length, dic_len))
+        for i, n in enumerate('S' + seq[1]):
+            output[i, num_dic[n]] = 1
+
+        # Decoder Target (target + 'E')
+        target = np.zeros(max_length, dtype=np.int64)
+        for i, n in enumerate(seq[1] + 'E'):
+            target[i] = num_dic[n]
+
+        batch_e.append(input)
+        batch_d.append(output)
+        batch_y.append(target)
+        len_y.append(len(seq[1]) + 1)
+
+    return np.array(batch_e), np.array(batch_d), np.array(batch_y), np.array(len_y)
+
+
+# 하이퍼파라미터
+learning_rate = 0.01
+n_hidden = 128
+n_class = dic_len
+total_epoch = 100
+
+# 배치 준비
+batch_e, batch_d, batch_y, len_y = make_batch(seq_data)
+
+# 모델 정의
+class Seq2Seq(tf.keras.Model):
+    def __init__(self, n_hidden, n_class, max_length):
+        super(Seq2Seq, self).__init__()
+        self.encoder_rnn = tf.keras.layers.SimpleRNN(n_hidden, return_state=True, return_sequences=True)
+        self.decoder_rnn = tf.keras.layers.SimpleRNN(n_hidden, return_sequences=True, return_state=True)
+        self.dense = tf.keras.layers.Dense(n_class)
+        self.max_length = max_length
+
+    def call(self, enc_input, dec_input, training=False):
+        enc_output, enc_state = self.encoder_rnn(enc_input, training=training)
+        dec_output, _ = self.decoder_rnn(dec_input, initial_state=enc_state, training=training)
+        output = self.dense(dec_output)
+        return output
+
+model = Seq2Seq(n_hidden, n_class, max_length)
+loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
+optimizer = tf.keras.optimizers.Adam(learning_rate)
+
+# 학습 루프
+for epoch in range(total_epoch):
+    with tf.GradientTape() as tape:
+        logits = model(batch_e, batch_d, training=True)
+
+        # Mask 적용
+        mask = tf.sequence_mask(len_y, maxlen=max_length, dtype=tf.float32)
+        loss = loss_fn(batch_y, logits)
+        loss = tf.reduce_sum(loss * mask) / tf.reduce_sum(mask)
+
+    grads = tape.gradient(loss, model.trainable_variables)
+    optimizer.apply_gradients(zip(grads, model.trainable_variables))
+
+    print(f'Epoch {epoch+1:04d}, Loss: {loss:.6f}')
+
+
+# 번역 함수 (Inference)
+def translate(word):
+    seq_data = [[word, '']]
+    batch_e, _, _, _ = make_batch(seq_data)
+
+    enc_output, enc_state = model.encoder_rnn(batch_e, training=False)
+
+    dec_input = np.zeros((1, 1, dic_len), dtype=np.float32)
+    dec_input[0, 0, num_dic['S']] = 1
+
+    result = ''
+    dec_state = enc_state
+
+    for _ in range(max_length):
+        dec_output, dec_state = model.decoder_rnn(dec_input, initial_state=dec_state, training=False)
+        logits = model.dense(dec_output)
+        pred_id = tf.argmax(logits[0, 0]).numpy()
+        char = char_arr[pred_id]
+        if char == 'E':
+            break
+        result += char
+
+        # 다음 입력
+        dec_input = np.zeros((1, 1, dic_len), dtype=np.float32)
+        dec_input[0, 0, pred_id] = 1
+
+    return result
+
+
+# 테스트
+for word in ('word', 'wood', 'gate', 'apple', 'tiger', 'computing'):
+    print(word, '->', translate(word))
+
+print()
+
+for word in ('weed', 'wolf', 'woman', 'qweqwe'):
+    print(word, '->', translate(word))
+```
