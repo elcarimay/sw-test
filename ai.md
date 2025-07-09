@@ -1,4 +1,4 @@
-python```
+```python
 ##신규 tensorflow 2.0버전
 import tensorflow as tf
 
