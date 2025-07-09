@@ -206,3 +206,17 @@ model.fit(x_train, y_train, epochs=10, batch_size=100, verbose=2)
 loss, accuracy = model.evaluate(x_test, y_test)
 print('Accuracy:', accuracy)
 ```
+```python
+import tensorflow as tf
+import numpy as np
+
+char_arr = ['a', 'b', 'c', 'd', 'e', 'f', 'g',\
+			'h', 'i', 'j', 'k', 'l', 'm', 'n'\
+			'o', 'p', 'q', 'r', 's', 't', 'u'\
+			'v', 'w', 'x', 'y', 'z']
+num_dic = {n: i for i, n in enumerate(char_arr)}
+dic_len = len(num_dic)
+
+seq_data = ['word', 'wood', 'deep', 'dive', 'cold',\
+			'cool', 'load', 'love', 'kiss', 'kind']
+```
