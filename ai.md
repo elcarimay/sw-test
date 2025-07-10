@@ -417,3 +417,296 @@ print()
 for word in ('weed', 'wolf', 'woman', 'qweqwe'):
     print(word, '->', translate(word))
 ```
+```python
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+
+# Hyperparameters
+learning_rate = 0.01
+training_epoch = 20
+batch_size = 100
+n_hidden = 256
+n_input = 28*28
+
+# Load MNIST dataset
+with np.load('mnist.npz') as f:
+    X_train, _ = f['x_train'], f['y_train']
+    X_test, _ = f['x_test'], f['y_test']
+
+# Reshape and normalize data
+X_train = X_train.reshape(-1, n_input) / 255.0
+X_test = X_test.reshape(-1, n_input) / 255.0
+
+# Define autoencoder model
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Dense(n_hidden, activation='sigmoid', input_shape=(n_input,)),
+    tf.keras.layers.Dense(n_input, activation='sigmoid')
+])
+
+# Compile model
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate), loss='mean_squared_error')
+
+# Train model
+model.fit(X_train, X_train, epochs=training_epoch, batch_size=batch_size)
+
+# Test model
+n = 4
+canvas_orig = np.empty((28*n, 28*n))
+canvas_recon = np.empty((28*n, 28*n))
+for i in range(n):
+    batch_x = X_test[i*n:(i+1)*n]
+    g = model.predict(batch_x)
+    for j in range(n):
+        canvas_orig[i*28:(i+1)*28, j*28:(j+1)*28] = batch_x[j].reshape([28,28])
+    for j in range(n):
+        canvas_recon[i*28:(i+1)*28, j*28:(j+1)*28] = g[j].reshape([28,28])
+
+# Plot results
+print("Original Images")
+plt.figure(figsize=(n,n))
+plt.imshow(canvas_orig, origin="upper", cmap="gray")
+plt.show()
+print("Reconstructed Images")
+plt.figure(figsize=(n,n))
+plt.imshow(canvas_recon, origin="upper", cmap="gray")
+plt.show()
+```
+```python
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+import matplotlib.pyplot as plt
+
+# Hyperparameters
+training_epoch = 20
+batch_size = 100
+
+# Load MNIST dataset
+with np.load('mnist.npz') as f:
+    X_train, _ = f['x_train'], f['y_train']
+    X_test, _ = f['x_test'], f['y_test']
+
+# Reshape and normalize data
+X_train = X_train.reshape(-1, 28, 28, 1) / 255.0
+X_test = X_test.reshape(-1, 28, 28, 1) / 255.0
+
+# Define autoencoder model
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(32, (5, 5), strides=(2, 2), activation='relu', input_shape=(28, 28, 1)),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.Dense(14*14*32, activation='relu'),
+    tf.keras.layers.Reshape((14, 14, 32)),
+    tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), activation='sigmoid', padding='same')
+])
+
+# Compile model
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# Train model
+model.fit(X_train, X_train, epochs=training_epoch, batch_size=batch_size)
+
+# Test model
+n = 4
+canvas_orig = np.empty((28*n, 28*n))
+canvas_recon = np.empty((28*n, 28*n))
+for i in range(n):
+    batch_x = X_test[i*n:(i+1)*n]
+    g = model.predict(batch_x)
+    for j in range(n):
+        canvas_orig[i*28:(i+1)*28, j*28:(j+1)*28] = batch_x[j].reshape([28,28])
+    for j in range(n):
+        canvas_recon[i*28:(i+1)*28, j*28:(j+1)*28] = g[j].reshape([28,28])
+
+# Plot results
+print("Original Images")
+plt.figure(figsize=(n,n))
+plt.imshow(canvas_orig, origin="upper", cmap="gray")
+plt.show()
+print("Reconstructed Images")
+plt.figure(figsize=(n,n))
+plt.imshow(canvas_recon, origin="upper", cmap="gray")
+plt.show()
+```
+```python
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Hyperparameters
+total_epoch = 100
+batch_size = 100
+learning_rate = 0.0002
+n_hidden = 256
+n_input = 28*28
+n_noise = 128
+
+# Load MNIST dataset
+with np.load('mnist.npz') as f:
+    X_train, _ = f['x_train'], f['y_train']
+    _, _ = f['x_test'], f['y_test']
+
+X_train = X_train.reshape(-1, n_input) / 255.0
+
+# Define generator model
+generator = tf.keras.models.Sequential([
+    tf.keras.layers.Dense(n_hidden, activation='relu', input_shape=(n_noise,)),
+    tf.keras.layers.Dense(n_input, activation='sigmoid')
+])
+
+# Define discriminator model
+discriminator = tf.keras.models.Sequential([
+    tf.keras.layers.Dense(n_hidden, activation='relu', input_shape=(n_input,)),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+
+# Define loss functions and optimizers
+def generator_loss(y_pred):
+    return -tf.reduce_mean(tf.math.log(y_pred))
+
+def discriminator_loss(y_real, y_fake):
+    return -tf.reduce_mean(tf.math.log(y_real) + tf.math.log(1 - y_fake))
+
+generator_optimizer = tf.keras.optimizers.Adam(learning_rate)
+discriminator_optimizer = tf.keras.optimizers.Adam(learning_rate)
+
+# Train models
+for epoch in range(total_epoch):
+    for i in range(len(X_train) // batch_size):
+        batch_xs = X_train[i*batch_size:(i+1)*batch_size]
+        noise = np.random.normal(size=(batch_size, n_noise))
+        
+        with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+            gen_output = generator(noise, training=True)
+            real_output = discriminator(batch_xs, training=True)
+            fake_output = discriminator(gen_output, training=True)
+            
+            gen_loss = generator_loss(fake_output)
+            disc_loss = discriminator_loss(real_output, fake_output)
+            
+        gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
+        gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+        
+        generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
+        discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+        
+    print('Epoch: ', '%04d' % epoch, 'D loss: {:.4}'.format(disc_loss), 'G loss: {:.4}'.format(gen_loss))
+    
+    if epoch == 0 or (epoch + 1) % 10 == 0:
+        sample_size = 10
+        noise = np.random.normal(size=(sample_size, n_noise))
+        samples = generator(noise, training=False)
+        
+        fig, ax = plt.subplots(1, sample_size, figsize=(sample_size, 1))
+        for i in range(sample_size):
+            ax[i].set_axis_off()
+            ax[i].imshow(np.reshape(samples[i], (28,28)))
+        plt.show()
+        plt.close(fig)
+```
+```python
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.datasets import mnist
+
+# 하이퍼파라미터 설정
+total_epoch = 100
+batch_size = 100
+learning_rate = 0.0002
+n_hidden = 256
+n_input = 28*28
+n_noise = 128
+n_label = 10
+
+# 데이터 불러오기
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train = x_train.reshape((-1, n_input)) / 255.0
+y_train = keras.utils.to_categorical(y_train, n_label)
+
+# 모델 정의
+def generator():
+    model = keras.Sequential([
+        layers.Dense(n_hidden, activation='relu', input_shape=(n_noise + n_label,)),
+        layers.Dense(n_input, activation='sigmoid')
+    ])
+    return model
+
+def discriminator():
+    model = keras.Sequential([
+        layers.Dense(n_hidden, activation='relu', input_shape=(n_input + n_label,)),
+        layers.Dense(1)
+    ])
+    return model
+
+# 모델 생성
+G = generator()
+D = discriminator()
+
+# 손실 함수 정의
+def loss_D(D, real, fake):
+    loss_D_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+        logits=real, labels=tf.ones_like(real)))
+    loss_D_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+        logits=fake, labels=tf.zeros_like(fake)))
+    return loss_D_real + loss_D_fake
+
+def loss_G(D, fake):
+    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+        logits=fake, labels=tf.ones_like(fake)))
+
+# 옵티마이저 정의
+D_optimizer = keras.optimizers.Adam(learning_rate)
+G_optimizer = keras.optimizers.Adam(learning_rate)
+
+# 학습
+for epoch in range(total_epoch):
+    for i in range(len(x_train) // batch_size):
+        batch_xs = x_train[i*batch_size:(i+1)*batch_size]
+        batch_ys = y_train[i*batch_size:(i+1)*batch_size]
+        noise = np.random.normal(size=(batch_size, n_noise))
+        
+        with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+            inputs = tf.concat([batch_xs, batch_ys], axis=1)
+            real = D(inputs, training=True)
+            
+            inputs = tf.concat([noise, batch_ys], axis=1)
+            fake = G(inputs, training=True)
+            inputs = tf.concat([fake, batch_ys], axis=1)
+            fake = D(inputs, training=True)
+            
+            loss_D_val = loss_D(D, real, fake)
+            loss_G_val = loss_G(D, fake)
+        
+        gradients_of_D = disc_tape.gradient(loss_D_val, D.trainable_variables)
+        D_optimizer.apply_gradients(zip(gradients_of_D, D.trainable_variables))
+        
+        gradients_of_G = gen_tape.gradient(loss_G_val, G.trainable_variables)
+        G_optimizer.apply_gradients(zip(gradients_of_G, G.trainable_variables))
+    
+    print('Epoch: ', '%04d' % epoch,
+          'D loss: {:.4}'.format(loss_D_val),
+          'G loss: {:.4}'.format(loss_G_val))
+    
+    if epoch % 10 == 0:
+        sample_size = 3
+        noise = np.random.normal(size=(sample_size*n_label, n_noise))
+        y_sample = np.eye(n_label)
+        for i in range(1, sample_size):
+            y_sample = np.concatenate([y_sample, np.eye(n_label)])
+        inputs = tf.concat([noise, y_sample], axis=1)
+        samples = G(inputs, training=False)
+        samples = samples.numpy()
+        
+        fig, ax = plt.subplots(sample_size, n_label, figsize=(n_label, sample_size))
+        for i in range(sample_size):
+            for j in range(n_label):
+                ax[i][j].set_axis_off()
+                ax[i][j].imshow(np.reshape(samples[i*n_label+j], (28,28)))
+        plt.savefig('samples/{}.png'.format(str(epoch).zfill(3)))
+        plt.show()
+        plt.close(fig)
+```
