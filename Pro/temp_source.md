@@ -1,127 +1,103 @@
-```cpp
-#if 1
-#include <unordered_map>
-#include <set>
-#include <vector>
-#include <queue>
-using namespace std;
-
-struct Product {
-    int id, category, company, price;
-    bool removed;
-}product[50003];
-
-struct RESULT {
-    int cnt, IDs[5];
-};
-
-struct Data {
-    int id, price;
-    bool operator<(const Data& r) const {
-        return price == r.price ? product[id].id > product[r.id].id : price > r.price;
-    }
-};
-unordered_map<int, int> pMap;
-priority_queue<Data> CatComp[6][6];
-vector<int> v[6][6];
-
-int getID(int c) {
-    return pMap.count(c) ? pMap[c] : pMap[c] = pMap.size() + 1;
-}
-
-void init() {
-    pMap.clear();
-    for (int i = 1; i <= 5; i++) for (int j = 1; j <= 5; j++)
-        CatComp[i][j] = {}, v[i][j].clear();
-}
-
-int sell(int mID, int mCategory, int mCompany, int mPrice) {
-    int id = getID(mID);
-    product[id] = { mID, mCategory, mCompany, mPrice };
-    CatComp[mCategory][mCompany].push({ id, mPrice });
-    v[mCategory][mCompany].push_back(id);
-    return (int)v[mCategory][mCompany].size();
-}
-
-int closeSale(int mID) {
-    if (!pMap.count(mID)) return -1;
-    int id = getID(mID);
-    if (product[id].removed) return -1;
-    product[id].removed = true;
-    auto& tmp = v[product[id].category][product[id].company];
-    tmp.erase(find(tmp.begin(), tmp.end(), id));
-    return product[id].price;
-}
-
-int discount(int mCategory, int mCompany, int mAmount) {
-    auto& c_tmp = CatComp[mCategory][mCompany];
-    auto& v_tmp = v[mCategory][mCompany];
-    for(int i = 0;i < v_tmp.size();i++) {
-        int id = v_tmp[i];
-        product[id].price -= mAmount;
-        if (product[id].price <= 0) {
-            product[id].removed = true;
-            v_tmp.erase(v_tmp.begin() + i--);
-        }
-        c_tmp.push({ id, product[id].price });
-    }
-    return (int)v_tmp.size();
-}
-
-priority_queue<Data> pq, final;
-RESULT show(int mHow, int mCode) {
-    RESULT result = { 0 }; pq = {}, final = {};
-    int cnt;
-    if (!mHow) {
-        for (int i = 1; i <= 5; i++) for (int j = 1; j <= 5; j++) {
-            cnt = 0;
-            while (!CatComp[i][j].empty()) {
-                auto cur = CatComp[i][j].top(); CatComp[i][j].pop();
-                if (product[cur.id].price <= 0) continue;
-                if (product[cur.id].removed) continue;
-                if (product[cur.id].price != cur.price) continue;
-                pq.push(cur), final.push(cur);
-                if (++cnt == 5) break;
-            }
-            while (!pq.empty()) CatComp[i][j].push(pq.top()), pq.pop();
-        }
-    }
-    else if (mHow == 1) {
-        for (int j = 1; j <= 5; j++) {
-            cnt = 0;
-            while (!CatComp[mCode][j].empty()) {
-                auto cur = CatComp[mCode][j].top(); CatComp[mCode][j].pop();
-                if (product[cur.id].price <= 0) continue;
-                if (product[cur.id].removed) continue;
-                if (product[cur.id].price != cur.price) continue;
-                pq.push(cur), final.push(cur);
-                if (++cnt == 5) break;
-            }
-            while (!pq.empty()) CatComp[mCode][j].push(pq.top()), pq.pop();
-        }
-    }
-    else if (mHow == 2) {
-        for (int i = 1; i <= 5; i++) {
-            cnt = 0;
-            while (!CatComp[i][mCode].empty()) {
-                auto cur = CatComp[i][mCode].top(); CatComp[i][mCode].pop();
-                if (product[cur.id].price <= 0) continue;
-                if (product[cur.id].removed) continue;
-                if (product[cur.id].price != cur.price) continue;
-                pq.push(cur), final.push(cur);
-                if (++cnt == 5) break;
-            }
-            while (!pq.empty()) CatComp[i][mCode].push(pq.top()), pq.pop();
-        }
-    }
-    cnt = 0;
-    while(!final.empty()){
-        result.IDs[cnt] = product[final.top().id].id, final.pop();
-        if (++cnt == 5) break;
-    }
-    result.cnt = cnt;
-    return result;
-}
-#endif // 0
-
-```
+2 100
+34
+100 10
+200 0 1 1 1 3
+200 0 2 3 1 3
+200 0 3 6 6 4
+300 1 3 3 2 1
+200 3 4 1 1 4
+300 4 3 2 4 3
+200 6 5 1 6 4
+200 7 6 1 0 3
+200 8 7 6 4 3
+300 9 5 2 5 3 7 6
+200 10 8 1 2 4
+200 10 9 4 2 3
+200 10 10 1 6 4
+200 10 11 3 3 3
+300 10 5 2 10 8 5 3
+200 11 12 2 7 3
+300 11 5 10 8 5 3 12
+300 12 5 10 5 3 12 7
+200 14 13 3 2 3
+200 14 14 2 1 3
+200 14 15 1 0 3
+300 15 4 5 15 14 13
+200 18 16 6 2 3
+200 21 17 4 2 4
+200 22 18 0 6 4
+200 22 19 3 1 4
+300 23 5 13 19 18 17 16
+200 24 20 1 1 4
+200 26 21 7 7 3
+200 26 22 5 1 5
+300 27 5 13 22 17 20 21
+200 32 23 6 6 4
+300 33 4 13 22 23 20
+66
+100 30
+200 1 668 21 4 6
+200 2 134 17 6 4
+200 2 442 21 19 5
+200 4 855 2 25 5
+200 6 847 13 4 10
+300 8 5 847 668 855 442 134
+200 9 499 13 11 15
+300 12 5 499 847 668 855 442
+200 12 355 8 14 12
+200 13 451 14 17 13
+200 14 184 11 8 11
+200 17 579 6 22 6
+200 20 956 7 4 3
+200 25 908 11 6 15
+200 27 533 4 7 14
+200 28 883 1 18 12
+200 29 169 3 7 15
+200 32 659 17 17 12
+200 36 319 13 9 4
+300 39 5 908 451 659 579 855
+200 39 961 16 11 10
+300 40 5 908 451 659 961 579
+200 45 229 6 9 13
+300 47 5 451 961 229 659 579
+200 48 757 8 13 5
+200 50 607 13 6 7
+200 53 615 20 24 3
+200 59 975 4 1 5
+200 60 224 9 19 7
+200 60 356 3 11 5
+200 63 45 17 9 8
+200 63 331 17 23 5
+200 66 683 16 24 6
+200 69 636 26 17 3
+300 70 5 961 757 45 224 956
+300 74 5 757 956 45 224 442
+200 76 54 5 23 3
+200 82 461 0 16 7
+300 86 5 45 956 461 224 442
+300 93 5 45 956 461 224 442
+200 93 494 5 4 11
+200 94 220 13 0 14
+300 95 5 45 220 494 956 461
+300 98 5 45 494 220 461 224
+200 105 669 19 1 6
+200 108 242 0 3 11
+200 109 955 11 4 10
+200 110 684 18 2 7
+200 112 625 16 0 14
+300 114 5 625 242 684 224 669
+200 117 825 16 13 12
+200 120 540 10 12 7
+200 121 701 12 18 8
+200 124 425 0 22 7
+300 125 5 242 625 669 825 701
+300 128 5 242 625 825 669 701
+300 130 5 242 825 625 701 425
+300 133 5 242 625 701 425 224
+300 136 5 242 625 425 701 224
+300 138 5 625 701 224 442 636
+300 141 5 625 701 224 442 636
+300 142 5 625 701 224 442 636
+300 144 4 625 701 442 636
+300 146 4 625 701 442 636
+300 147 4 625 701 442 636
