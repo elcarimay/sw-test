@@ -294,3 +294,291 @@ RESULT_S search(int mTime, char mStr[])
     }
     return res;
 }
+#include <cstdio>
+#include <cstring>
+#include <vector>
+#include <queue>
+#include <unordered_map>
+#include <unordered_set>
+#include <algorithm>
+
+using namespace std;
+
+struct RESULT_E {
+    int success;
+    char locname[5]; // "A002"
+};
+
+struct RESULT_S {
+    int cnt;
+    char carlist[5][8]; // "XXYZZZZ"
+};
+
+// ===== 전역 상태 =====
+static int G_N, G_M, G_L;
+
+static vector<int> freeCount; // 구역별 빈 슬롯 수
+static vector< priority_queue<int, vector<int>, greater<int>> > freeSlots; // 구역별 최소 슬롯 힙
+
+struct ParkedInfo {
+    int area;
+    int slot;
+    int start;
+    int towTime;
+};
+struct TowedInfo {
+    int towStart;
+    int parkDuration;
+};
+
+// 차량번호를 64비트로 저장
+static unordered_map<uint64_t, ParkedInfo> parked;
+static unordered_map<uint64_t, TowedInfo>  towed;
+
+struct TowEvent {
+    int towTime;
+    uint64_t car;
+    bool operator>(const TowEvent& o) const {
+        if (towTime != o.towTime) return towTime > o.towTime;
+        return car > o.car;
+    }
+};
+static priority_queue<TowEvent, vector<TowEvent>, greater<TowEvent>> towPQ;
+
+// 뒤 4자리(0000~9999) → 집합
+static vector< unordered_set<uint64_t> > parkedBySuf; // size 10000
+static vector< unordered_set<uint64_t> > towedBySuf;  // size 10000
+
+// ===== 유틸 =====
+static inline uint64_t encCar(const char s[8]) {
+    // 7바이트를 하위 56비트에 패킹 (s[0]..s[6])
+    uint64_t x = 0;
+    for (int i=0;i<7;i++) x = (x<<8) | (unsigned char)s[i];
+    return x;
+}
+static inline void decCar(uint64_t x, char out[8]) {
+    // 상위부터 복원
+    for (int i=6;i>=0;i--) { out[i] = (char)(x & 0xFF); x >>= 8; }
+    out[7] = '\0';
+}
+static inline int suffix4_from_car(uint64_t car) {
+    // car의 4~7번째 숫자 = s[3..6] (0-based)
+    char s[8]; decCar(car, s);
+    return (s[3]-'0')*1000 + (s[4]-'0')*100 + (s[5]-'0')*10 + (s[6]-'0');
+}
+static inline int suffix4_from_str(const char s[5]) {
+    return (s[0]-'0')*1000 + (s[1]-'0')*100 + (s[2]-'0')*10 + (s[3]-'0');
+}
+static inline void make_locname(int area, int slot, char out[5]) {
+    out[0] = (char)('A' + area);
+    out[1] = (char)('0' + (slot/100)%10);
+    out[2] = (char)('0' + (slot/10)%10);
+    out[3] = (char)('0' + (slot%10));
+    out[4] = '\0';
+}
+
+// 자동 견인 (mTime까지)
+static inline void processTow(int now) {
+    while (!towPQ.empty()) {
+        auto ev = towPQ.top();
+        if (ev.towTime > now) break;
+        towPQ.pop();
+
+        auto it = parked.find(ev.car);
+        if (it == parked.end()) continue; // 이미 처리됨
+        ParkedInfo &pi = it->second;
+        if (pi.towTime != ev.towTime) continue; // 지연 이벤트
+
+        // 슬롯 반환
+        freeSlots[pi.area].push(pi.slot);
+        freeCount[pi.area]++;
+
+        // parked 인덱스 제거
+        int suf = suffix4_from_car(ev.car);
+        auto &setP = parkedBySuf[suf];
+        setP.erase(ev.car);
+
+        // towed 기록
+        TowedInfo ti;
+        ti.towStart = ev.towTime;
+        ti.parkDuration = pi.towTime - pi.start; // 보통 L
+        towed[ev.car] = ti;
+        towedBySuf[suf].insert(ev.car);
+
+        parked.erase(it);
+    }
+}
+
+// 구역 선택
+static inline int chooseArea() {
+    int bestArea = -1, bestFree = -1;
+    // N ≤ 26 → 선형이 가장 빠름
+    for (int a=0;a<G_N;++a) {
+        int fc = freeCount[a];
+        if (fc > bestFree) { bestFree = fc; bestArea = a; }
+        else if (fc == bestFree && fc > 0 && a < bestArea) bestArea = a;
+    }
+    if (bestFree <= 0) return -1;
+    return bestArea;
+}
+
+// 검색 정렬 키
+struct Key {
+    bool isParked;
+    int XX;
+    char Y;
+    uint64_t car;
+};
+static inline bool keyLess(const Key& a, const Key& b){
+    if (a.isParked != b.isParked) return a.isParked > b.isParked;
+    if (a.XX != b.XX) return a.XX < b.XX;
+    if (a.Y  != b.Y ) return a.Y  < b.Y;
+    return a.car < b.car;
+}
+
+// ===== API =====
+void init(int N, int M, int L)
+{
+    G_N = N; G_M = M; G_L = L;
+
+    freeCount.assign(N, 0);
+    freeSlots.assign(N, {});
+    for (int a=0;a<N;++a) {
+        priority_queue<int, vector<int>, greater<int>> pq;
+        freeSlots[a].swap(pq);
+        for (int s=0;s<M;++s) freeSlots[a].push(s);
+        freeCount[a] = M;
+    }
+
+    parked.clear(); towed.clear();
+    parked.reserve(4096);
+    towed.reserve(4096);
+    while (!towPQ.empty()) towPQ.pop();
+
+    parkedBySuf.assign(10000, {});
+    towedBySuf.assign(10000, {});
+    for (int i=0;i<10000;++i){
+        parkedBySuf[i].reserve(16);
+        towedBySuf[i].reserve(16);
+    }
+}
+
+RESULT_E enter(int mTime, char mCarNo[])
+{
+    processTow(mTime);
+
+    uint64_t car = encCar(mCarNo);
+
+    // 견인 기록 있으면 삭제(성공 여부 무관)
+    auto itT = towed.find(car);
+    if (itT != towed.end()) {
+        int suf = suffix4_from_car(car);
+        towedBySuf[suf].erase(car);
+        towed.erase(itT);
+    }
+
+    RESULT_E r; r.success = 0; r.locname[0] = '\0';
+
+    int area = chooseArea();
+    if (area == -1) return r; // 실패
+
+    int slot = freeSlots[area].top(); freeSlots[area].pop();
+    freeCount[area]--;
+
+    ParkedInfo pi;
+    pi.area = area;
+    pi.slot = slot;
+    pi.start = mTime;
+    pi.towTime = mTime + G_L;
+
+    parked[car] = pi;
+    towPQ.push(TowEvent{pi.towTime, car});
+
+    int suf = suffix4_from_car(car);
+    parkedBySuf[suf].insert(car);
+
+    r.success = 1;
+    make_locname(area, slot, r.locname);
+    return r;
+}
+
+int pullout(int mTime, char mCarNo[])
+{
+    processTow(mTime);
+
+    uint64_t car = encCar(mCarNo);
+
+    auto itP = parked.find(car);
+    if (itP != parked.end()) {
+        ParkedInfo &pi = itP->second;
+        int duration = mTime - pi.start;
+
+        freeSlots[pi.area].push(pi.slot);
+        freeCount[pi.area]++;
+
+        int suf = suffix4_from_car(car);
+        parkedBySuf[suf].erase(car);
+        parked.erase(itP);
+
+        return duration;
+    }
+
+    auto itT = towed.find(car);
+    if (itT != towed.end()) {
+        TowedInfo ti = itT->second;
+        int parkDur = ti.parkDuration;
+        int towDur  = mTime - ti.towStart;
+        int value   = -(parkDur + towDur * 5);
+
+        int suf = suffix4_from_car(car);
+        towedBySuf[suf].erase(car);
+        towed.erase(itT);
+
+        return value;
+    }
+
+    return -1;
+}
+
+RESULT_S search(int mTime, char mStr[])
+{
+    processTow(mTime);
+
+    RESULT_S res; res.cnt = 0;
+
+    int suf = suffix4_from_str(mStr);
+    vector<Key> cand; cand.reserve(64);
+
+    // 주차 중
+    for (auto &c : parkedBySuf[suf]) {
+        Key k;
+        k.isParked = true;
+        char s[8]; decCar(c, s);
+        k.XX = (s[0]-'0')*10 + (s[1]-'0');
+        k.Y  = s[2];
+        k.car = c;
+        cand.push_back(k);
+    }
+    // 견인
+    for (auto &c : towedBySuf[suf]) {
+        Key k;
+        k.isParked = false;
+        char s[8]; decCar(c, s);
+        k.XX = (s[0]-'0')*10 + (s[1]-'0');
+        k.Y  = s[2];
+        k.car = c;
+        cand.push_back(k);
+    }
+
+    sort(cand.begin(), cand.end(), keyLess);
+
+    int K = (int)min<size_t>(5, cand.size());
+    res.cnt = K;
+    for (int i=0;i<K;++i){
+        char s[8]; decCar(cand[i].car, s);
+        // 복사
+        for (int j=0;j<7;++j) res.carlist[i][j] = s[j];
+        res.carlist[i][7] = '\0';
+    }
+    return res;
+}
