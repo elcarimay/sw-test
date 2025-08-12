@@ -58,3 +58,140 @@ Parameters
 Return
   해당 단어가 존재하는 페이지 번호
 
+// Dictionary with paging — C++11, standard headers only
+#include <string>
+#include <vector>
+#include <deque>
+#include <queue>
+#include <unordered_map>
+#include <algorithm>
+#include <utility>
+#include <cstring>
+
+using namespace std;
+
+namespace Dict {
+
+struct Node {
+    int child[26];
+    int cnt;      // subtree words (include self if isWord)
+    bool isWord;
+    Node() : cnt(0), isWord(false) { memset(child, -1, sizeof(child)); }
+};
+
+static vector<Node> T;
+static int PAGE = 1;
+
+inline int idx(char c){ return c - 'a'; }
+
+void reset(int pageSize){
+    PAGE = pageSize;
+    T.clear(); T.reserve(200000);
+    T.push_back(Node()); // root = 0
+}
+
+void addOne(const string& s){
+    int u = 0;
+    T[u].cnt++;
+    for(char ch : s){
+        int c = idx(ch);
+        if(T[u].child[c] == -1){
+            T[u].child[c] = (int)T.size();
+            T.push_back(Node());
+        }
+        u = T[u].child[c];
+        T[u].cnt++;
+    }
+    T[u].isWord = true;
+}
+
+// s 가 존재한다고 보장
+void removeOne(const string& s){
+    int u = 0;
+    T[u].cnt--;
+    for(char ch : s){
+        int c = idx(ch);
+        int v = T[u].child[c];
+        u = v;
+        T[u].cnt--;
+    }
+    T[u].isWord = false;
+}
+
+// 1-based rank of s
+int rankOf(const string& s){
+    int u = 0;
+    int rank = 0;
+    for(size_t i=0;i<s.size();++i){
+        int c = idx(s[i]);
+        // add counts of children < c
+        for(int d=0; d<c; ++d){
+            int v = T[u].child[d];
+            if(v!=-1) rank += T[v].cnt;
+        }
+        u = T[u].child[c];
+        if(u==-1) return rank; // 주어진 문제 조건상 발생하지 않음
+        if(i == s.size()-1){
+            rank += (T[u].isWord ? 1 : 0);
+            return rank;
+        }
+    }
+    return rank;
+}
+
+// find k-th word (1-based). assumes 1<=k<=T[0].cnt
+string kth(int k){
+    string res;
+    int u = 0;
+    while(true){
+        if(T[u].isWord){
+            if(k==1) return res;
+            --k;
+        }
+        for(int d=0; d<26; ++d){
+            int v = T[u].child[d];
+            if(v==-1) continue;
+            int c = T[v].cnt;
+            if(k > c){
+                k -= c;
+            }else{
+                res.push_back('a'+d);
+                u = v;
+                break;
+            }
+        }
+    }
+}
+
+} // namespace Dict
+
+// ========== User API ==========
+
+void init(int N, std::string mWordList[], int mWordSize){
+    Dict::reset(N);
+    for(int i=0;i<mWordSize;++i){
+        Dict::addOne(mWordList[i]);
+    }
+}
+
+void addWord(std::string mWordList[], int mWordSize){
+    for(int i=0;i<mWordSize;++i){
+        Dict::addOne(mWordList[i]);
+    }
+}
+
+void removeWord(std::string mWordList[], int mWordSize){
+    for(int i=0;i<mWordSize;++i){
+        Dict::removeOne(mWordList[i]);
+    }
+}
+
+std::string findWord(int mPageNum){
+    int k = (mPageNum-1)*Dict::PAGE + 1; // 페이지 첫 단어의 전역 순위
+    return Dict::kth(k);
+}
+
+int findPage(std::string mWord){
+    int r = Dict::rankOf(mWord); // 1-based
+    return (r-1)/Dict::PAGE + 1;
+}
