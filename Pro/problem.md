@@ -376,3 +376,273 @@ RESULT top5(int mTime){
     return R;
 }
 
+// solution.cpp  (C++11, standard headers only)
+#include <iostream>
+#include <vector>
+#include <deque>
+#include <queue>
+#include <unordered_map>
+#include <algorithm>
+#include <utility>
+
+using namespace std;
+
+struct RESULT {
+    int cnt;
+    int IDs[5];
+};
+
+struct Run {
+    int dir; // 0:up,1:right,2:down,3:left
+    int len;
+};
+
+struct Worm {
+    int id;
+    bool alive = true;
+    int N;
+    int hx, hy;      // head
+    int tx, ty;      // tail
+    int dir = 0;     // facing
+    int length = 0;
+    int grow = 0;    // growth potential
+    deque<Run> runs; // head-side at front
+
+    void placeStraight(int x, int y, int L, int face, int N_) {
+        N = N_; id = -1; alive = true;
+        hx = x; hy = y; dir = face; length = L; grow = 0;
+        int bdir = (face + 2) % 4; // tail쪽 방향
+        runs.clear();
+        runs.push_front((Run){face, 1});           // head 칸 1
+        if (L - 1 > 0) runs.push_back((Run){bdir, L - 1}); // 나머지는 반대 방향 직선
+
+        static int dx[4] = {0, 1, 0, -1};
+        static int dy[4] = {-1, 0, 1, 0};
+        tx = x + dx[bdir] * (L - 1);
+        ty = y + dy[bdir] * (L - 1);
+    }
+
+    bool isStraight() const { return runs.size() == 1; }
+
+    pair<int,int> previewNextHead() const {
+        int ndir = isStraight() ? (dir + 1) % 4 : dir;
+        static int dx[4] = {0, 1, 0, -1};
+        static int dy[4] = {-1, 0, 1, 0};
+        return make_pair(hx + dx[ndir], hy + dy[ndir]);
+    }
+    int previewNextDir() const { return isStraight() ? (dir + 1) % 4 : dir; }
+
+    // 이번 초에 비워질 칸: 성장하지 않는다면 '현재 꼬리 칸'이 비워진다.
+    pair<int,int> previewTailPopCell() const {
+        return make_pair(tx, ty);
+    }
+
+    void applyMove(bool willGrow) {
+        int ndir = previewNextDir();
+        if (!runs.empty() && runs.front().dir == ndir) runs.front().len++;
+        else runs.push_front((Run){ndir, 1});
+        static int dx[4] = {0, 1, 0, -1};
+        static int dy[4] = {-1, 0, 1, 0};
+        hx += dx[ndir]; hy += dy[ndir];
+        dir = ndir;
+
+        if (willGrow) {
+            length++;
+            grow--;
+        } else {
+            if (!runs.empty()) {
+                runs.back().len--;
+                int tdir = runs.back().dir;
+                if (runs.back().len == 0) runs.pop_back();
+                tx += dx[tdir]; ty += dy[tdir]; // 새 tail 좌표
+            }
+        }
+    }
+};
+
+static int N_global, curTime;
+static int owner[2001][2001]; // -1: empty, else worm idx
+static vector<Worm> worms;
+
+inline bool inBounds(int x,int y){ return (0<=x && x<N_global && 0<=y && y<N_global); }
+
+// 소멸 시 안전하게 격자에서 해당 worm 인덱스를 모두 제거
+static void clearWormOnGrid(int widx){
+    Worm &w = worms[widx];
+    if(!w.alive) return;
+    for(int x=0;x<N_global;x++) for(int y=0;y<N_global;y++)
+        if(owner[x][y]==widx) owner[x][y]=-1;
+    w.alive = false;
+}
+
+void init(int N){
+    N_global = N; curTime = 0;
+    for(int x=0;x<N;x++) for(int y=0;y<N;y++) owner[x][y] = -1;
+    worms.clear();
+}
+
+static void advanceTo(int t){
+    static int dx[4] = {0, 1, 0, -1};
+    static int dy[4] = {-1, 0, 1, 0};
+    for (; curTime < t; ++curTime){
+        int W = (int)worms.size();
+        vector<int> willGrow(W, 0), ndir(W, 0);
+        vector<pair<int,int> > newHead(W, make_pair(-1,-1));
+        vector<pair<int,int> > tailPop(W, make_pair(-1,-1));
+        vector<char> considered(W, 0);
+
+        for(int i=0;i<W;i++){
+            if(!worms[i].alive) continue;
+            considered[i]=1;
+            willGrow[i] = (worms[i].grow>0);
+            ndir[i] = worms[i].previewNextDir();
+            newHead[i] = worms[i].previewNextHead();
+            if(!willGrow[i]) tailPop[i] = worms[i].previewTailPopCell(); // 현재 tail 칸
+        }
+
+        unordered_map<long long, vector<int> > headCell;
+        headCell.reserve(considered.size()*2);
+        auto key = [&](int x,int y)->long long {
+            return ( (long long)x<<21 ) ^ (long long)y; // N<=2000이면 안전
+        };
+
+        vector<char> dead(W, 0);
+
+        // 1) 머리-머리
+        for(int i=0;i<W;i++) if(considered[i]){
+            pair<int,int> p = newHead[i];
+            headCell[key(p.first,p.second)].push_back(i);
+        }
+        for (unordered_map<long long, vector<int> >::iterator it = headCell.begin(); it!=headCell.end(); ++it){
+            vector<int>& vec = it->second;
+            if(vec.size()>=2){
+                for(size_t k=0;k<vec.size();++k) dead[vec[k]] = 1;
+            }
+        }
+
+        // 2) 경계 밖
+        for(int i=0;i<W;i++) if(considered[i] && !dead[i]){
+            pair<int,int> p = newHead[i];
+            if(!inBounds(p.first,p.second)) dead[i]=1;
+        }
+
+        // 3) 머리-몸체 (상대 꼬리 칸이면 예외)
+        vector<int> hitTo(W, -1);
+        for(int i=0;i<W;i++) if(considered[i] && !dead[i]){
+            pair<int,int> p = newHead[i];
+            int x = p.first, y = p.second;
+            if(!inBounds(x,y)) continue;
+            int own = owner[x][y];
+            if(own==-1) continue;
+            // 상대 꼬리가 이번 초에 빠질 '현재 꼬리 칸'이면 충돌 아님
+            if(!willGrow[own] && tailPop[own].first==x && tailPop[own].second==y) continue;
+            // 자기 몸 포함 충돌
+            hitTo[i] = own;
+            dead[i] = 1;
+        }
+
+        // 성장 잠재력 부여(생존 대상에게만)
+        vector<int> addGrow(W, 0);
+        for(int i=0;i<W;i++){
+            if(hitTo[i]!=-1){
+                int tgt = hitTo[i];
+                if(considered[tgt] && !dead[tgt]){
+                    addGrow[tgt] += worms[i].length;
+                }
+            }
+        }
+
+        // 4) 실제 이동 반영
+        // (1) 꼬리 pop: 이번 초에 성장하지 않는 경우 현재 tail 칸을 비운다
+        for(int i=0;i<W;i++) if(considered[i] && !dead[i]){
+            if(!willGrow[i]){
+                pair<int,int> p = tailPop[i]; // == (tx,ty)
+                if(inBounds(p.first,p.second)) owner[p.first][p.second] = -1;
+            }
+        }
+        // (2) 새 머리 점유
+        for(int i=0;i<W;i++) if(considered[i] && !dead[i]){
+            pair<int,int> p = newHead[i];
+            if(inBounds(p.first,p.second)) owner[p.first][p.second] = i;
+        }
+        // (3) 내부 상태 갱신
+        for(int i=0;i<W;i++) if(considered[i] && !dead[i]){
+            worms[i].applyMove(willGrow[i]);
+        }
+        // (4) 소멸자 격자에서 제거
+        for(int i=0;i<W;i++) if(considered[i] && dead[i]){
+            clearWormOnGrid(i);
+        }
+        // (5) 성장잠재력 누적 (다음 초부터 성장)
+        for(int i=0;i<W;i++) if(considered[i] && worms[i].alive){
+            worms[i].grow += addGrow[i];
+        }
+    }
+}
+
+void join(int mTime, int mID, int mX, int mY, int mLength){
+    advanceTo(mTime);
+    int idx = (int)worms.size();
+    worms.push_back(Worm());
+    Worm &w = worms.back();
+    w.placeStraight(mX, mY, mLength, 0, N_global);
+    w.id = mID;
+
+    // 격자 찍기 (head→tail)
+    owner[mX][mY] = idx;
+    static int dx[4] = {0, 1, 0, -1};
+    static int dy[4] = {-1, 0, 1, 0};
+    int x=mX, y=mY;
+    if (w.runs.size()>=1){
+        int d = w.runs[0].dir;
+        for(int k=1;k<w.runs[0].len;k++){
+            x -= dx[d]; y -= dy[d];
+            owner[x][y] = idx;
+        }
+    }
+    for(size_t r=1;r<w.runs.size();++r){
+        int d = w.runs[r].dir;
+        for(int k=0;k<w.runs[r].len;k++){
+            x -= dx[d]; y -= dy[d];
+            owner[x][y] = idx;
+        }
+    }
+}
+
+RESULT top5(int mTime){
+    advanceTo(mTime);
+    struct Node{ int len; int id; };
+    struct CmpMin {
+        bool operator()(const Node& a, const Node& b) const {
+            if(a.len!=b.len) return a.len > b.len; // len 작은 게 위
+            return a.id > b.id;                    // id 작은 게 위
+        }
+    };
+    priority_queue<Node, vector<Node>, CmpMin> pq;
+
+    for (size_t i=0;i<worms.size();++i){
+        Worm &w = worms[i];
+        if(!w.alive) continue;
+        Node node; node.len = w.length; node.id = w.id;
+        if ((int)pq.size() < 5) pq.push(node);
+        else{
+            Node curMin = pq.top();
+            bool better = (node.len > curMin.len) || (node.len==curMin.len && node.id > curMin.id);
+            if (better){ pq.pop(); pq.push(node); }
+        }
+    }
+    vector<Node> v;
+    while(!pq.empty()){ v.push_back(pq.top()); pq.pop(); }
+    struct CmpDesc {
+        bool operator()(const Node& a, const Node& b) const {
+            if(a.len!=b.len) return a.len > b.len;
+            return a.id > b.id;
+        }
+    };
+    sort(v.begin(), v.end(), CmpDesc());
+
+    RESULT R; R.cnt = (int)v.size();
+    for(int i=0;i<R.cnt;i++) R.IDs[i] = v[i].id;
+    return R;
+}
+
