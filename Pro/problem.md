@@ -1,187 +1,73 @@
 [문제 설명]
-한 페이지에 N 개의 단어들이 있는 단어사전이 있다.
-단어는 길이 10 이하의 영어 소문자로 구성된 문자열이다.
-단어들은 사전순으로 정렬 되어 있다.
-만약 단어가 10개 존재하고 N 이 3 이라면 첫번째 페이지에는 사전순으로 1번째 ~ 3번째인 단어들이 존재하고, 두번째 페이지에는 4번째 ~ 6번째인 단어들, 마지막 페이지인 4번째 페이지에는 사전순으로 10번째인 단어 1개만이 존재한다.
-단어들은 새로 추가되기도 하고, 사전에 존재하는 단어들이 없어지기도 한다.
-이런 경우에도 단어들은 사전순으로 관리되어야 한다.
-또한 특정 페이지의 첫 번째에 존재하는 단어를 찾아야 한다.
-만약 위의 경우 두 번째 페이지에 존재하는 단어를 찾아야 한다면, 사전순으로 4번째에 해당하는 단어를 반환하면 된다.
-마지막으로 특정 단어가 주어졌을 때, 그 단어가 존재하는 페이지 번호를 반환해야 한다.
+N개의 구역이 있고 각 구역에는 차량을 보관할 수 있는 슬롯이 M개가 있는 주차장이 있다.
+구역들은 영어 대문자로 구분되며 ‘A’부터 순서대로 부여된다. 예로 N = 3이면 구역 A, B, C가 있다.
+한 구역에 있는 슬롯들은 3자리 숫자로 구분되어 “000”부터 순서대로 부여된다. 예로 M = 4이면 슬롯 000, 001, 002, 003이 있다.
+주차 위치는 구역과 슬롯을 구분하는 문자열을 이어 붙여 표현된다.
+예로 구역 A에 슬롯 002인 주차 위치는 “A002”로 표시된다.
+한 슬롯에 1개의 차량만 보관할 수 있다.
+차량이 입차하면 다음과 같은 규칙으로 슬롯이 선정되고 주차된다.
+1) 빈 슬롯이 가장 많은 구역 중 영역의 대문자 순서가 가장 앞선 구역이 선택된다.
+2) 선택된 구역에서 숫자 번호가 가장 앞선 빈 슬롯에 차량이 보관이 된다.
+3) 만약 어느 구역에도 빈 슬롯이 없는 경우 주차는 실패한다.
+차량이 출차하면 그 차량을 보관했던 슬롯은 빈 슬롯이 되고 다시 차량을 보관할 수 있게 된다.
+차량이 주차한지 L 시간이 지나면 장기 주차차량으로 간주되고 바로 견인된다.
+견인된 후 해당 차량을 보관했던 슬롯은 빈 슬롯이 된다.
+예로, L = 10일 때 시각 5에 입차 했다면 시각 15가 될 때 견인되고 시각 15부터 해당 슬롯에 주차할 수 있게 된다.
+시스템에서는 견인된 사실을 사용자에게 알려주기 위해서 견인된 차량으로 기록한다.
+견인된 차량을 출차 요청하면 사용자가 차량이 견인된 사실을 인지했다고 생각하여 기록을 삭제한다.
+견인된 차량이 재입차할 수 있다. 이런 경우도 사용자가 이미 견인된 차량을 차량 보관소에서 찾았다고 생각하여 기록을 삭제한다.
+기록이 삭제된 차량은 더이상 견인된 차량으로 생각하지 않는다.
 아래 API 설명을 참조하여 각 함수를 구현하라.
-아래는 User Code 부분에 작성해야 하는 API 의 설명이다.
+아래는 User Code 부분에 작성해야 하는 API의 설명이다.
 
-void init(int N, string mWordList[], int mWordSize)
-테스트 케이스에 대한 초기화 함수.
-각 테스트 케이스의 맨 처음 1회 호출된다.
-N 은 한 페이지에 존재하는 단어의 갯수를 의미한다.
-mWordList 는 초기에 존재하는 단어들이다.
-단어들은 중복 없이 주어진다.
-주어지는 단어들은 사전순으로 정렬되어 있지 않음에 유의하라.
-mWordSize 는 초기에 존재하는 단어의 갯수이다.
-string type 은 각 언어별로 다르게 주어지므로, 주어진 템플릿 코드를 기준으로 작성하라.
+void init(int N, int M, int L)
+테스트 케이스에 대한 초기화 함수. 각 테스트 케이스의 맨 처음 1회 호출된다.
+초기에 주차장에서 주차되거나 견인된 차량은 없다.
 Parameters
-N : 한 페이지에 존재하는 단어의 수 (1 ≤ N ≤ 10,000)
-  mWordList : 초기에 존재하는 단어들 (1 ≤ 각 단어의 길이 ≤ 10)
-  mWordSize : 초기에 존재하는 단어의 갯수 (5 ≤ mWordSize ≤ 10,000)
-
-void addWord(string mWordList[], int mWordSize)
-새로운 단어들이 추가 된다.
-mWordSize는 추가할 단어의 갯수이다.
-이 단어들은 사전에 존재하지 않는 것들이고, 중복되지 않게 주어진다.
-주어지는 단어들은 사전순으로 정렬되어 있지 않음에 유의하라.
+  N : 구역의 개수 (2 ≤ N ≤ 26)
+  M : 각 구역에 있는 슬롯의 개수 (2 ≤ M ≤ 1,000)
+  L : 차량을 주차장에 주차할 수 있는 최대 기간 (500 ≤ L ≤ 100,000)
+  
+RESULT_E enter(int mTime, char mCarNo[])
+시각 mTime에 차량 번호가 mCarNo인 차량이 입차한다. 그 결과를 RESULT_E 구조체에 저장하고 반환한다.
+주차에 성공하면 RESULT_E.success에 1을 저장하고 차량이 주차된 주차 위치를 RESULT_E.locname에 저장한다.
+주차에 실패하면 RESULT_E.success에 0을 저장한다.
+차량 번호는 XXYZZZZ인 형태를 가진다. X, Z는 숫자이고 Y는 영어 대문자이다.
+시각 mTime에 주차된 차량의 번호가 전달되는 경우는 없다.
+하지만, 출차된 차량 또는 견인된 차량의 번호가 다시 전달될 수 있다.
+만약, 견인된 차량 번호가 전달된 경우 주차 성공 여부와 상관없이 견인된 기록이 삭제되고 더 이상 견인된 차량으로 생각하지 않는다.
+C++인 경우 문자열 끝에 ‘\0’를 넣어야 한다.
 Parameters
-  mWordList : 추가할 단어들 (1 ≤ 각 단어의 길이 ≤ 10)
-  mWordSize : 추가할 단어의 갯수 (1 ≤ mWordSize ≤ 100)
+  mTime : 차량이 입차될 때 시각 (1 ≤ mTime ≤ 10,000,000)
+  mCarNo : 입차될 차량 번호 (XXYZZZZ 형태, X와 Z는 숫자이고 Y는 영어 대문자)
+Return Value
+  RESULT_E.success : 주차의 성공 여부 (성공 1, 실패 0)
+  RESULT_E.locname : 주차된 차량의 위치
 
-void removeWord(string mWordList[], int mWordSize)
-단어들이 사전에서 삭제 된다.
-mWordSize는 삭제할 단어의 갯수이다.
-삭제할 단어들은 사전에 존재하는 것들이고, 중복되지 않게 주어진다.
+int pullout(int mTime, char mCarNo[])
+시각 mTime에 차량 번호가 mCarNo인 차량을 출차한다.
+함수 반환 값은 다음과 같다.
+1) 차량이 주차된 경우 주차된 기간을 반환한다.
+2) 차량이 견인된 경우 (주차된 기간 + 견인된 기간 * 5) * (-1)을 반환한다.
+3) 차량이 주차되어 있지 않고 견인되지 않는 경우는 -1을 반환한다.
+출차를 요청한 차량이 견인된 차량인 경우 견인되었다는 기록을 삭제하고 더 이상 견인된 차량으로 생각하지 않는다.
 Parameters
-  mWordList : 삭제할 단어들 (1 ≤ 각 단어의 길이 ≤ 10)
-  mWordSize : 삭제할 단어의 갯수 (1 ≤ mWordSize ≤ 100)
+  mTime : 차량이 출차될 때 시각 (1 ≤ mTime ≤ 10,000,000)
+  mCarNo : 출차될 차량 번호 (XXYZZZZ 형태, X와 Z는 숫자이고 Y는 영어 대문자)
+Return Value
+  주차된 경우에는 주차된 기간, 견인된 경우에는 (주차된 기간 + 견인된 기간 * 5) * (-1), 그렇지 않은 경우에는 -1
 
-string findWord(int mPageNum)
-사전에서 mPageNum 페이지의 첫번째 단어를 찾아 반환한다.
-mPageNum은 현재 존재하는 페이지 번호임이 보장된다.
+RESULT_S search(int mTime, char mStr[])
+시각 mTime에 주차된 차량 또는 견인된 차량 중 차량 번호의 뒷 4자리가 mStr와 일치하는 차량을 우선 순위 순으로 최대 5대 검색한다.
+예로, mStr = “5870”이고 차량 번호가 “24Z5870”이면 일치한 경우이다.
+검색된 차량은 다음과 같은 우선 순위를 가진다. 차량 번호를 XXYZZZZ 형태를 가진다.
+1) 주차된 차량이 견인된 차량보다 우선 순위가 더 높다.
+2) 위 조건에서 우선 순위가 같은 경우 XX를 수로 표현할 때 더 낮은 수가 우선 순위가 더 높다.
+3) 위 조건에서 우선 순위가 같은 경우 Y의 알파벳 순서가 더 빠른 것이 우선 순위가 더 높다.
+검색된 차량의 개수를 RESULT_S.cnt에 저장하고 우선 순위 순으로 찾은 i번째 차량 번호는 RESULT_S.carlist[i – 1]에 저장한다. (0 ≤ RESULT_S.cnt ≤ 5, 1 ≤ i ≤ RESULT_S.cnt)
+C++인 경우 문자열 끝에 ‘\0’를 넣어야 한다.
 Parameters
-  mPageNum : 단어를 찾을 페이지
-Return
-  해당 페이지의 첫번째 단어
-
-int findPage(string mWord)
-사전에서 mWord 가 존재하는 페이지 번호를 반환한다.
-단어는 현재 사전에 존재하는 것만 주어진다.
-Parameters
-  mWord : 페이지를 찾을 단어 (1 ≤ 단어의 길이 ≤ 10)
-Return
-  해당 단어가 존재하는 페이지 번호
-
-#include <string>
-#include <vector>
-#include <cstring>
-#include <algorithm>
-
-using namespace std;
-
-struct Node {
-    int child[26];
-    int cnt;      // subtree words count (includes self if isWord)
-    bool isWord;
-    Node() : cnt(0), isWord(false) { memset(child, -1, sizeof(child)); }
-};
-
-static vector<Node> trie;
-static int PAGE = 1;
-
-inline int idx(char c) { return c - 'a'; }
-
-void reset(int pageSize) {
-    PAGE = pageSize;
-    trie.clear();
-    trie.reserve(200000);
-    trie.push_back(Node()); // root
-}
-
-void addOne(const string& s) {
-    int u = 0;
-    trie[u].cnt++;
-    for (char ch : s) {
-        int c = idx(ch);
-        if (trie[u].child[c] == -1) {
-            trie[u].child[c] = (int)trie.size();
-            trie.push_back(Node());
-        }
-        u = trie[u].child[c];
-        trie[u].cnt++;
-    }
-    trie[u].isWord = true;
-}
-
-void removeOne(const string& s) {
-    int u = 0;
-    trie[u].cnt--;
-    for (char ch : s) {
-        int c = idx(ch);
-        int v = trie[u].child[c];
-        u = v;
-        trie[u].cnt--;
-    }
-    trie[u].isWord = false;
-}
-
-// return 1-based rank of s
-int rankOf(const string& s) {
-    int u = 0;
-    int rank = 0;
-    for (size_t i = 0; i < s.size(); ++i) {
-        int c = idx(s[i]);
-        for (int d = 0; d < c; ++d) {
-            int v = trie[u].child[d];
-            if (v != -1) rank += trie[v].cnt;
-        }
-        u = trie[u].child[c];
-        if (u == -1) return rank;
-        if (i == s.size() - 1) {
-            rank += (trie[u].isWord ? 1 : 0);
-            return rank;
-        }
-    }
-    return rank;
-}
-
-// find k-th word (1-based)
-string kth(int k) {
-    string res;
-    int u = 0;
-    while (true) {
-        if (trie[u].isWord) {
-            if (k == 1) return res;
-            --k;
-        }
-        for (int d = 0; d < 26; ++d) {
-            int v = trie[u].child[d];
-            if (v == -1) continue;
-            int c = trie[v].cnt;
-            if (k > c) {
-                k -= c;
-            } else {
-                res.push_back('a' + d);
-                u = v;
-                break;
-            }
-        }
-    }
-}
-
-// ===== Required API =====
-
-void init(int N, string mWordList[], int mWordSize) {
-    reset(N);
-    for (int i = 0; i < mWordSize; ++i) {
-        addOne(mWordList[i]);
-    }
-}
-
-void addWord(string mWordList[], int mWordSize) {
-    for (int i = 0; i < mWordSize; ++i) {
-        addOne(mWordList[i]);
-    }
-}
-
-void removeWord(string mWordList[], int mWordSize) {
-    for (int i = 0; i < mWordSize; ++i) {
-        removeOne(mWordList[i]);
-    }
-}
-
-string findWord(int mPageNum) {
-    int k = (mPageNum - 1) * PAGE + 1;
-    return kth(k);
-}
-
-int findPage(string mWord) {
-    int r = rankOf(mWord);
-    return (r - 1) / PAGE + 1;
-}
+  mTime : 차량을 검색할 때 시각 (1 ≤ mTime ≤ 10,000,000)
+  mStr : 검색할 차량 뒷 4자리 번호 (ZZZZ 형태, Z는 숫자)
+Return Value
+  찾은 차량의 개수를 RESULT_S.cnt에 저장, 찾은 차량 번호를 RESULT_S.carlist에 저장. 찾은 개수는 5를 초과할 수 없다.
