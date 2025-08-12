@@ -195,3 +195,130 @@ int findPage(std::string mWord){
     int r = Dict::rankOf(mWord); // 1-based
     return (r-1)/Dict::PAGE + 1;
 }
+#include <string>
+#include <vector>
+#include <cstring>
+#include <algorithm>
+
+using namespace std;
+
+struct Node {
+    int child[26];
+    int cnt;      // subtree words count (includes self if isWord)
+    bool isWord;
+    Node() : cnt(0), isWord(false) { memset(child, -1, sizeof(child)); }
+};
+
+static vector<Node> trie;
+static int PAGE = 1;
+
+inline int idx(char c) { return c - 'a'; }
+
+void reset(int pageSize) {
+    PAGE = pageSize;
+    trie.clear();
+    trie.reserve(200000);
+    trie.push_back(Node()); // root
+}
+
+void addOne(const string& s) {
+    int u = 0;
+    trie[u].cnt++;
+    for (char ch : s) {
+        int c = idx(ch);
+        if (trie[u].child[c] == -1) {
+            trie[u].child[c] = (int)trie.size();
+            trie.push_back(Node());
+        }
+        u = trie[u].child[c];
+        trie[u].cnt++;
+    }
+    trie[u].isWord = true;
+}
+
+void removeOne(const string& s) {
+    int u = 0;
+    trie[u].cnt--;
+    for (char ch : s) {
+        int c = idx(ch);
+        int v = trie[u].child[c];
+        u = v;
+        trie[u].cnt--;
+    }
+    trie[u].isWord = false;
+}
+
+// return 1-based rank of s
+int rankOf(const string& s) {
+    int u = 0;
+    int rank = 0;
+    for (size_t i = 0; i < s.size(); ++i) {
+        int c = idx(s[i]);
+        for (int d = 0; d < c; ++d) {
+            int v = trie[u].child[d];
+            if (v != -1) rank += trie[v].cnt;
+        }
+        u = trie[u].child[c];
+        if (u == -1) return rank;
+        if (i == s.size() - 1) {
+            rank += (trie[u].isWord ? 1 : 0);
+            return rank;
+        }
+    }
+    return rank;
+}
+
+// find k-th word (1-based)
+string kth(int k) {
+    string res;
+    int u = 0;
+    while (true) {
+        if (trie[u].isWord) {
+            if (k == 1) return res;
+            --k;
+        }
+        for (int d = 0; d < 26; ++d) {
+            int v = trie[u].child[d];
+            if (v == -1) continue;
+            int c = trie[v].cnt;
+            if (k > c) {
+                k -= c;
+            } else {
+                res.push_back('a' + d);
+                u = v;
+                break;
+            }
+        }
+    }
+}
+
+// ===== Required API =====
+
+void init(int N, string mWordList[], int mWordSize) {
+    reset(N);
+    for (int i = 0; i < mWordSize; ++i) {
+        addOne(mWordList[i]);
+    }
+}
+
+void addWord(string mWordList[], int mWordSize) {
+    for (int i = 0; i < mWordSize; ++i) {
+        addOne(mWordList[i]);
+    }
+}
+
+void removeWord(string mWordList[], int mWordSize) {
+    for (int i = 0; i < mWordSize; ++i) {
+        removeOne(mWordList[i]);
+    }
+}
+
+string findWord(int mPageNum) {
+    int k = (mPageNum - 1) * PAGE + 1;
+    return kth(k);
+}
+
+int findPage(string mWord) {
+    int r = rankOf(mWord);
+    return (r - 1) / PAGE + 1;
+}
