@@ -3,6 +3,8 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <queue>
+#include <functional>
 
 using namespace std;
 
@@ -11,36 +13,10 @@ struct RESULT_S { int cnt; char carlist[5][8]; };
 
 static int G_N, G_M, G_L;
 
-// ---------------- 구역/슬롯 관리 ----------------
-struct MinHeap {
-    vector<int> a;
-    inline bool empty() const { return a.empty(); }
-    inline void push(int x){
-        a.push_back(x);
-        int i=(int)a.size()-1;
-        while(i>0){
-            int p=(i-1)>>1; if(a[p]<=a[i]) break;
-            swap(a[p],a[i]); i=p;
-        }
-    }
-    inline int top() const { return a[0]; }
-    inline int pop(){
-        int ret=a[0], n=(int)a.size();
-        a[0]=a[n-1]; a.pop_back(); --n;
-        int i=0;
-        while(true){
-            int l=i*2+1,r=l+1,m=i;
-            if(l<n && a[l]<a[m]) m=l;
-            if(r<n && a[r]<a[m]) m=r;
-            if(m==i) break;
-            swap(a[i],a[m]); i=m;
-        }
-        return ret;
-    }
-    inline void clear(){ a.clear(); }
-};
+// ---------------- 구역/슬롯 관리 (STL) ----------------
 static vector<int> freeCount, nextFree;
-static vector<MinHeap> holes;
+// 반납 슬롯: 각 구역별 최소힙
+static vector< priority_queue<int, vector<int>, greater<int>> > holes;
 
 // ---------------- 차량 키/유틸 ----------------
 static inline unsigned long long encCar(const char s[8]){
@@ -72,7 +48,7 @@ static inline void make_locname(int area, int slot, char out[5]){
     out[4]='\0';
 }
 
-// ---------------- 상태(STL 해시 사용) ----------------
+// ---------------- 상태 (STL 해시) ----------------
 struct ParkedInfo { int area, slot, start, towTime; int sufIdx; };
 struct TowedInfo  { int towStart, parkDuration;     int sufIdx;  };
 
@@ -83,30 +59,15 @@ static unordered_map<unsigned long long, TowedInfo>  towed;
 static vector<vector<unsigned long long>> parkedVec; // [10000]
 static vector<vector<unsigned long long>> towedVec;  // [10000]
 
-// 견인 이벤트 힙(최소힙)
+// 견인 이벤트 힙 (STL priority_queue)
 struct TowEvent{ int towTime; unsigned long long car; };
-static vector<TowEvent> towHeap;
-static inline bool towLess(const TowEvent&a,const TowEvent&b){
-    return (a.towTime!=b.towTime)? a.towTime<b.towTime : a.car<b.car;
-}
-static inline void towPush(const TowEvent&e){
-    towHeap.push_back(e); int i=(int)towHeap.size()-1;
-    while(i>0){ int p=(i-1)>>1; if(!towLess(towHeap[i], towHeap[p])) break; swap(towHeap[i],towHeap[p]); i=p; }
-}
-static inline bool towEmpty(){ return towHeap.empty(); }
-static inline TowEvent towTop(){ return towHeap[0]; }
-static inline void towPop(){
-    int n=(int)towHeap.size();
-    towHeap[0]=towHeap[n-1]; towHeap.pop_back(); --n;
-    int i=0;
-    while(true){
-        int l=i*2+1,r=l+1,m=i;
-        if(l<n && towLess(towHeap[l],towHeap[m])) m=l;
-        if(r<n && towLess(towHeap[r],towHeap[m])) m=r;
-        if(m==i) break;
-        swap(towHeap[i],towHeap[m]); i=m;
+struct TowCmp {
+    bool operator()(const TowEvent& a, const TowEvent& b) const {
+        if (a.towTime != b.towTime) return a.towTime > b.towTime; // min-heap by time
+        return a.car > b.car;
     }
-}
+};
+static priority_queue<TowEvent, vector<TowEvent>, TowCmp> towPQ;
 
 // ---------------- 슬롯/구역 ----------------
 static inline int chooseArea(){
@@ -119,11 +80,21 @@ static inline int chooseArea(){
     return (bf<=0)? -1 : best;
 }
 static inline int allocSlot(int area){
-    if(!holes[area].empty()){ int s=holes[area].pop(); --freeCount[area]; return s; }
-    if(nextFree[area] < G_M){ int s=nextFree[area]++; --freeCount[area]; return s; }
+    if(!holes[area].empty()){
+        int s=holes[area].top(); holes[area].pop();
+        --freeCount[area];
+        return s;
+    }
+    if(nextFree[area] < G_M){
+        int s=nextFree[area]++; --freeCount[area];
+        return s;
+    }
     return -1;
 }
-static inline void freeSlot(int area,int slot){ holes[area].push(slot); ++freeCount[area]; }
+static inline void freeSlot(int area,int slot){
+    holes[area].push(slot);
+    ++freeCount[area];
+}
 
 // 접미사 벡터에서 O(1) 삭제
 static inline void parkedEraseFromSuffix(int suf,int idx){
@@ -149,19 +120,24 @@ static inline void towedEraseFromSuffix(int suf,int idx){
 
 // 자동 견인 (mTime까지 처리)
 static inline void processTow(int now){
-    while(!towEmpty()){
-        TowEvent ev=towTop(); if(ev.towTime>now) break; towPop();
+    while(!towPQ.empty() && towPQ.top().towTime <= now){
+        TowEvent ev = towPQ.top(); towPQ.pop();
+
         auto itP = parked.find(ev.car);
         if(itP==parked.end()) continue;
         ParkedInfo &pi = itP->second;
         if(pi.towTime!=ev.towTime) continue; // 지연 이벤트
+
         // 슬롯 반환
         freeSlot(pi.area, pi.slot);
+
         // 주차 인덱스 제거
         int suf=suf4_from_car(ev.car);
         parkedEraseFromSuffix(suf, pi.sufIdx);
+
         int parkDur = ev.towTime - pi.start;
         parked.erase(itP);
+
         // 견인 등록
         TowedInfo ti; ti.towStart=ev.towTime; ti.parkDuration=parkDur; ti.sufIdx=-1;
         auto ins = towed.emplace(ev.car, ti).first;
@@ -176,15 +152,15 @@ void init(int N, int M, int L){
 
     freeCount.assign(N, M);
     nextFree.assign(N, 0);
-    holes.assign(N, MinHeap()); for(int a=0;a<N;++a) holes[a].clear();
+    holes.assign(N, {}); // 구역별 최소힙 초기화
 
     parked.clear(); towed.clear();
-    // 예상치에 맞게 reserve(필요 시 조정)
+    // 예상 규모에 맞춰 reserve로 재해시 비용 감소
     parked.reserve(1<<16);
     towed.reserve(1<<15);
 
     parkedVec.assign(10000, {}); towedVec.assign(10000, {});
-    towHeap.clear();
+    while(!towPQ.empty()) towPQ.pop();
 }
 
 RESULT_E enter(int mTime, char mCarNo[]){
@@ -210,7 +186,7 @@ RESULT_E enter(int mTime, char mCarNo[]){
     parkedVec[suf].push_back(car);
     ins->second.sufIdx=(int)parkedVec[suf].size()-1;
 
-    towPush(TowEvent{pi.towTime, car});
+    towPQ.push(TowEvent{pi.towTime, car});
 
     r.success=1; make_locname(area,slot,r.locname);
     return r;
@@ -224,9 +200,9 @@ int pullout(int mTime, char mCarNo[]){
     if(itP!=parked.end()){
         ParkedInfo &p = itP->second;
         int dur = mTime - p.start;
-        freeSlot(p.area, p.slot);
+        freeSlot(p->area, p->slot);
         int suf=suf4_from_car(car);
-        parkedEraseFromSuffix(suf, p.sufIdx);
+        parkedEraseFromSuffix(suf, p->sufIdx);
         parked.erase(itP);
         return dur;
     }
@@ -258,37 +234,23 @@ RESULT_S search(int mTime, char mStr[]){
         return a.car < b.car;                    // tie-break
     };
 
-    Item top[5]; int K=0;
-    auto insertTop = [&](const Item& it){
-        int pos=K;
-        while(pos>0 && better(it, top[pos-1])) pos--;
-        if(K<5){
-            for(int i=K;i>pos;--i) top[i]=top[i-1];
-            top[pos]=it; ++K;
-        }else{
-            if(!better(it, top[4])) return;
-            if(pos>4) pos=4;
-            for(int i=4;i>pos;--i) top[i]=top[i-1];
-            top[pos]=it;
-        }
-    };
+    // 후보 수집 (STL 사용: partial_sort로 Top-5)
+    vector<Item> cand;
+    cand.reserve( (size_t)parkedVec[suf].size() + (size_t)towedVec[suf].size() );
 
-    // 주차 중
-    const auto& vp=parkedVec[suf];
-    for(unsigned long long c: vp){
-        Item it{true, getXX_from_car(c), getY_from_car(c), c};
-        insertTop(it);
-    }
-    // 견인
-    const auto& vt=towedVec[suf];
-    for(unsigned long long c: vt){
-        Item it{false, getXX_from_car(c), getY_from_car(c), c};
-        insertTop(it);
+    for (auto c : parkedVec[suf]) cand.push_back( Item{true,  getXX_from_car(c), getY_from_car(c), c} );
+    for (auto c : towedVec[suf])  cand.push_back( Item{false, getXX_from_car(c), getY_from_car(c), c} );
+
+    if (cand.size() <= 5) {
+        sort(cand.begin(), cand.end(), better);
+    } else {
+        partial_sort(cand.begin(), cand.begin()+5, cand.end(), better);
+        cand.resize(5);
     }
 
-    res.cnt=K;
-    for(int i=0;i<K;++i){
-        char s[8]; decCar(top[i].car, s);
+    res.cnt = (int)min<size_t>(5, cand.size());
+    for(int i=0;i<res.cnt;++i){
+        char s[8]; decCar(cand[i].car, s);
         for(int j=0;j<7;++j) res.carlist[i][j]=s[j];
         res.carlist[i][7]='\0';
     }
