@@ -4,7 +4,7 @@
 #include <algorithm>
 using namespace std;
 
-#define MAXN 50003
+#define MAXN 16 // 최대 상품 수 15 + 1
 
 struct RESULT { int cnt, IDs[5]; };
 
@@ -12,9 +12,10 @@ unordered_map<int, int> hmap;
 struct Info {
     int mid, cat, com, price;
     bool removed;
-} info[MAXN];
-
+};
+vector<Info> info;
 int idCnt;
+
 struct Data {
     int id;
     bool operator<(const Data& r) const {
@@ -22,17 +23,23 @@ struct Data {
         return info[id].mid < info[r.id].mid;
     }
 };
-vector<Data> catcom[6][6];
+vector<Data> catcom[3][3]; // mCategory, mCompany = 1~2
 
 int getID(int c) {
-    return hmap.count(c) ? hmap[c] : hmap[c] = idCnt++;
+    if (!hmap.count(c)) {
+        hmap[c] = idCnt++;
+        info.push_back({});
+    }
+    return hmap[c];
 }
 
 void init() {
     idCnt = 0;
     hmap.clear();
-    for (int i = 1; i < 6; i++)
-        for (int j = 1; j < 6; j++)
+    info.clear();
+    info.reserve(15);
+    for (int i = 1; i <= 2; i++)
+        for (int j = 1; j <= 2; j++)
             catcom[i][j].clear();
 }
 
@@ -43,9 +50,9 @@ void insert_sorted(vector<Data>& vec, Data data) {
 
 int sell(int mID, int mCategory, int mCompany, int mPrice) {
     int id = getID(mID);
-    info[id] = { mID, mCategory, mCompany, mPrice, false };
-    insert_sorted(catcom[mCategory][mCompany], { id });
-    return (int)catcom[mCategory][mCompany].size();
+    info[id] = {mID, mCategory, mCompany, mPrice, false};
+    insert_sorted(catcom[mCategory][mCompany], {id});
+    return catcom[mCategory][mCompany].size();
 }
 
 int closeSale(int mID) {
@@ -59,34 +66,32 @@ int closeSale(int mID) {
 }
 
 int discount(int mCategory, int mCompany, int mAmount) {
-    vector<Data>& vec = catcom[mCategory][mCompany];
-    vector<Data> new_vec;
-    new_vec.reserve(vec.size());
-    for (auto& nx : vec) {
+    auto& vec = catcom[mCategory][mCompany];
+    auto it = remove_if(vec.begin(), vec.end(), [&](Data& nx) {
         int id = nx.id;
-        if (info[id].removed) continue;
-        if (info[id].price - mAmount <= 0) {
+        if (info[id].removed) return true;
+        if (info[id].price <= mAmount) {
             hmap.erase(info[id].mid);
             info[id].removed = true;
-        } else {
-            info[id].price -= mAmount;
-            new_vec.push_back(nx);
+            return true;
         }
-    }
-    vec.swap(new_vec);
-    sort(vec.begin(), vec.end()); // 정렬 유지
-    return (int)vec.size();
+        info[id].price -= mAmount;
+        return false;
+    });
+    vec.erase(it, vec.end());
+    sort(vec.begin(), vec.end());
+    return vec.size();
 }
 
 RESULT show(int mHow, int mCode) {
-    RESULT res = { 0, {0} };
+    RESULT res = {0, {0}};
     vector<Data> tmp;
-    tmp.reserve(5);
-    for (int i = 1; i <= 5 && tmp.size() < 5; i++) {
-        for (int j = 1; j <= 5 && tmp.size() < 5; j++) {
+    tmp.reserve(15);
+    for (int i = 1; i <= 2 && tmp.size() < 5; i++) {
+        for (int j = 1; j <= 2 && tmp.size() < 5; j++) {
             if (mHow == 1 && i != mCode) continue;
             if (mHow == 2 && j != mCode) continue;
-            for (auto& nx : catcom[i][j]) {
+            for (const auto& nx : catcom[i][j]) {
                 if (!info[nx.id].removed) {
                     tmp.push_back(nx);
                     if (tmp.size() == 5) break;
@@ -95,7 +100,7 @@ RESULT show(int mHow, int mCode) {
         }
     }
     if (tmp.size() > 1) sort(tmp.begin(), tmp.end());
-    for (auto& nx : tmp) res.IDs[res.cnt++] = info[nx.id].mid;
+    for (const auto& nx : tmp) res.IDs[res.cnt++] = info[nx.id].mid;
     return res;
 }
 ```
