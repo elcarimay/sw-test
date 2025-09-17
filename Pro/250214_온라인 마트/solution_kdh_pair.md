@@ -8,8 +8,7 @@ struct RESULT { int cnt, IDs[5]; };
 
 unordered_map<int, int> hmap;
 struct Info {
-    int mid, cat, com, price;
-    bool removed;
+    int mid, cc, price;
 }info[50003];
 
 priority_queue<pair<int,int>, vector<pair<int,int>>, greater<>> catcom[6][6];
@@ -18,7 +17,7 @@ int idCnt, activeCnt[6][6], offset[6][6];
 void cleanPQ(int c, int p) { // c:category, p:company
     while (!catcom[c][p].empty()) {
         auto cur = catcom[c][p].top(); 
-        if (info[cur.second].removed || (cur.first != info[cur.second].price)) catcom[c][p].pop();
+        if (!hmap.count(info[cur.second].mid) || (cur.first != info[cur.second].price)) catcom[c][p].pop();
         else break;
     }
 }
@@ -33,7 +32,7 @@ void init() {
 
 int sell(int mID, int mCategory, int mCompany, int mPrice) {
     int id = hmap[mID] = idCnt++;
-    info[id] = { mID, mCategory, mCompany, mPrice + offset[mCategory][mCompany] };
+    info[id] = { mID, mCategory*10+mCompany, mPrice + offset[mCategory][mCompany] };
     catcom[mCategory][mCompany].push({ info[id].price, id});
     return ++activeCnt[mCategory][mCompany];
 }
@@ -42,9 +41,9 @@ int closeSale(int mID) {
     if (!hmap.count(mID)) return -1;
     int id = hmap[mID];
     hmap.erase(mID);
-    activeCnt[info[id].cat][info[id].com]--;
-    info[id].removed = true;
-    return info[id].price - offset[info[id].cat][info[id].com];
+    int c = info[id].cc / 10, p = info[id].cc % 10;
+    activeCnt[c][p]--;
+    return info[id].price - offset[c][p];
 }
 
 int discount(int mCategory, int mCompany, int mAmount) {
@@ -53,11 +52,11 @@ int discount(int mCategory, int mCompany, int mAmount) {
         cleanPQ(mCategory, mCompany);
         auto cur = catcom[mCategory][mCompany].top();
         auto& i = info[cur.second];
-        if (i.price - offset[i.cat][i.com] <= 0) {
+        int c = i.cc / 10, p = i.cc % 10;
+        if (i.price - offset[c][p] <= 0) {
             catcom[mCategory][mCompany].pop();
             hmap.erase(i.mid);
-            activeCnt[i.cat][i.com]--;
-            i.removed = true;
+            activeCnt[c][p]--;
         }
         else break;
     }
@@ -65,7 +64,7 @@ int discount(int mCategory, int mCompany, int mAmount) {
 }
 
 struct Node {
-    int id, price, cat, com;
+    int id, price, cc;
     bool operator<(const Node& r)const {
         if (price != r.price) return price > r.price;
         return info[id].mid > info[r.id].mid;
@@ -80,8 +79,8 @@ RESULT show(int mHow, int mCode) {
         int cnt = 0;
         while (!catcom[i][j].empty() && cnt < 5) {
             auto cur = catcom[i][j].top(); catcom[i][j].pop();
-            if (info[cur.second].removed) continue;
-            mergePQ.push({ cur.second, cur.first - offset[i][j], i , j });
+            if (!hmap.count(info[cur.second].mid)) continue;
+            mergePQ.push({ cur.second, cur.first - offset[i][j], i*10+j });
             cnt++;
         }
     }
@@ -95,10 +94,10 @@ RESULT show(int mHow, int mCode) {
     Node n = {};
     while (!tmp.empty()) {
         n = tmp.top(); tmp.pop();
-        catcom[n.cat][n.com].push({ n.price + offset[n.cat][n.com], n.id });
+        int c = n.cc / 10, p = n.cc % 10;
+        catcom[c][p].push({ n.price + offset[c][p], n.id });
     }
     return res;
 }
 #endif // 1
-
 ```
