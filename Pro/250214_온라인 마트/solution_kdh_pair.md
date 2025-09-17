@@ -32,7 +32,7 @@ void init() {
 
 int sell(int mID, int mCategory, int mCompany, int mPrice) {
     int id = hmap[mID] = idCnt++;
-    info[id] = { mID, mCategory*10+mCompany, mPrice + offset[mCategory][mCompany] };
+    info[id] = { mID, mCategory * 10 + mCompany, mPrice + offset[mCategory][mCompany] };
     catcom[mCategory][mCompany].push({ info[id].price, id});
     return ++activeCnt[mCategory][mCompany];
 }
@@ -51,12 +51,10 @@ int discount(int mCategory, int mCompany, int mAmount) {
     while (!catcom[mCategory][mCompany].empty()) {
         cleanPQ(mCategory, mCompany);
         auto cur = catcom[mCategory][mCompany].top();
-        auto& i = info[cur.second];
-        int c = i.cc / 10, p = i.cc % 10;
-        if (i.price - offset[c][p] <= 0) {
+        if (info[cur.second].price - offset[mCategory][mCompany] <= 0) {
             catcom[mCategory][mCompany].pop();
-            hmap.erase(i.mid);
-            activeCnt[c][p]--;
+            hmap.erase(info[cur.second].mid);
+            activeCnt[mCategory][mCompany]--;
         }
         else break;
     }
@@ -80,7 +78,7 @@ RESULT show(int mHow, int mCode) {
         while (!catcom[i][j].empty() && cnt < 5) {
             auto cur = catcom[i][j].top(); catcom[i][j].pop();
             if (!hmap.count(info[cur.second].mid)) continue;
-            mergePQ.push({ cur.second, cur.first - offset[i][j], i*10+j });
+            mergePQ.push({ cur.second, cur.first - offset[i][j], i * 10 + j });
             cnt++;
         }
     }
