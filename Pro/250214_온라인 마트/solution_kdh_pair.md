@@ -93,7 +93,7 @@ RESULT show(int mHow, int mCode) {
     while (!tmp.empty()) {
         n = tmp.top(); tmp.pop();
         int c = n.cc / 10, p = n.cc % 10;
-        catcom[c][p].push({ n.price + offset[c][p], n.id });
+        catcom[c][p].push({ n.price + offset[c][p], n.id }); // 원복
     }
     return res;
 }
