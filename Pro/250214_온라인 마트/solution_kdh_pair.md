@@ -29,7 +29,7 @@ void init() {
         activeCnt[i][j] = offset[i][j] = 0;
     }
 }
-
+// 이전 discount되어 있는 것을 더해서 나중에 들어오는 상품에 영향을 미치지 않도록 함.
 int sell(int mID, int mCategory, int mCompany, int mPrice) {
     int id = hmap[mID] = idCnt++;
     info[id] = { mID, mCategory * 10 + mCompany, mPrice + offset[mCategory][mCompany] };
