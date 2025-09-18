@@ -11,7 +11,7 @@ struct Edge {
 
 #define INF 987654321
 #define MAXN 503
-
+// A*알고리즘, 휴리스틱: 문제해결을 빠르게 하기 위해 쓰는 합리적인 추정치.
 int N, idCnt, dist[MAXN], h[MAXN], chargeRate[MAXN];
 vector<Edge> adj[MAXN], radj[MAXN];
 unordered_map<long long, pair<int, int>> idPos; // mid -> (from, idx)
