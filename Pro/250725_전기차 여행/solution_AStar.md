@@ -1,5 +1,5 @@
 ```cpp
-#if 1 //  ms
+#if 1 // 133 ms
 #include <vector>
 #include <unordered_map>
 #include <queue>
@@ -15,45 +15,40 @@ struct Edge {
 int N, dist[MAXN], h[MAXN], chargeRate[MAXN];
 vector<Edge> adj[MAXN], radj[MAXN];
 unordered_map<int, pair<int, int>> hmap; // mid -> city index
-void InfectTimePQ(int m, int city[], int start[]) {
-	for (int i = 0; i < N; i++) dist[i] = INF;
-	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq; // time, city 오름차순
-	for (int i = 0; i < m; i++) {
-		int to = city[i], time = start[i];
-		if (dist[to] > time) pq.push(make_pair(dist[to] = time, to));
-	}
+priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq; // time, city 오름차순
+
+void dijkstra(int a[], vector<Edge>(&vec)[MAXN]) {
 	while (!pq.empty()) {
 		auto cur = pq.top(); pq.pop();
 		int time = cur.first, u = cur.second;
-		if (time != dist[u]) continue;
-		for (auto nx : adj[u]) {
+		if (time != a[u]) continue;
+		for (auto nx : vec[u]) {
 			int v = nx.to, nt = time + nx.time;
-			if (dist[v] > nt) pq.push(make_pair(dist[v] = nt, v));
+			if (a[v] > nt) pq.push(make_pair(a[v] = nt, v));
 		}
 	}
 }
 
+void InfectTimePQ(int m, int city[], int start[]) {
+	for (int i = 0; i < N; i++) dist[i] = INF;
+	while (!pq.empty()) pq.pop();
+	for (int i = 0; i < m; i++) if (dist[city[i]] > start[i]) pq.push(make_pair(dist[city[i]] = start[i], city[i]));
+	dijkstra(dist, adj);
+}
+
 void reversePQ(int target) {
 	for (int i = 0; i < N; i++) h[i] = INF;
-	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+	while (!pq.empty()) pq.pop();
 	h[target] = 0;
 	pq.push(make_pair(0, target));
-	while (!pq.empty()) {
-		auto cur = pq.top(); pq.pop();
-		int time = cur.first, u = cur.second;
-		if (time != h[u]) continue;
-		for (auto nx : radj[u]) {
-			int v = nx.to, nt = time + nx.time;
-			if (nt < h[v]) pq.push(make_pair(h[v] = nt, v));
-		}
-	}
+	dijkstra(h, radj);
 }
 
 int minTime(int B, int s, int e) { // ===================== EV 최단시간: A* + 1시간충전 ===================== B: 최대충전용량
 	if (dist[s] <= 0) return -1;
 	int g[MAXN][303]; // g = 실제 시간, f = g + h[u]
-	for (int i = 0; i < N; i++) for (int j = 0; j <= B; j++) g[i][j] = INF;
-	struct Node { // f: g+h[u] 현재까지 걸린시간 + 앞으로 남은 최소 예상시간(h[u])
+	for (int i = 0; i < N; i++) for (int j = 0; j <= B; j++) g[i][j] = INF; //vector<vector<int>> g(MAXN, vector<int>(303, INF));
+	struct Node { // f: g + h[u] -> 현재까지 걸린시간 + 앞으로 남은 최소 예상시간(h[u])
 		int f, g, u, b; // f: 우선순위값, g: 현재상태까지 도달하는데 걸린 최소시간
 		bool operator<(const Node& r)const {
 			if (f != r.f) return f > r.f;
@@ -65,14 +60,11 @@ int minTime(int B, int s, int e) { // ===================== EV 최단시간: A* 
 	while (!pq.empty()) {
 		Node cur = pq.top(); pq.pop();
 		int t = cur.g, u = cur.u, b = cur.b;
-		if ((t != g[u][b]) || (t >= dist[u])) continue; // dist[u]는 감염시간이므로 넘지 않아야 함.
-		if (u == e) return t; // A*: 최초 팝이 최적.
+		if ((t != g[u][b]) || (t >= dist[u])) continue;
+		if (u == e) return t; // A* algorithm: 최초 팝이 최적.
 		if (b < B) { // ---- 1) 1시간 충전 전이 ----
-			int nb = (b + chargeRate[u] > B) ? B : b + chargeRate[u];
-			int t2 = t + 1;
-			if (t2 < dist[u]) {
-				if (g[u][nb] > t2) pq.push(Node{ t2 + h[u], g[u][nb] = t2, u, nb }); // 휴리스틱은 '도시' 기준
-			}
+			int nb = (b + chargeRate[u] > B) ? B : b + chargeRate[u], t2 = t + 1;
+			if (t2 < dist[u] && g[u][nb] > t2) pq.push(Node{ t2 + h[u], g[u][nb] = t2, u, nb }); // 휴리스틱은 '도시' 기준
 		}
 		for (auto nx : adj[u]) { // ---- 2) 도로 주행 전이 ----
 			if (b < nx.power) continue;
