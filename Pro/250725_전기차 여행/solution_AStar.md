@@ -66,7 +66,7 @@ int minTime(int B, int s, int e) { // ===================== EV 최단시간: A* 
 		Node cur = pq.top(); pq.pop();
 		int t = cur.g, u = cur.u, b = cur.b;
 		if ((t != g[u][b]) || (t >= dist[u])) continue; // dist[u]는 감염시간이므로 넘지 않아야 함.
-		if (u == e) return t; // A*: 최초 팝이 최적. t < dist[e]는 이미 safeStay(u,t)에서 u==e이면 확인됨
+		if (u == e) return t; // A*: 최초 팝이 최적.
 		if (b < B) { // ---- 1) 1시간 충전 전이 ----
 			int nb = (b + chargeRate[u] > B) ? B : b + chargeRate[u];
 			int t2 = t + 1;
