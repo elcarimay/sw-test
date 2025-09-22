@@ -1,7 +1,6 @@
 ```cpp
 #if 1 // 375 ms
 #define _CRT_SECURE_NO_WARNINGS
-#include <cstring>
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
@@ -25,12 +24,22 @@ void decCar(ull x, char out[8]) {
     for (int i = 6; i >= 0; i--) { out[i] = (char)(x & 0xFF); x >>= 8; } out[7] = '\0';
 }
 int suf4_from_car(ull car) {
+    /*int ret = 0;
+    for (int i = 6; i >= 0; i--) {
+        if (i >= 3) {
+            int s = (char)(car & 0xFF);
+            ret += (s - '0') * pow(10, 6 - i);
+        }
+        car >>= 8;
+    }
+    return ret;*/
+
     char s[8]; decCar(car, s);
     return (s[3] - '0') * 1000 + (s[4] - '0') * 100 + (s[5] - '0') * 10 + (s[6] - '0');
 }
 void make_locname(int area, int slot, char out[5]) {
     out[0] = (char)('A' + area);
-    out[1] = (char)('0' + (slot / 100) % 10);
+    out[1] = (char)('0' + (slot / 100));
     out[2] = (char)('0' + (slot / 10) % 10);
     out[3] = (char)('0' + (slot % 10));
     out[4] = '\0';
@@ -51,25 +60,18 @@ struct TowEvent {
 priority_queue<TowEvent> towPQ;
 
 int chooseArea() {
-    int best = -1, bf = -1;
-    for (int i = 0; i < N; i++) {
-        int f = freeCount[i];
-        if (f > bf) bf = f, best = i;
-        else if (f == bf && f > 0 && i < best) best = i;
-    }
-    return (bf <= 0) ? -1 : best;
+    int idx = -1, space = 0;
+    for (int i = 0; i < N; i++) if (freeCount[i] > space) space = freeCount[i], idx = i;
+    return idx;
 }
 
 int allocSlot(int area) {
+    --freeCount[area];
     if (!holes[area].empty()) {
-        int s = holes[area].top(); holes[area].pop();
-        --freeCount[area];
-        return s;
+        int cur = holes[area].top(); holes[area].pop();
+        return cur;
     }
-    if (nextFree[area] < M) {
-        int s = nextFree[area]++; --freeCount[area];
-        return s;
-    }
+    if (nextFree[area] < M) return nextFree[area]++;
     return -1;
 }
 
@@ -81,15 +83,12 @@ void freeSlot(int area, int slot) {
 void processTow(int now) { // 자동 견인 (mTime까지 처리)
     while (!towPQ.empty() && towPQ.top().towTime <= now) {
         TowEvent cur = towPQ.top(); towPQ.pop();
-        if (!parked.count(cur.car)) continue;
-        if (parked[cur.car].enterTime != cur.mTime) continue;
+        if (!parked.count(cur.car) || parked[cur.car].enterTime != cur.mTime) continue;
         ParkedInfo& pi = parked[cur.car];
         int area = pi.area, slot = pi.slot, et = pi.enterTime, tt = pi.towTime;
         parked.erase(cur.car);
-        if (tt != cur.towTime) continue; // 지연 이벤트
         freeSlot(area, slot); // 슬롯 반환
         int suf = suf4_from_car(cur.car); // 주차 인덱스 제거
-        int parkDur = cur.towTime - et;
         towed[cur.car] = { cur.towTime, cur.towTime - et }; // 견인 등록
         towedPQ[suf].push(make_pair(cur.car, cur.towTime));
     }
@@ -115,8 +114,7 @@ RESULT_E enter(int mTime, char mCarNo[]) {
     RESULT_E r = {};
     int zone = chooseArea(); if (zone == -1) return r;
     int slot = allocSlot(zone); if (slot == -1) return r;
-    int suf = suf4_from_car(car);
-    parkedPQ[suf].push(make_pair(car, mTime));
+    parkedPQ[suf4_from_car(car)].push(make_pair(car, mTime));
     parked[car] = { zone,slot,mTime,mTime + L };
     towPQ.push({ parked[car].towTime, car, mTime });
     r.success = 1; make_locname(zone, slot, r.locname);
@@ -179,5 +177,4 @@ RESULT_S search(int mTime, char mStr[]) {
     return res;
 }
 #endif // 1
-
 ```
