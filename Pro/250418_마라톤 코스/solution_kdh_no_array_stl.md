@@ -94,5 +94,4 @@ int getLength(int mSpot) {
 	return globalmax;
 }
 #endif // 1
-
 ```
