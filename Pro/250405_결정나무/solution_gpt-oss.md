@@ -167,8 +167,7 @@ int fit() {
 }
 
 int predict(int mX, int mY) {
-	int ret = predictIterative(mX, mY);
-	return ret;
+	return predictIterative(mX, mY);
 }
 
 #endif // 1 // 43 ms
