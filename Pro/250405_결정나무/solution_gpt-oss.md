@@ -83,7 +83,6 @@ void buildTreeIterative() {
 		bool isLeftChild;
 	};
 	tree.clear();
-	vector<Node> tempNodes;
 	queue<Frame> st;
 	st.push({ 0,0,N - 1, N - 1, -1, false }); // start from the whole grid;
 	while (!st.empty()) {
