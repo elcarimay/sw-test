@@ -1,5 +1,5 @@
 ```cpp
-#if 1 // 189 ms
+#if 1 // 185 ms
 #define _CRT_SECURE_NO_WARNINGS
 #include <set>
 #include <unordered_map>
@@ -38,14 +38,6 @@ void init() {
 
 void destroy() {}
 
-int getsID(int c) {
-    return scmap.count(c) ? scmap[c] : scmap[c] = scCnt++;
-}
-
-int getrID(int c) {
-    return rmap.count(c) ? rmap[c] : rmap[c] = rCnt++;
-}
-
 char delim[] = "/-:";
 ull convert(char d[], bool opt, bool opt2 = false) { // 날짜는 “2019 / 01 / 01” 부터 “2029 / 12 / 31” 까지 주어질 수 있다., opt가 true면 시간만 계산
     ull time = 0; int month;
@@ -69,24 +61,25 @@ ull convert(char d[], bool opt, bool opt2 = false) { // 날짜는 “2019 / 01 /
 }
 
 void newClass(int mClassId, char mClassBegin[], char mClassEnd[], int mRatio) {
-    sc[getsID(mClassId)] = { convert(mClassBegin, false), convert(mClassEnd, false), mRatio };
+    int sid = scmap[mClassId] = scCnt++;
+    sc[sid] = { convert(mClassBegin, false), convert(mClassEnd, false), mRatio };
 }
 
 void newRecord(int mRecordId, int mClassId, char mRecordBegin[], char mRecordEnd[]) {
-    int rid = getrID(mRecordId);
-    r[rid] = { convert(mRecordBegin, true), convert(mRecordEnd, true), getsID(mClassId) };
+    int rid = rmap[mRecordId] = rCnt++;
+    r[rid] = { convert(mRecordBegin, true), convert(mRecordEnd, true), scmap[mClassId] };
     it[rid] = s.insert({ rid }).first;
 }
 
 void changeRecord(int mRecordId, char mNewBegin[], char mNewEnd[]) {
-    int rid = getrID(mRecordId);
+    int rid = rmap[mRecordId];
     r[rid].start = convert(mNewBegin, true), r[rid].end = convert(mNewEnd, true);
     s.erase(it[rid]);
     it[rid] = s.insert({ rid }).first;
 }
 
 int checkAttendance(int mClassId, char mDate[]) {
-    int sid = getsID(mClassId);
+    int sid = scmap[mClassId];
     ull date = convert(mDate, true, true);
     ull class_s = sc[sid].start + date, class_e = sc[sid].end + date;
     ull cnt = 0, start = 0, end = 0;
