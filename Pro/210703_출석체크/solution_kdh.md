@@ -69,24 +69,18 @@ ull convert(char d[], bool opt, bool opt2 = false) { // 날짜는 “2019 / 01 /
 }
 
 void newClass(int mClassId, char mClassBegin[], char mClassEnd[], int mRatio) {
-    int sid = getsID(mClassId);
-    sc[sid].start = convert(mClassBegin, false);
-    sc[sid].end = convert(mClassEnd, false);
-    sc[sid].ratio = mRatio;
+    sc[getsID(mClassId)] = { convert(mClassBegin, false), convert(mClassEnd, false), mRatio };
 }
 
 void newRecord(int mRecordId, int mClassId, char mRecordBegin[], char mRecordEnd[]) {
     int rid = getrID(mRecordId);
-    r[rid].cid = getsID(mClassId);
-    r[rid].start = convert(mRecordBegin, true);
-    r[rid].end = convert(mRecordEnd, true);
+    r[rid] = { convert(mRecordBegin, true), convert(mRecordEnd, true), getsID(mClassId) };
     it[rid] = s.insert({ rid }).first;
 }
 
 void changeRecord(int mRecordId, char mNewBegin[], char mNewEnd[]) {
     int rid = getrID(mRecordId);
-    r[rid].start = convert(mNewBegin, true);
-    r[rid].end = convert(mNewEnd, true);
+    r[rid].start = convert(mNewBegin, true), r[rid].end = convert(mNewEnd, true);
     s.erase(it[rid]);
     it[rid] = s.insert({ rid }).first;
 }
@@ -103,8 +97,7 @@ int checkAttendance(int mClassId, char mDate[]) {
         if (class_e <= st) break;
         if (end <= st) { // 새로운 구간이 나타나면
             cnt += end - start;
-            start = max(class_s, st);
-            end = min(class_e, en);
+            start = max(class_s, st), end = min(class_e, en);
         }
         else end = min(class_e, max(en, end)); // 겹치는 부분의 끝부분만 처리
     }
@@ -123,5 +116,4 @@ int checkCheating() {
     return 0;
 }
 #endif // 1
-
 ```
